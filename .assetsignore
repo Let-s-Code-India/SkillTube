@@ -1,0 +1,10 @@
+wrangler.jsonc
+.assetsignore
+.git
+.github
+.gitignore
+supabase
+scripts
+docs
+*.md
+image/_dev
