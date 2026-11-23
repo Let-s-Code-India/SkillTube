@@ -1,10 +1,21 @@
+# files that must NOT be served as public website files
+worker.js
 wrangler.jsonc
 .assetsignore
-.git
-.github
 .gitignore
+.github
+.git
+node_modules
+package.json
+package-lock.json
+README.md
+BUILD_STAGES.md
+FRONTEND_SPEC.md
+KEYS_GUIDE.md
+SVG_ASSET_PROMPT.md
+SVG_IMPROVE_PROMPT.md
+copilot-instructions.md
+catalog
+sql
 supabase
-scripts
-docs
-*.md
 image/_dev
