@@ -1,4 +1,3 @@
-import { strings } from "./strings.js";
 const table = {
   LOGIN_REQUIRED:"Please sign in with GitHub first.",
   ACCOUNT_NOT_READY:"Your account is not ready. Finish sign-in setup and try again.",
@@ -19,6 +18,7 @@ const table = {
   READ_ONLY:"SkillTube is in read-only mode.",
   SIGNUPS_PAUSED:"New sign-ups are paused.",
   STAR_LIMIT:"You have reached the star limit.",
+  CANNOT_STAR_OWN:"You cannot star your own listing.",
   FOLLOW_LIMIT:"You have reached the follow limit.",
   COMMENT_EMPTY:"Write a comment first.",
   COMMENT_TOO_LONG:"This comment is too long.",

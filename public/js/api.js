@@ -11,7 +11,10 @@ async function session() {
 }
 export async function call(name, args = {}) {
   const { data, error } = await supabase().rpc(name, args);
-  if (error) throw { code:error.message?.split(":")[0] || "SERVER_ERROR", arg:null, raw:error };
+  if (error) {
+    const match=String(error.message||"").trim().match(/^([A-Z][A-Z0-9_]*)(?::\s*(.*))?$/s);
+    throw { code:match?.[1]||"SERVER_ERROR", arg:match?.[2]||null, raw:error };
+  }
   return data;
 }
 export async function edge(name, body = {}) {
