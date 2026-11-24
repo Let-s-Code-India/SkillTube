@@ -26,6 +26,13 @@ const table = {
   COMMENT_TOO_LONG:"This comment is too long.",
   COMMENT_LIMIT_SKILL:"You already commented on this listing in the last 24 hours.",
   COMMENT_LIMIT_DAY:"You reached your daily comment limit.",
+  COMMENT_NOT_FOUND:"This comment could not be found.",
+  PARENT_NOT_FOUND:"The comment you are replying to is no longer available.",
+  PIN_ONLY_COMMENTS:"Only top-level comments can be pinned.",
+  PIN_LIMIT:"This listing has reached its pinned-comment limit.",
+  BAD_LENGTH:"Enter a comment between 1 and 1500 characters.",
+  REPORT_CLOSED:"This report is already closed.",
+  REPORT_NOT_FOUND:"This report could not be found.",
   REPORT_LIMIT_TARGET:"You already reported this target in the last 24 hours.",
   REPORT_LIMIT_DAY:"You reached your daily report limit.",
   CANNOT_REPORT_OWN:"You cannot report your own listing or channel.",
@@ -53,7 +60,6 @@ const table = {
   NO_GITHUB:"This account is not linked to GitHub.",
   NO_LINKS:"Links are not allowed in comments.",
   NOT_YOURS:"This action belongs to another account.",
-  FILE_TOO_BIG:"The image is larger than the allowed size.",
   SERVER_ERROR:"Something went wrong. Please try again."
 };
 export function errorMessage(code, arg) {
@@ -62,6 +68,7 @@ export function errorMessage(code, arg) {
   if (arg && (key === "PUBLISH_LIMIT" || key === "EDIT_LOCKED" || key === "COUNTRY_LOCKED")) {
     message += ` ${arg}`;
   }
+  if(arg&&key==="COMMENT_TOO_LONG")message=`This comment must be no more than ${arg} characters.`;
   return message;
 }
 export function showError(target, code, arg) {
