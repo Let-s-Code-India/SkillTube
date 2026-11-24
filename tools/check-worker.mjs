@@ -21,6 +21,7 @@ const env={
 };
 const waitUntil=[];
 const context={waitUntil(promise){waitUntil.push(promise);}};
+cached.set(`${env.SITE_URL}/sitemap-pages.xml`,new Response("<urlset><url><loc>stale</loc></url></urlset>"));
 const sitemap=await worker.fetch(new Request(`${env.SITE_URL}/sitemap-pages.xml`),env,context);
 if(!sitemap.ok)throw new Error(`sitemap-pages.xml returned ${sitemap.status}`);
 const xml=await sitemap.text();

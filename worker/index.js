@@ -33,6 +33,11 @@ export default {
       if (path === "/licenses/BRAND.md") return Response.redirect("https://github.com/Let-s-Code-India/SkillTube/blob/main/licenses/BRAND.md", 302);
       if (path === "/robots.txt") return robots(env, url);
       if (path === "/llms.txt") return llms(env, url);
+      if (path === "/sitemap-pages.xml") {
+        const response = await sitemap(env, url, path);
+        response.headers.set("Cache-Control", "public, max-age=300");
+        return request.method === "HEAD" ? new Response(null, response) : response;
+      }
       if (path === "/sitemap.xml" || path.startsWith("/sitemap-")) return cached(request, ctx, () => sitemap(env, url, path), 3600);
       if ((m = path.match(/^\/topic\/([A-Za-z0-9-]+)\/?$/))) return cached(request, ctx, () => topicPage(env, url, m[1]), 600);
       if (path === "/leaderboard" || path === "/leaderboard/") return cached(request, ctx, () => leaderboardPage(env, url), 600);
