@@ -10,14 +10,19 @@ behind Supabase Row Level Security or deployed Edge Functions.
 - `public_skill(p_skill uuid)` — public listing details.
 - `public_developer(p_username text)` — public developer channel.
 - `public_settings()` — public settings, including image rules.
-- `public_stats()` — public directory totals.
+- `public_stats()` — returns `{real:false}` when public totals are disabled;
+  otherwise `{real:true,skills,developers,members}` with active listing,
+  distinct active-owner and eligible-member counts.
 - `trending_tags()` — public trending tags.
 - `dashboard()` — callable anonymously and by logged-in users. Returns the
-  latest weekly snapshot (`state`, `week`, `top`) with up to 50 ranked public
-  developers, including score, public username/name, display logo and tick.
-  Signed-in ready accounts also receive `me.state` (`no_skill`, `waiting` with
-  `live_on`/`days_left`, or `live` with rank/score/best band). Use `top` for the
-  public leaderboard and `me` for the app dashboard.
+  `{state,week,top,me}` object. `state` is `empty` or `live`; `week` is the
+  latest weekly-rank number or null. `top` is an array of up to 50 public
+  entries with `rank`, `score`, `username`, `name`, `logo` (`path`, `zoom`,
+  `x`, `y`) and `tick`. `me` is null for anonymous or ineligible users; an
+  eligible signed-in user receives `state:no_skill`, `state:waiting` with
+  `live_on` and `days_left`, or `state:live` with `rank`, `score` and
+  `best_band`. Use `top` for the public leaderboard and `me` for the app
+  dashboard.
 - `badge_catalog()` — public badge rules.
 - `public_sitemap(p_kind text, p_page int default 0)` — public sitemap records.
 

@@ -1,120 +1,151 @@
 <div align="center">
 
-# 🎬 SkillTube
+<img src="public/logo.svg" alt="SkillTube" width="100">
 
-### The open, free home for AI skills. Discover. Read. Download. Plug into your assistant.
+# SkillTube
 
-*Think "YouTube", but instead of videos you browse skills that make AI assistants more capable.*
+### Discover and share AI skills and the tools around them.
 
-[![Status](https://img.shields.io/badge/status-early%20development-orange)](#-roadmap)
-[![Free](https://img.shields.io/badge/cost-100%25%20free-brightgreen)](#-our-principles)
-[![Open Source](https://img.shields.io/badge/open%20source-yes-blue)](#-license)
-[![Built by](https://img.shields.io/badge/built%20by-Let's%20Code%20India-ff6b00)](https://github.com/Let-s-Code-India)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Cloudflare Workers](https://img.shields.io/badge/hosted%20on-Cloudflare%20Workers-orange)](https://workers.cloudflare.com/)
+[![Supabase](https://img.shields.io/badge/backend-Supabase-3ecf8e)](https://supabase.com/)
+[![Free](https://img.shields.io/badge/price-100%25%20free-brightgreen)](https://skilltube.ayushgiri-ai-21.workers.dev/)
 
-</div>
-
----
-
-## ✨ What is SkillTube?
-
-AI assistants get much more useful when you give them **skills**: small, reusable packages of instructions and files that teach them how to do one job well.
-
-The problem: skills are scattered across thousands of GitHub repositories, and there is no single friendly place to find them.
-
-**SkillTube is that place.** Developers list their skills. Everyone else browses them as simple cards, reads what each skill does in depth, and downloads the ones they like, straight from the developer's own GitHub repository.
-
-> SkillTube does **not** host skill files. Every download goes directly to the developer's repository, so developers stay in control of their work.
-
----
-
-## 🧭 How it works
-
-**For people who want skills**
-
-1. Open SkillTube and browse the skill cards (image, name, short description, and the developer's name).
-2. Click a card to read the full description: what the skill does and how it works.
-3. Press **Download**. You are sent to the developer's GitHub repository.
-4. Add the skill to your own assistant and start using it.
-
-**For developers who build skills**
-
-1. Sign in with your **GitHub account**. There is no separate password to remember.
-2. Add your skill: paste your repository link, then give it a title, a name, a short description, and a long description. An image is optional. If you skip it, a clean letter avatar is made for you.
-3. SkillTube checks with GitHub that the repository really belongs to you. Verified skills get a ✔ badge.
-4. Edit your skill's details whenever you like from your dashboard.
-
-**Behind the scenes**
-
-Every **6 hours** an automatic catalog job checks every listed skill against GitHub. If a repository has been deleted or made private, the skill is removed from SkillTube automatically. If a repository is renamed, SkillTube follows it and updates the listing.
-
----
-
-## 🔒 Trust and verification
-
-- **GitHub only.** Sign-in and skills both come from GitHub, which most developers already use.
-- **Ownership is checked, not claimed.** SkillTube matches the signed-in GitHub account against the repository's owner on GitHub itself, using permanent numeric IDs rather than names that can change.
-- **Always re-checked.** The 6-hour catalog keeps verifying that each repository still exists and still belongs to the same owner.
-- **Be careful with third-party skills.** Skills are made by the community. Read what a skill does before adding it to your assistant.
-
----
-
-## 🧱 Tech stack (all free tiers, no credit card)
-
-| Part | Tool |
-|---|---|
-| Website | HTML, CSS, JavaScript on **GitHub Pages** |
-| Login, database, small files | **Supabase** (GitHub sign-in, Postgres, Row Level Security) |
-| Automatic 6-hour catalog | **GitHub Actions** |
-| Ownership checks | **GitHub API** |
-
----
-
-## 🗺️ Roadmap
-
-- [ ] Project setup: Supabase project, database tables, security rules
-- [ ] Sign in with GitHub
-- [ ] Add a skill with automatic ownership verification
-- [ ] Skill cards grid and skill detail page
-- [ ] Download button
-- [ ] Developer dashboard: edit and delete your skills
-- [ ] 6-hour catalog job: verify, rename-follow, and auto-remove missing skills
-- [ ] ✔ Verified badge, Report button, and fork labels
-- [ ] Trending dashboard: most downloaded and most viewed skills
-- [ ] Search and categories
-
----
-
-## 🧡 Our principles
-
-- **Free forever for everyone.** No paid tools, no subscriptions, no credit card needed to build or run this.
-- **Open source.** Built in the open by the community.
-- **Developers stay in control.** Your skill lives in your repository. Delete it there and it disappears here.
-- **Lightweight.** Designed to be built and run even on modest hardware.
-
----
-
-## 🤝 Contributing
-
-SkillTube is just getting started, and every kind of help is welcome: ideas, design, code, testing, and writing docs.
-
-1. Open an **Issue** to share an idea or report a problem.
-2. Fork the repository and create a branch for your change.
-3. Open a **Pull Request** and describe what you changed and why.
-
-Please be kind and respectful to everyone in the project.
-
----
-
-## 📄 License
-
-Released under the **MIT License**. See the `LICENSE` file for details.
-
----
-
-<div align="center">
-
-**Made with ❤️ by [Let's Code India](https://github.com/Let-s-Code-India)**
-
-*Free software, built from scratch, for everyone.*
+<img src="public/og-image.png" alt="SkillTube — the open discovery layer for AI resources" width="100%">
 
 </div>
+
+SkillTube is a free, open directory for **AI skills first**, plus MCP servers,
+datasets, databases, prompts, agents, guides and other AI tools. Developers
+keep their projects in public GitHub repositories; SkillTube adds structured
+discovery, useful tags, public developer channels and community signals.
+
+## Features
+
+- Search AI resources by name, description and structured topics.
+- Browse server-rendered skill and developer pages, with Markdown alternatives
+  for crawlers and assistants.
+- Sign in with GitHub to publish, manage and share listings.
+- Follow developers, star listings, discuss work and receive update indicators.
+- Discover badges, weekly rankings and developer channels.
+- Report content through a documented review and response flow.
+- Use a responsive interface designed for keyboard, touch and small screens.
+
+## Screenshots
+
+Screenshots will be added after the public launch.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  Browser[Browser] -->|static assets and public routes| Worker[Cloudflare Worker and Assets]
+  Worker -->|RPC and Edge Functions only| Supabase[Supabase]
+  Supabase -->|catalog data| Worker
+  Catalog[GitHub Actions catalog check] -->|verify public repositories| GitHub[GitHub]
+  Browser -->|GitHub OAuth| Supabase
+```
+
+The browser does not read database tables. It calls only the functions exposed
+by the backend through [`public/js/api.js`](public/js/api.js). Public skill and
+developer pages are rendered by the Worker; the app shell and static content
+are served from `public/`.
+
+## Technology
+
+| Area | Technology |
+| --- | --- |
+| Web app and static content | HTML, CSS and native JavaScript modules |
+| Hosting and server-rendered public pages | Cloudflare Workers and Assets |
+| Authentication and data | Supabase Auth, Postgres, RPC and Edge Functions |
+| Repository ownership checks | GitHub OAuth and GitHub API |
+| Periodic catalog check | GitHub Actions |
+
+## Security and privacy
+
+- Browser code calls backend functions; it never queries Supabase tables.
+- Authorization and input validation are enforced by SQL/RLS and Edge Functions.
+- The browser contains only the publishable Supabase key; server secrets stay
+  in the deployment environment.
+- Markdown rendered into HTML is sanitized with the vendored DOMPurify.
+- SkillTube does not store IP addresses, run analytics or use tracking cookies.
+- Each listing remains in its developer's repository; read the repository's
+  license before using its contents.
+
+Read the [security model](docs/SECURITY_MODEL.md), [database contract](docs/DATABASE.md),
+[error-code guide](docs/ERROR_CODES.md) and
+[security reporting policy](https://github.com/Let-s-Code-India/.github/blob/main/SECURITY.md).
+
+## Live site
+
+- [SkillTube](https://skilltube.ayushgiri-ai-21.workers.dev/)
+- [Developers](https://skilltube.ayushgiri-ai-21.workers.dev/developers/)
+- [Leaderboard](https://skilltube.ayushgiri-ai-21.workers.dev/leaderboard/)
+- [Badges](https://skilltube.ayushgiri-ai-21.workers.dev/badges/)
+- [FAQ](https://skilltube.ayushgiri-ai-21.workers.dev/faq/)
+- [Privacy](https://skilltube.ayushgiri-ai-21.workers.dev/legal/privacy/)
+- [robots.txt](https://skilltube.ayushgiri-ai-21.workers.dev/robots.txt)
+- [Sitemap](https://skilltube.ayushgiri-ai-21.workers.dev/sitemap.xml)
+- [llms.txt](https://skilltube.ayushgiri-ai-21.workers.dev/llms.txt)
+
+## Local development
+
+The website has no frontend bundler or site build step. Open this repository in
+Codespaces, edit files under `public/` or `worker/`, and use the repository's
+Cloudflare Workers Builds deployment for the live service. For local checks:
+
+```sh
+npm ci
+npm run check:posts
+npm run check:schema
+npm run check:links
+node tools/stamp-footer.mjs --check
+```
+
+The post generator runs at commit time and writes static HTML; visitors do not
+fetch Markdown at runtime. Run `npm run generate:posts` after changing post
+sources or metadata.
+
+## Catalog
+
+The scheduled GitHub Actions catalog workflow rechecks listed public GitHub
+repositories every six hours. It removes unavailable listings only according
+to the backend's retry and deletion rules. The workflow needs the repository's
+Supabase URL and service-role secret; never put those secrets in source files.
+See the [runbook](docs/RUNBOOK.md).
+
+## Project layout
+
+```text
+public/                  App, static pages, styles, images and vendored browser libraries
+  js/pages/              One module per app route
+  js/components/         Reusable interface components
+  legal/                 Public policy pages
+  why-skilltube/         Generated blog index and static articles
+content/why/             Markdown sources for the blog
+worker/index.js          Public server-rendered routes and sitemap
+supabase/sql/            Database source of truth
+supabase/functions/      Authenticated backend operations
+catalog/                 Scheduled repository verification
+schema/                  Public payload schemas and fixtures
+docs/                    Architecture, database, security and operations docs
+licenses/                Project and third-party license notices
+tools/                   Static-content and acceptance-check scripts
+```
+
+## Contributing
+
+Issues and pull requests are welcome. Please follow the organization-level
+[contribution guide](https://github.com/Let-s-Code-India/.github/blob/main/CONTRIBUTING.md)
+and [Code of Conduct](https://github.com/Let-s-Code-India/.github/blob/main/CODE_OF_CONDUCT.md).
+The source code is under the [MIT License](LICENSE); listed resources remain
+under their own authors' licenses. SkillTube name and artwork use the
+[brand guidelines](licenses/BRAND.md).
+
+## Contact
+
+- ayushgiri.ai.21@gmail.com
+- ayushgiri.25@icloud.com
+- ayushgiri.dev1@outlook.com
+
+**Made in Mumbai, India by Let's Code India.**

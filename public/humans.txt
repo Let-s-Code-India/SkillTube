@@ -1,4 +1,17 @@
-Team: Let's Code India
-Project: SkillTube
+/* TEAM */
+Founder: Ayush Giri
+Organisation: Let's Code India
 Location: Mumbai, Maharashtra, India
-Made from: Open-source, free software
+
+/* SITE */
+Project: SkillTube
+Description: Free discovery for AI skills, MCP servers, datasets, databases, prompts, agents and AI tools.
+Standards: HTML, CSS, JavaScript, JSON-LD, Sitemap
+Software: Cloudflare Workers, Supabase
+Source: https://github.com/Let-s-Code-India/SkillTube
+
+/* CONTACT */
+Email: ayushgiri.ai.21@gmail.com
+Email: ayushgiri.25@icloud.com
+Email: ayushgiri.dev1@outlook.com
+Security: https://skilltube.ayushgiri-ai-21.workers.dev/.well-known/security.txt
