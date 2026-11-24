@@ -19,8 +19,13 @@ export async function render(app) {
   if(dashboard?.me){ const card=document.createElement("section"); card.className="card"; const h=document.createElement("h2"); h.textContent="Your dashboard"; const detail=document.createElement("p");
     if(dashboard.me.state==="no_skill") detail.textContent="Publish your first AI resource to start your dashboard.";
     if(dashboard.me.state==="waiting") detail.textContent=`Your ranking will go live in ${dashboard.me.days_left} days.`;
-    if(dashboard.me.state==="live") detail.textContent=`Rank ${dashboard.me.rank ?? "—"} · Score ${dashboard.me.score ?? "—"} · Best band ${dashboard.me.best_band ?? "—"}`;
-    card.append(h,detail); app.append(card);
+    if(dashboard.me.state==="live") detail.textContent=dashboard.me.rank
+      ?`Rank ${dashboard.me.rank} · Score ${Number(dashboard.me.score||0).toLocaleString()} · Best band ${dashboard.me.best_band ? `top ${dashboard.me.best_band}` : "not yet earned"}`
+      :dashboard.state==="empty"
+        ?"You are eligible; the first weekly ranking has not been published yet."
+        :"You are eligible for ranking, but are not currently in the top 50.";
+    const link=document.createElement("a");link.href="#/dashboard";link.textContent="Open your full dashboard";
+    card.append(h,detail,link); app.append(card);
   }
   refreshNotificationDots();
 }
