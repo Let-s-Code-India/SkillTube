@@ -36,6 +36,19 @@ and arguments. High-level groups include `me`, `create_skill`, `edit_skill`,
 `dashboard()` is public callable per the backend summary. Admin operations require
 `is_admin` or `is_admin_writer` server-side checks.
 
+## Follow and seen-by-username RPCs
+
+- `follow_by_username(p_username text)` — signed-in users only. Resolves an
+  eligible developer by case-insensitive GitHub username and returns the same
+  JSON as `toggle_follow(p_dev uuid)`.
+- `mark_developer_seen_by_username(p_username text)` — signed-in users only.
+  Resolves an eligible developer and marks their followed updates seen.
+
+Both functions require authentication, reject missing/blocked developers with
+`DEVELOPER_NOT_FOUND`, and grant execute only to `authenticated` and
+`service_role`. Use these when the UI has a username but must not expose the
+developer UUID.
+
 ## Edge Functions
 
 - `account-gate` — POST, user JWT. Captures GitHub account age and account status.

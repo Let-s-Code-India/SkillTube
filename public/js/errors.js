@@ -20,6 +20,8 @@ const table = {
   STAR_LIMIT:"You have reached the star limit.",
   CANNOT_STAR_OWN:"You cannot star your own listing.",
   FOLLOW_LIMIT:"You have reached the follow limit.",
+  CANNOT_FOLLOW_SELF:"You cannot follow your own channel.",
+  DEVELOPER_NOT_FOUND:"This developer could not be found.",
   COMMENT_EMPTY:"Write a comment first.",
   COMMENT_TOO_LONG:"This comment is too long.",
   COMMENT_LIMIT_SKILL:"You already commented on this listing in the last 24 hours.",

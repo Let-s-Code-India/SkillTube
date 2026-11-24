@@ -42,3 +42,13 @@ export async function edgeForm(name, formData) {
   if (!r.ok || data.ok === false) throw { code:data.code || "SERVER_ERROR", arg:data.arg || null, raw:data };
   return data;
 }
+
+export function followByUsername(username) {
+  return call("follow_by_username",{p_username:username});
+}
+export function markDeveloperSeenByUsername(username) {
+  return call("mark_developer_seen_by_username",{p_username:username});
+}
+export function markDeveloperSeen(devId) {
+  return call("mark_developer_seen",{p_dev:devId});
+}
