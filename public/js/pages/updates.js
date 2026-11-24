@@ -1,4 +1,4 @@
-import { getUpdatesFeed, markAllUpdatesSeen, call } from "../api.js";
+import { getUpdatesFeed, markAllUpdatesSeen, getAlertCounts, getMyAchievements, markAlertsSeen, call } from "../api.js";
 import { showError } from "../errors.js";
 import { refreshNotificationDots } from "../components/notification-dots.js";
 export async function render(app) {
@@ -27,6 +27,42 @@ export async function render(app) {
     await refreshNotificationDots();
   }catch(e){showError(error,e.code,e.arg);}
   await renderReportNotices(app);
+  await renderAchievementNotices(app);
+}
+
+async function renderAchievementNotices(app) {
+  const section=document.createElement("section");section.className="badge-section";
+  const heading=document.createElement("h2");heading.textContent="Your achievements";
+  const error=document.createElement("div");
+  const list=document.createElement("div");list.className="badge-grid";
+  section.append(heading,error,list);app.append(section);
+  let achievements,alerts;
+  try{[achievements,alerts]=await Promise.all([getMyAchievements(50),getAlertCounts()]);}
+  catch(e){showError(error,e.code,e.arg);return;}
+
+  const unseen=Math.max(0,Number(alerts?.badges)||0);
+  const active=(achievements||[]).filter((badge)=>!badge.revoked);
+  if(!active.length) {
+    const empty=document.createElement("p");empty.className="mut";empty.textContent="No badges earned yet.";list.append(empty);
+  } else {
+    for(const [index,badge] of active.entries()) {
+      const card=document.createElement("article");card.className="card badge-card";
+      const name=document.createElement("h3");name.textContent=badge.name||"SkillTube badge";
+      const info=document.createElement("p");info.className="mut";info.textContent=badge.tier||"";
+      if(index<unseen){const fresh=document.createElement("span");fresh.className="notification-dot red";fresh.textContent="New";fresh.setAttribute("aria-label","New badge");card.append(fresh);}
+      const reason=document.createElement("p");reason.textContent=badge.reason||"";
+      card.append(name,info,reason);list.append(card);
+    }
+  }
+
+  if(unseen<=active.length) {
+    try{await markAlertsSeen();await refreshNotificationDots();}
+    catch(e){showError(error,e.code,e.arg);}
+  } else {
+    const note=document.createElement("p");note.className="mut";
+    note.textContent="Some new achievements are outside the 50 most recent awards; the alert will remain unread.";
+    section.append(note);
+  }
 }
 
 async function renderReportNotices(app) {
