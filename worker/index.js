@@ -252,8 +252,11 @@ function searchPage(env, url, q, page, items, notice, trending = []) {
   const searching = !!q || page > 0;
   const next = items.length >= 20 ? `<p><a href="/developers/?q=${encodeURIComponent(q)}&page=${page + 1}" rel="nofollow">More results</a></p>` : "";
   const tags = (trending || []).slice(0, 20).map((t) => { const label = typeof t === "string" ? t : t.label || t.slug || ""; return label ? `<a href="/developers/?q=${encodeURIComponent(label)}">${esc(label)}</a>` : ""; }).join("");
-  const body = `<h1>Developers and skills</h1>
+  const body = `<h1>Developers and AI resources</h1>
 <form class="s" method="get" action="/developers/"><input name="q" value="${esc(q)}" placeholder="Skill name or tag. Type @username for a developer" maxlength="80" aria-label="Search"><button type="submit">Search</button></form>
+<section class="card"><h2>For developers and AI tools</h2><h3>Be found by people and by AI assistants</h3>
+<p>AI crawlers can find repositories on GitHub, but a SkillTube channel gives them your profile and every listing as clean, structured, complete pages.</p>
+<p>Publish AI skills, MCP servers, datasets, databases, prompts, agents and AI tools as structured listings. Your code, repository history and licence stay on GitHub.</p></section>
 ${notice ? `<p class="mut">${esc(notice)}</p>` : ""}
 ${tags ? `<h2>Trending topics</h2><div class="chips">${tags}</div>` : ""}
 <h2>${q ? `Results for "${esc(q)}"` : "Skills"}</h2>

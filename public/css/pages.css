@@ -3,4 +3,12 @@
 .post-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
 .legal h1 { font-size:clamp(30px,4vw,49px); }
 .legal h2 { margin-top:2em; }
+.table-wrap { max-width:100%; overflow-x:auto; }
+.table-wrap table { width:100%; border-collapse:collapse; text-align:left; }
+.table-wrap th,.table-wrap td { padding:12px; border-bottom:1px solid var(--line); vertical-align:top; }
+.table-wrap thead th { font-family:var(--font-mono); font-size:13px; }
+.faq-item { padding:14px 0; border-bottom:1px solid var(--line); }
+.faq-item summary { cursor:pointer; font-weight:700; }
+.faq-item p { color:var(--muted); }
+#faq-search { display:block; width:100%; margin-top:8px; padding:12px; border:1px solid var(--line); border-radius:4px; background:var(--surface-raised); }
 @media(max-width:900px) { .stat-grid,.post-grid { grid-template-columns:1fr; } }
