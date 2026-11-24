@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://skilltube.example/schema/skill.schema.json",
+  "title": "Public SkillTube skill",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "short_desc",
+    "image",
+    "views",
+    "stars",
+    "comments",
+    "verified",
+    "created_at",
+    "updated_at",
+    "developer",
+    "long_desc",
+    "tags"
+  ],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "name": { "type": "string" },
+    "short_desc": { "type": "string" },
+    "image": { "$ref": "#/definitions/image" },
+    "views": { "type": "integer", "minimum": 0 },
+    "stars": { "type": "integer", "minimum": 0 },
+    "comments": { "type": "integer", "minimum": 0 },
+    "verified": { "type": "boolean" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "developer": {
+      "type": "object",
+      "required": ["username", "name", "logo"],
+      "properties": {
+        "username": { "type": "string" },
+        "name": { "type": ["string", "null"] },
+        "logo": { "$ref": "#/definitions/image" }
+      },
+      "additionalProperties": false
+    },
+    "long_desc": { "type": "string" },
+    "tags": {
+      "type": "object",
+      "required": ["t1", "t2", "t3"],
+      "properties": {
+        "t1": { "type": "array", "items": { "type": "string" } },
+        "t2": { "type": "array", "items": { "type": "string" } },
+        "t3": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    }
+  },
+  "definitions": {
+    "image": {
+      "type": "object",
+      "required": ["path", "zoom", "x", "y"],
+      "properties": {
+        "path": { "type": ["string", "null"] },
+        "zoom": { "type": "number" },
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

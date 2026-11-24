@@ -1,0 +1,42 @@
+{
+  "username": "example-dev",
+  "name": "Example Developer",
+  "bio": "A developer profile fixture.",
+  "self_tags": ["AI", "open source"],
+  "logo": { "path": null, "zoom": 1, "x": 0, "y": 0 },
+  "followers": 4,
+  "following": 2,
+  "skills_count": 1,
+  "tick": null,
+  "badges": [
+    {
+      "key": "first-skill",
+      "name": "First Skill",
+      "tier": "gold",
+      "weekly": false,
+      "earned_at": "2026-11-24T10:00:00Z",
+      "reason": "Published a first skill."
+    }
+  ],
+  "skills": [
+    {
+      "id": "7c0d0f66-65f7-4e8d-aef4-e0d2f3c5a5d1",
+      "name": "Example AI skill",
+      "short_desc": "A concise example listing.",
+      "image": { "path": null, "zoom": 1, "x": 0, "y": 0 },
+      "views": 12,
+      "stars": 3,
+      "comments": 1,
+      "verified": true,
+      "created_at": "2026-11-24T10:00:00Z",
+      "updated_at": "2026-11-24T10:00:00Z",
+      "developer": {
+        "username": "example-dev",
+        "name": "Example Developer",
+        "logo": { "path": null, "zoom": 1, "x": 0, "y": 0 }
+      }
+    }
+  ],
+  "is_me": false,
+  "is_following": false
+}

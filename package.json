@@ -4,9 +4,14 @@
   "type": "module",
   "scripts": {
     "generate:posts": "node tools/make-post.mjs",
-    "check:posts": "node tools/make-post.mjs --check"
+    "check:posts": "node tools/make-post.mjs --check",
+    "check:schema": "node tools/check-schema.mjs",
+    "check:links": "node tools/check-links.mjs",
+    "check:worker": "node tools/check-worker.mjs"
   },
   "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "jsdom": "^26.1.0"
   }
 }

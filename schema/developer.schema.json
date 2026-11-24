@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://skilltube.example/schema/developer.schema.json",
+  "title": "Public SkillTube developer",
+  "type": "object",
+  "required": [
+    "username",
+    "name",
+    "bio",
+    "self_tags",
+    "logo",
+    "followers",
+    "following",
+    "skills_count",
+    "tick",
+    "badges",
+    "skills",
+    "is_me",
+    "is_following"
+  ],
+  "properties": {
+    "username": { "type": "string" },
+    "name": { "type": ["string", "null"] },
+    "bio": { "type": ["string", "null"] },
+    "self_tags": { "type": "array", "items": { "type": "string" } },
+    "logo": { "$ref": "skill.schema.json#/definitions/image" },
+    "followers": { "type": "integer", "minimum": 0 },
+    "following": { "type": "integer", "minimum": 0 },
+    "skills_count": { "type": "integer", "minimum": 0 },
+    "tick": { "type": ["string", "null"] },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "name", "tier", "weekly", "earned_at", "reason"],
+        "properties": {
+          "key": { "type": "string" },
+          "name": { "type": "string" },
+          "tier": { "type": "string" },
+          "weekly": { "type": "boolean" },
+          "earned_at": { "type": "string", "format": "date-time" },
+          "reason": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "short_desc",
+          "image",
+          "views",
+          "stars",
+          "comments",
+          "verified",
+          "created_at",
+          "updated_at",
+          "developer"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "short_desc": { "type": "string" },
+          "image": { "$ref": "skill.schema.json#/definitions/image" },
+          "views": { "type": "integer", "minimum": 0 },
+          "stars": { "type": "integer", "minimum": 0 },
+          "comments": { "type": "integer", "minimum": 0 },
+          "verified": { "type": "boolean" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" },
+          "developer": {
+            "type": "object",
+            "required": ["username", "name", "logo"],
+            "properties": {
+              "username": { "type": "string" },
+              "name": { "type": ["string", "null"] },
+              "logo": { "$ref": "skill.schema.json#/definitions/image" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "is_me": { "type": "boolean" },
+    "is_following": { "type": "boolean" }
+  },
+  "additionalProperties": false
+}
