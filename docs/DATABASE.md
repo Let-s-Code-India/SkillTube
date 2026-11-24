@@ -13,6 +13,12 @@ behind Supabase Row Level Security or deployed Edge Functions.
 - `public_stats()` — public directory totals.
 - `trending_tags()` — public trending tags.
 - `dashboard()` — public signed-in dashboard data.
+  Returns JSON with `state` (`empty` or `live`), `week`, `top` (ranked
+  public developers), and `me` for a signed-in ready account. `me.state`
+  is `no_skill`, `waiting` (with `live_on` and `days_left`) or `live`
+  (with `rank`, `score`, and `best_band`). This function is callable
+  anonymously and by logged-in users; use `top` for the public leaderboard
+  and `me` for the app dashboard.
 - `badge_catalog()` — public badge rules.
 - `public_sitemap(p_kind text, p_page int default 0)` — public sitemap records.
 

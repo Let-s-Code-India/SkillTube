@@ -118,33 +118,6 @@ async function catalog(env, url) {
   return CAT || {};
 }
 
-const CSS = `
-:root{--bg:#fff;--fg:#14171f;--mut:#5b6472;--card:#f4f6fa;--line:#dfe3ea;--acc:#2b59e6}
-@media(prefers-color-scheme:dark){:root{--bg:#0f1218;--fg:#e8ebf2;--mut:#9aa3b2;--card:#171c26;--line:#262d3a;--acc:#7aa2ff}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
-header,main,footer{max-width:960px;margin:0 auto;padding:0 16px}
-header{display:flex;gap:16px;align-items:center;justify-content:space-between;padding-top:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
-header .brand{font-weight:700;font-size:18px;color:var(--fg)}header nav a{margin-left:14px}
-main{padding-top:20px;padding-bottom:40px}h1{font-size:28px;line-height:1.2;margin:.2em 0}h2{font-size:18px;margin:1.6em 0 .5em}
-.mut{color:var(--mut)}.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));margin:14px 0}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:block;color:var(--fg)}
-.card:hover{text-decoration:none;border-color:var(--acc)}.card .body{padding:10px 12px}.card b{display:block}
-.frame{aspect-ratio:4/3;overflow:hidden;background:var(--line);position:relative}
-.frame img{width:100%;height:100%;object-fit:cover;display:block}
-.ph{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:44px;font-weight:700;color:var(--mut)}
-.chips{display:flex;flex-wrap:wrap;gap:6px}.chips a{background:var(--card);border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:14px;color:var(--fg)}
-.cta{margin:22px 0;padding:16px;border:1px dashed var(--line);border-radius:12px;background:var(--card)}
-.btn{display:inline-block;background:var(--acc);color:#fff;padding:9px 16px;border-radius:9px;font-weight:600}.btn:hover{text-decoration:none;opacity:.9}
-.hero{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.logo{width:84px;height:84px;border-radius:50%;overflow:hidden;background:var(--line);flex:none}
-.logo img{width:100%;height:100%;object-fit:cover}.tick{width:22px;height:22px;vertical-align:-4px}
-.badges{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}.bd{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}
-.bd img{width:52px;height:52px;flex:none}.bd small{display:block;color:var(--mut)}
-form.s{display:flex;gap:8px;margin:14px 0}form.s input{flex:1;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit}
-form.s button{padding:10px 16px;border-radius:9px;border:0;background:var(--acc);color:#fff;font:inherit;font-weight:600}
-footer{padding-top:18px;padding-bottom:30px;color:var(--mut);border-top:1px solid var(--line);font-size:14px}
-`;
-
 function layout(env, url, o) {
   const base = site(env, url);
   const canon = o.canonical ? base + o.canonical : null;
@@ -291,14 +264,21 @@ async function topicPage(env, url, tag) {
   const items = (r && r.items) || [];
   const body = `<h1>${esc(tag)} AI resources</h1><p class="mut">AI skills, MCP servers, datasets, databases, prompts, agents and AI tools tagged ${esc(tag)}.</p>
 ${items.length ? `<div class="grid">${items.map((s) => skillCard(env, s)).join("")}</div>` : `<p class="mut">No listings found for this topic.</p>`}`;
-  return layout(env, url, { title: `${tag} AI resources | SkillTube`, desc: `Discover AI resources tagged ${tag}.`, canonical: `/topic/${tag}/`, body });
+  const ld = { "@context":"https://schema.org", "@type":"CollectionPage", name:`${tag} AI resources`, description:`AI skills, MCP servers, datasets, databases, prompts, agents and AI tools tagged ${tag}.`, url:site(env,url)+`/topic/${tag}/` };
+  return layout(env, url, { title: `${tag} AI resources | SkillTube`, desc: `Discover AI resources tagged ${tag}.`, canonical: `/topic/${tag}/`, ld, body });
 }
 
 async function leaderboardPage(env, url) {
   const d = await rpc(env, "dashboard", {}).catch(() => null);
-  const rows = d?.leaderboard || d?.weekly || d?.ranks || d?.top || [];
+  const rows = d?.top || [];
+  const ranked = Array.isArray(rows) ? rows.slice(0,50) : [];
+  const bandRows = ranked.map((r) => {
+    const rank = Number(r.rank || 0);
+    const band = rank <= 10 ? "Apex 10" : rank <= 20 ? "Contender 20" : rank <= 30 ? "Challenger 30" : rank <= 40 ? "Climber 40" : "Rise 50";
+    return `<li><span class="mut">${esc(band)}</span> · <a href="/dev/${esc(r.username)}">@${esc(r.username)}</a> — ${esc(r.name || r.username)} · ${num(r.score)}</li>`;
+  }).join("");
   const body = `<h1>Weekly leaderboard</h1><p class="mut">The top 50 developers by weekly score.</p>
-${Array.isArray(rows) && rows.length ? `<ol>${rows.slice(0,50).map((r) => `<li><a href="/dev/${esc(r.username || r.github_username)}">@${esc(r.username || r.github_username)}</a> — ${num(r.score || r.weekly_score || 0)}</li>`).join("")}</ol>` : `<p class="mut">Weekly rankings are not available yet.</p>`}`;
+${d?.state === "live" && ranked.length ? `<ol>${bandRows}</ol>` : `<p class="mut">Weekly rankings are not available yet.</p>`}`;
   return layout(env, url, { title: "Weekly leaderboard | SkillTube", desc: "The weekly top 50 SkillTube developer rankings.", canonical: "/leaderboard/", body });
 }
 

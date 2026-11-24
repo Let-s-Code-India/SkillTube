@@ -34,6 +34,18 @@ async function render() {
       const feed = await call("for_you_feed",{p_page:0});
       const p = document.createElement("p"); p.textContent = Array.isArray(feed) ? `${feed.length} listings in your feed.` : strings.empty;
       app.append(p);
+      const dashboard = await call("dashboard",{});
+      if (dashboard?.me) {
+        const mine = document.createElement("section");
+        mine.className = "card";
+        const heading = document.createElement("h2"); heading.textContent = "Your dashboard";
+        const detail = document.createElement("p");
+        if (dashboard.me.state === "no_skill") detail.textContent = "Publish your first AI resource to start your dashboard.";
+        if (dashboard.me.state === "waiting") detail.textContent = `Your ranking will go live in ${dashboard.me.days_left} days.`;
+        if (dashboard.me.state === "live") detail.textContent = `Rank ${dashboard.me.rank ?? "—"} · Score ${dashboard.me.score ?? "—"} · Best band ${dashboard.me.best_band ?? "—"}`;
+        mine.append(heading,detail);
+        app.append(mine);
+      }
     } else if (route === "search") {
       const p = document.createElement("p"); p.textContent = "Search public listings and developers.";
       app.append(p);
