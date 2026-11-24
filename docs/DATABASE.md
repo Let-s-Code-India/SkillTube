@@ -46,3 +46,8 @@ and arguments. High-level groups include `me`, `create_skill`, `edit_skill`,
 
 The provider token is captured from `session.provider_token` and kept in memory
 or sessionStorage. It is sent only to `add-skill` and account-gate.
+
+## Backend requests
+
+- Store the 18+ and Terms/Privacy acceptance timestamp on the profile. The
+  frontend currently keeps this convenience flag in localStorage only.

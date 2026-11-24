@@ -164,9 +164,11 @@ async function skillPage(env, url, id, md) {
     return plain(`# ${s.name}\n\n${s.short_desc}\n\nBy ${dev.name || dev.username} (@${dev.username}) - ${base}/dev/${dev.username}\n\nViews: ${s.views} | Stars: ${s.stars}\n\n## About\n\n${s.long_desc}\n\n## Topics\n\n${tags.join(", ")}\n\nPage: ${base}${canon}\n`, "text/markdown");
   }
   const im = imgUrl(env, s.image && s.image.path);
+  const typeText = tags.join(" ").toLowerCase();
+  const ldType = /dataset|database|vector store|embedding|benchmark/.test(typeText) ? "Dataset" : "SoftwareSourceCode";
   const ld = {
-    "@context": "https://schema.org", "@type": "SoftwareApplication", name: s.name, description: s.short_desc,
-    applicationCategory: "DeveloperApplication", operatingSystem: "Any", url: base + canon,
+    "@context": "https://schema.org", "@type": ldType, name: s.name, description: s.short_desc,
+    url: base + canon,
     author: { "@type": "Person", name: dev.name || dev.username, alternateName: "@" + dev.username, url: `${base}/dev/${dev.username}` },
     keywords: tags.join(", "), dateCreated: s.created_at, dateModified: s.updated_at,
     ...(im ? { image: im } : {}),
@@ -322,7 +324,7 @@ function llms(env, url) {
   const base = site(env, url);
   return plain(`# SkillTube
 
-> SkillTube is a free, open place where developers list AI skills. Every skill lives in its own public GitHub repository. Pages here show the name, description, topics, views and the developer. Download links are shown only after signing in with GitHub.
+> SkillTube is a free, open discovery layer for AI skills, MCP servers, datasets, databases, prompts, agents and AI tools. Every listing lives in its own public GitHub repository. Pages here show the name, description, topics, views and the developer. Download links are shown only after signing in with GitHub.
 
 ## Where to read
 - [All skills and search](${base}/developers/): search by skill name or topic; type @username to find a developer
