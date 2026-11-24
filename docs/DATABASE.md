@@ -43,6 +43,10 @@ and arguments. High-level groups include `me`, `create_skill`, `edit_skill`,
   JSON as `toggle_follow(p_dev uuid)`.
 - `mark_developer_seen_by_username(p_username text)` — signed-in users only.
   Resolves an eligible developer and marks their followed updates seen.
+- `file_report_channel_by_username(p_username text, p_reason text, p_note text
+  default null)` — signed-in users only. Resolves an eligible developer and
+  records a channel report with the same validation and anonymous reporter
+  handling as `file_report`.
 
 Both functions require authentication, reject missing/blocked developers with
 `DEVELOPER_NOT_FOUND`, and grant execute only to `authenticated` and
