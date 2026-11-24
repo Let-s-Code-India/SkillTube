@@ -52,3 +52,15 @@ export function markDeveloperSeenByUsername(username) {
 export function markDeveloperSeen(devId) {
   return call("mark_developer_seen",{p_dev:devId});
 }
+export function getUpdatesFeed(limit=50,before=null) {
+  return call("my_updates_feed",{p_limit:limit,p_before:before});
+}
+export function getUnreadUpdatesCount() {
+  return call("unread_updates_count");
+}
+export function getAlertCounts() {
+  return call("my_alert_count");
+}
+export function markAllUpdatesSeen() {
+  return call("mark_all_seen");
+}

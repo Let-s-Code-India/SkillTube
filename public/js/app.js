@@ -3,6 +3,7 @@ import { getSession, signIn, gateSession } from "./auth.js";
 import { showError } from "./errors.js";
 import { state } from "./state.js";
 import { ageGate } from "./components/dialogs.js";
+import { refreshNotificationDots } from "./components/notification-dots.js";
 
 const app = document.querySelector("#app");
 const drawer = document.querySelector("#drawer");
@@ -78,6 +79,7 @@ async function render() {
   app.replaceChildren();
   const h=document.createElement("h1"); h.textContent=titles[routeParts(route)[0]] || "SkillTube";
   app.append(h);
+  refreshNotificationDots();
   try { await loadPage(route,app); }
   catch(error) { showError(app,error.code || "SERVER_ERROR",error.arg); }
 }
