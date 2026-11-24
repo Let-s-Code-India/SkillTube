@@ -38,11 +38,13 @@ function showReplyForm(article,parent,skillId,onChanged) {
   article.querySelector(".reply-form")?.remove();
   const form=document.createElement("form");form.className="reply-form";
   const label=document.createElement("label");label.textContent="Reply (up to 100 characters)";
-  const input=document.createElement("textarea");input.maxLength=100;input.required=true;
+  const input=document.createElement("textarea");input.required=true;
+  const counter=document.createElement("small");counter.className="mut";counter.textContent="0 / 100";
+  input.addEventListener("input",()=>{counter.textContent=`${Array.from(input.value).length} / 100`;});
   const error=document.createElement("div");
   const button=document.createElement("button");button.type="submit";button.className="btn";button.textContent="Reply";
-  label.append(input);form.append(label,button,error);article.append(form);
-  form.addEventListener("submit",async(event)=>{event.preventDefault();button.disabled=true;try{await call("add_comment",{p_skill:skillId,p_body:input.value,p_parent:parent.id});onChanged();}catch(e){showError(error,e.code,e.arg);}finally{button.disabled=false;}});
+  label.append(input,counter);form.append(label,button,error);article.append(form);
+  form.addEventListener("submit",async(event)=>{event.preventDefault();if(Array.from(input.value).length>100){showError(error,"COMMENT_TOO_LONG","100");return;}button.disabled=true;try{await call("add_comment",{p_skill:skillId,p_body:input.value,p_parent:parent.id});onChanged();}catch(e){showError(error,e.code,e.arg);}finally{button.disabled=false;}});
 }
 
 export async function renderComments(container,skillId,{mine=false}={}) {
@@ -50,8 +52,10 @@ export async function renderComments(container,skillId,{mine=false}={}) {
   const heading=document.createElement("h2");heading.textContent="Comments";container.append(heading);
   const form=document.createElement("form");form.className="comment-form";
   const label=document.createElement("label");label.textContent="Add a comment (up to 200 characters)";
-  const input=document.createElement("textarea");input.maxLength=200;input.required=true;
-  label.append(input);
+  const input=document.createElement("textarea");input.required=true;
+  const counter=document.createElement("small");counter.className="mut";counter.textContent="0 / 200";
+  input.addEventListener("input",()=>{counter.textContent=`${Array.from(input.value).length} / 200`;});
+  label.append(input,counter);
   const button=document.createElement("button");button.type="submit";button.className="btn";button.textContent="Comment";
   const error=document.createElement("div");
   form.append(label,button,error);container.append(form);
@@ -71,6 +75,6 @@ export async function renderComments(container,skillId,{mine=false}={}) {
     }
     if(!roots.length){const empty=document.createElement("p");empty.className="mut";empty.textContent="No comments yet.";list.append(empty);}
   }
-  form.addEventListener("submit",async(event)=>{event.preventDefault();button.disabled=true;try{await call("add_comment",{p_skill:skillId,p_body:input.value,p_parent:null});input.value="";await refresh();}catch(e){showError(error,e.code,e.arg);}finally{button.disabled=false;}});
+  form.addEventListener("submit",async(event)=>{event.preventDefault();if(Array.from(input.value).length>200){showError(error,"COMMENT_TOO_LONG","200");return;}button.disabled=true;try{await call("add_comment",{p_skill:skillId,p_body:input.value,p_parent:null});input.value="";counter.textContent="0 / 200";await refresh();}catch(e){showError(error,e.code,e.arg);}finally{button.disabled=false;}});
   await refresh();
 }
