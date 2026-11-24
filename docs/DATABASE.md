@@ -30,8 +30,9 @@ The SQL source of truth includes account, publishing, community, report, update,
 badge, ranking and admin functions. Frontend calls must use the exact SQL names
 and arguments. High-level groups include `me`, `create_skill`, `edit_skill`,
 `delete_skill`, `set_country`, `update_my_profile`, `toggle_star`, `toggle_follow`,
-`add_comment`, `list_comments`, `file_report`, `dev_answer_report`, `my_skills`,
-`my_updates_feed`, `mark_all_seen`, `record_view`, and `get_download_link`.
+`add_comment`, `list_comments`, `file_report`, `my_notices`, `dev_answer_report`,
+`dev_report_message`, `my_skills`, `my_updates_feed`, `mark_all_seen`,
+`record_view`, and `get_download_link`.
 
 `dashboard()` is public callable per the backend summary. Admin operations require
 `is_admin` or `is_admin_writer` server-side checks.
@@ -47,16 +48,22 @@ and arguments. High-level groups include `me`, `create_skill`, `edit_skill`,
   default null)` — signed-in users only. Resolves an eligible developer and
   records a channel report with the same validation and anonymous reporter
   handling as `file_report`.
+- `admin_overview()`, `admin_report_queue(p_filter text)`,
+  `admin_users_search(p_q text)`, `admin_settings_get()`,
+  `admin_settings_set(p_key text, p_value jsonb)`, `admin_start_action(...)`,
+  `admin_decide_report(...)`, `admin_blocked_list()`, and
+  `admin_unblock(p_github_id bigint)` — administrator functions with
+  server-side role checks. Write operations require an admin writer.
 - `my_notices()` — signed-in developer report inbox, without reporter identity.
 - `dev_answer_report(p_report uuid, p_choice text, p_reply text)` — developer
   response choices and up to 1500 characters.
 - `dev_report_message(p_report uuid, p_body text)` — developer follow-up message
   on an open or answered report.
 
-Both functions require authentication, reject missing/blocked developers with
-`DEVELOPER_NOT_FOUND`, and grant execute only to `authenticated` and
-`service_role`. Use these when the UI has a username but must not expose the
-developer UUID.
+The username-resolution functions require authentication, reject
+missing/blocked developers with `DEVELOPER_NOT_FOUND`, and grant execute only
+to `authenticated` and `service_role`. Use these when the UI has a username but
+must not expose the developer UUID.
 
 ## Edge Functions
 

@@ -4,6 +4,7 @@ import { showError } from "./errors.js";
 import { state } from "./state.js";
 import { ageGate } from "./components/dialogs.js";
 import { refreshNotificationDots } from "./components/notification-dots.js";
+import { call } from "./api.js";
 
 const app = document.querySelector("#app");
 const drawer = document.querySelector("#drawer");
@@ -58,6 +59,8 @@ async function loadPage(route, app) {
 
 async function render() {
   const route = hashRoute();
+  const adminLink=document.querySelector("#admin-nav");
+  if(adminLink)adminLink.hidden=true;
   state.session = await getSession();
   if (!state.session) {
     app.replaceChildren();
@@ -76,6 +79,12 @@ async function render() {
   }
   const accepted=await ageGate(app,render);
   if (!accepted) return;
+  try {
+    const account=await call("me_state");
+    if(adminLink)adminLink.hidden=account?.is_admin!==true;
+  } catch(error) {
+    showError("#auth-error",error.code,error.arg);
+  }
   app.replaceChildren();
   const h=document.createElement("h1"); h.textContent=titles[routeParts(route)[0]] || "SkillTube";
   app.append(h);
