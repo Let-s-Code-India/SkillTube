@@ -1,0 +1,54 @@
+# OPTIONAL. Every Sunday: copy the data, lock it with a password, store it in a PRIVATE repository.
+# Turn it on later by adding (Settings -> Secrets and variables -> Actions):
+#   Secrets:   SUPABASE_DB_URL      (Supabase -> Connect -> "Session pooler" connection string, with your DB password)
+#              BACKUP_PASSPHRASE    (a long password only you know; without it the backup cannot be opened)
+#              BACKUP_REPO_TOKEN    (fine-grained token with "Contents: read and write" on the backup repo only)
+#   Variable:  BACKUP_REPO          (for example  Let-s-Code-India/skilltube-backups, a PRIVATE empty repository)
+name: backup
+
+on:
+  # Enable the schedule before launch after adding secrets SUPABASE_DB_URL,
+  # BACKUP_PASSPHRASE and BACKUP_REPO_TOKEN and variable BACKUP_REPO.
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    if: ${{ vars.BACKUP_REPO != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Dump the data (public schema and the login tables)
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          docker run --rm postgres:17 pg_dump "$DB_URL" --data-only --no-owner --no-privileges -n public  > dump.sql
+          docker run --rm postgres:17 pg_dump "$DB_URL" --data-only --no-owner --no-privileges -t auth.users -t auth.identities >> dump.sql
+          test -s dump.sql
+          gzip -9 dump.sql
+      - name: Lock with the password
+        env:
+          PASS: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          test -n "$PASS"
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$PASS" --symmetric --cipher-algo AES256 -o "backup-$(date -u +%F).sql.gz.gpg" dump.sql.gz
+          rm dump.sql.gz
+      - name: Store in the private repository (keep the last 8)
+        env:
+          TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
+          REPO: ${{ vars.BACKUP_REPO }}
+        run: |
+          set -euo pipefail
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/${REPO}.git" store
+          mv backup-*.sql.gz.gpg store/
+          cd store
+          ls -1 backup-*.sql.gz.gpg | sort | head -n -8 | xargs -r git rm -q
+          git config user.name "skilltube-backup"
+          git config user.email "backup@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Backup $(date -u +%F)"
+          git push -q

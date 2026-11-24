@@ -3,8 +3,6 @@
 name: catalog
 
 on:
-  schedule:
-    - cron: "23 */6 * * *"      # 4 times a day (UTC)
   workflow_dispatch: {}          # also a "Run workflow" button
 
 permissions:

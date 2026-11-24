@@ -1,0 +1,5 @@
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; script-src-elem 'self'; style-src 'self'; img-src 'self' https://tdxzcpigazlzzbyoccwo.supabase.co https://avatars.githubusercontent.com data:; connect-src 'self' https://tdxzcpigazlzzbyoccwo.supabase.co wss://tdxzcpigazlzzbyoccwo.supabase.co; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), camera=(), microphone=()

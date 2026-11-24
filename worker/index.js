@@ -33,6 +33,9 @@ export default {
       if (path === "/robots.txt") return robots(env, url);
       if (path === "/llms.txt") return llms(env, url);
       if (path === "/sitemap.xml" || path.startsWith("/sitemap-")) return cached(request, ctx, () => sitemap(env, url, path), 3600);
+      if ((m = path.match(/^\/topic\/([A-Za-z0-9-]+)\/?$/))) return cached(request, ctx, () => topicPage(env, url, m[1]), 600);
+      if (path === "/leaderboard" || path === "/leaderboard/") return cached(request, ctx, () => leaderboardPage(env, url), 600);
+      if (path === "/badges" || path === "/badges/") return cached(request, ctx, () => badgesPage(env, url), 600);
       if ((m = path.match(/^\/skill\/([0-9a-fA-F-]{36})(\.md)?$/))) return cached(request, ctx, () => skillPage(env, url, m[1], !!m[2]), 900);
       if ((m = path.match(/^\/dev\/([A-Za-z0-9-]{1,39})(\.md)?$/))) return cached(request, ctx, () => devPage(env, url, m[1], !!m[2]), 900);
       if (path === "/developers" || path === "/developers/") return developers(request, env, ctx, url);
@@ -47,6 +50,7 @@ export default {
 
 // ---------------------------------------------------------------- helpers
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const bytesToHex = (b) => Array.from(b, (v) => v.toString(16).padStart(2, "0")).join("");
 const clip = (s, n) => { const a = Array.from(String(s ?? "").replace(/\s+/g, " ").trim()); return a.length <= n ? a.join("") : a.slice(0, n - 1).join("") + "…"; };
 const site = (env, url) => (env.SITE_URL || url.origin).replace(/\/$/, "");
 const num = (n) => Number(n ?? 0).toLocaleString("en-US");
@@ -82,12 +86,14 @@ const SEC = {
   "Referrer-Policy": "strict-origin-when-cross-origin",
 };
 function html(env, body, status = 200) {
+  const nonce = bytesToHex(crypto.getRandomValues(new Uint8Array(16)));
+  body = body.replaceAll("__CSP_NONCE__", nonce);
   return new Response(body, {
     status,
     headers: {
       ...SEC,
       "Content-Type": "text/html; charset=utf-8",
-      "Content-Security-Policy": `default-src 'none'; img-src 'self' ${env.SUPABASE_URL} data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'`,
+      "Content-Security-Policy": `default-src 'none'; script-src 'nonce-${nonce}'; script-src-elem 'nonce-${nonce}'; style-src 'self'; img-src 'self' ${env.SUPABASE_URL} https://avatars.githubusercontent.com data:; connect-src 'self' ${env.SUPABASE_URL}; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'`,
     },
   });
 }
@@ -148,24 +154,23 @@ ${o.noindex ? '<meta name="robots" content="noindex,follow">' : '<meta name="rob
 ${canon ? `<link rel="canonical" href="${esc(canon)}">` : ""}
 ${o.md ? `<link rel="alternate" type="text/markdown" href="${esc(base + o.md)}">` : ""}
 <meta property="og:type" content="${o.ogType || "website"}"><meta property="og:site_name" content="SkillTube"><meta property="og:title" content="${esc(o.title)}"><meta property="og:description" content="${esc(o.desc)}">
-${canon ? `<meta property="og:url" content="${esc(canon)}">` : ""}${o.image ? `<meta property="og:image" content="${esc(o.image)}">` : ""}
-<meta name="twitter:card" content="${o.image ? "summary_large_image" : "summary"}">
+${canon ? `<meta property="og:url" content="${esc(canon)}">` : ""}<meta property="og:image" content="${esc(o.image || base + "/og-image.png")}">
+<meta property="og:image:width" content="2658"><meta property="og:image:height" content="1634">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${esc(o.image || base + "/og-image.png")}">
 <link rel="icon" href="/image/app/favicon.svg" type="image/svg+xml">
-<style>${CSS}</style>
-${o.ld ? `<script type="application/ld+json">${JSON.stringify(o.ld).replace(/</g, "\\u003c")}</script>` : ""}
+<link rel="stylesheet" href="/css/worker.css">
+${o.ld ? `<script nonce="__CSP_NONCE__" type="application/ld+json">${JSON.stringify(o.ld).replace(/</g, "\\u003c")}</script>` : ""}
 </head><body>
 <header><a class="brand" href="/">SkillTube</a><nav><a href="/developers/">Developers</a><a href="/">Sign in</a></nav></header>
 <main>${o.body}</main>
-<footer>SkillTube - skills made by developers, each in their own public GitHub repository. Download links are available after signing in with GitHub.</footer>
+<footer>© 2026 Let's Code India. <a href="/legal/privacy/">Privacy</a> · <a href="/legal/terms/">Terms</a> · <a href="/legal/community-guidelines/">Community Guidelines</a> · <a href="/legal/cookies/">Cookies</a> · <a href="/legal/security/">Security</a> · <a href="/brand/">Licenses</a> · <a href="/contact/">Contact</a> · <a href="/faq/">FAQ</a> · <a href="/why-skilltube/">Why SkillTube</a><br>Source code under the MIT License.</footer>
 </body></html>`, o.status || 200);
 }
 
 function frame(env, im, name) {
   const u = imgUrl(env, im && im.path);
   if (!u) return `<div class="frame"><div class="ph">${esc(Array.from(name || "?")[0] || "?")}</div></div>`;
-  const z = Number(im.zoom || 1), x = Number(im.x || 0), y = Number(im.y || 0);
-  const st = z !== 1 || x || y ? ` style="transform:translate(${x}%,${y}%) scale(${z})"` : "";
-  return `<div class="frame"><img src="${esc(u)}" alt="${esc(name)}" loading="lazy"${st}></div>`;
+  return `<div class="frame"><img src="${esc(u)}" alt="${esc(name)}" loading="lazy"></div>`;
 }
 
 function skillCard(env, s) {
@@ -196,14 +201,14 @@ async function skillPage(env, url, id, md) {
   };
   const chip = (t) => `<a href="/developers/?q=${encodeURIComponent(t)}">${esc(t)}</a>`;
   const body = `<article>
-<div class="hero"><div style="flex:1 1 320px;max-width:420px">${frame(env, s.image, s.name)}</div>
-<div style="flex:2 1 280px"><h1>${esc(s.name)}</h1>
+<div class="hero"><div class="skill-detail-image">${frame(env, s.image, s.name)}</div>
+<div class="skill-detail-copy"><h1>${esc(s.name)}</h1>
 <p class="mut">by <a href="/dev/${esc(dev.username)}">${esc(dev.name || dev.username)}</a> (@${esc(dev.username)})</p>
 <p>${esc(s.short_desc)}</p>
 <p class="mut">${num(s.views)} views · ${num(s.stars)} stars · ${num(s.comments)} comments${s.verified ? " · owner verified" : ""}</p></div></div>
 <h2>About this skill</h2>${paras(s.long_desc)}
 ${["t1", "t2", "t3"].map((k, i) => (s.tags?.[k]?.length ? `<h2>${["Topics", "Subtopics", "Details"][i]}</h2><div class="chips">${s.tags[k].map(chip).join("")}</div>` : "")).join("")}
-<div class="cta"><b>Want to use it?</b><p class="mut">Sign in with GitHub to open this skill's download link. It is free.</p><a class="btn" href="/#/skill/${esc(s.id)}">Sign in with GitHub</a></div>
+<div class="cta"><b>Want to use it?</b><p class="mut">Sign in with GitHub to open this skill's download link. It is free.</p><a class="btn" href="/app/#/skill/${esc(s.id)}">Sign in with GitHub</a></div>
 </article>`;
   return layout(env, url, { title: `${s.name} - skill by @${dev.username} | SkillTube`, desc: clip(s.short_desc, 155), canonical: canon, md: canon + ".md", image: im, ld, body, ogType: "article" });
 }
@@ -231,12 +236,12 @@ async function devPage(env, url, name, md) {
       interactionStatistic: [{ "@type": "InteractionCounter", interactionType: "https://schema.org/FollowAction", userInteractionCount: d.followers }],
     },
   };
-  const body = `<div class="hero"><div class="logo">${logo ? `<img src="${esc(logo)}" alt="${esc(label)}">` : `<div class="ph" style="font-size:34px">${esc(Array.from(label)[0] || "?")}</div>`}</div>
+  const body = `<div class="hero"><div class="logo">${logo ? `<img src="${esc(logo)}" alt="${esc(label)}">` : `<div class="ph">${esc(Array.from(label)[0] || "?")}</div>`}</div>
 <div><h1>${esc(label)} ${tick}</h1><p class="mut">@${esc(d.username)}</p>${d.bio ? `<p>${esc(d.bio)}</p>` : ""}
 <p class="mut">${num(d.followers)} followers · ${num(d.following)} following · ${num(d.skills_count)} skills</p></div></div>
 ${badges ? `<h2>Badges</h2><div class="badges">${badges}</div>` : ""}
 <h2>Skills</h2>${(d.skills || []).length ? `<div class="grid">${d.skills.map((s) => skillCard(env, { ...s, developer: { username: d.username } })).join("")}</div>` : `<p class="mut">No skills yet.</p>`}
-<div class="cta"><a class="btn" href="/#/dev/${esc(d.username)}">Follow on SkillTube</a></div>`;
+<div class="cta"><a class="btn" href="/app/#/dev/${esc(d.username)}">Follow on SkillTube</a></div>`;
   return layout(env, url, { title: `${label} (@${d.username}) - developer on SkillTube`, desc: clip(d.bio || `${label} publishes ${d.skills_count} AI skills on SkillTube.`, 155), canonical: canon, md: canon + ".md", image: logo, ld, body, ogType: "profile" });
 }
 
@@ -281,6 +286,30 @@ ${items.length ? `<div class="grid">${items.map((s) => skillCard(env, s)).join("
   return layout(env, url, { title: q ? `Search: ${q} | SkillTube` : "Developers and skills | SkillTube", desc: "Search AI skills by name or topic, or find a developer with @username.", canonical: "/developers/", noindex: searching, body });
 }
 
+async function topicPage(env, url, tag) {
+  const r = await rpc(env, "public_search", { p_q: tag, p_page: 0 });
+  const items = (r && r.items) || [];
+  const body = `<h1>${esc(tag)} AI resources</h1><p class="mut">AI skills, MCP servers, datasets, databases, prompts, agents and AI tools tagged ${esc(tag)}.</p>
+${items.length ? `<div class="grid">${items.map((s) => skillCard(env, s)).join("")}</div>` : `<p class="mut">No listings found for this topic.</p>`}`;
+  return layout(env, url, { title: `${tag} AI resources | SkillTube`, desc: `Discover AI resources tagged ${tag}.`, canonical: `/topic/${tag}/`, body });
+}
+
+async function leaderboardPage(env, url) {
+  const d = await rpc(env, "dashboard", {}).catch(() => null);
+  const rows = d?.leaderboard || d?.weekly || d?.ranks || d?.top || [];
+  const body = `<h1>Weekly leaderboard</h1><p class="mut">The top 50 developers by weekly score.</p>
+${Array.isArray(rows) && rows.length ? `<ol>${rows.slice(0,50).map((r) => `<li><a href="/dev/${esc(r.username || r.github_username)}">@${esc(r.username || r.github_username)}</a> — ${num(r.score || r.weekly_score || 0)}</li>`).join("")}</ol>` : `<p class="mut">Weekly rankings are not available yet.</p>`}`;
+  return layout(env, url, { title: "Weekly leaderboard | SkillTube", desc: "The weekly top 50 SkillTube developer rankings.", canonical: "/leaderboard/", body });
+}
+
+async function badgesPage(env, url) {
+  const badges = await rpc(env, "badge_catalog", {}).catch(() => []);
+  const files = await catalog(env, url);
+  const body = `<h1>Badge catalog</h1><p class="mut">Badges come from real activity rules. They cannot be bought.</p>
+<div class="badges">${(Array.isArray(badges) ? badges : []).map((b) => `<article class="bd">${files[b.key] ? `<img src="${esc(files[b.key])}" alt="">` : ""}<div><b>${esc(b.name)}</b><small>${esc(b.how || "")}</small></div></article>`).join("")}</div>`;
+  return layout(env, url, { title: "Badges | SkillTube", desc: "Explore SkillTube badges and how to earn them.", canonical: "/badges/", body });
+}
+
 // --------------------------------------------------------------- sitemap
 async function sitemap(env, url, path) {
   const base = site(env, url);
@@ -293,7 +322,10 @@ async function sitemap(env, url, path) {
     for (let i = 1; i <= n(b.total); i++) out += `<sitemap><loc>${base}/sitemap-devs-${i}.xml</loc></sitemap>`;
     return xml(out, "sitemapindex");
   }
-  if (path === "/sitemap-pages.xml") return xml(`<url><loc>${base}/</loc></url><url><loc>${base}/developers/</loc></url>`, "urlset");
+  if (path === "/sitemap-pages.xml") {
+    const pages = ["/","/developers/","/leaderboard/","/badges/","/faq/","/why-skilltube/","/about/","/help/","/contact/","/changelog/","/brand/","/status/","/legal/privacy/","/legal/terms/","/legal/community-guidelines/","/legal/acceptable-use/","/legal/copyright/","/legal/content-license/","/legal/cookies/","/legal/disclaimer/","/legal/grievance/","/legal/security/"];
+    return xml(pages.map((p) => `<url><loc>${base}${p}</loc></url>`).join(""), "urlset");
+  }
   const m = path.match(/^\/sitemap-(skills|devs)-(\d{1,4})\.xml$/);
   if (!m) return notFound(env, url);
   const r = await rpc(env, "public_sitemap", { p_kind: m[1] === "skills" ? "skill" : "dev", p_page: Number(m[2]) - 1 });

@@ -1,0 +1,8 @@
+Contact: mailto:ayushgiri.ai.21@gmail.com
+Contact: mailto:ayushgiri.25@icloud.com
+Contact: mailto:ayushgiri.dev1@outlook.com
+Contact: https://github.com/Let-s-Code-India/SkillTube/security/advisories/new
+Expires: 2027-11-24T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://skilltube.ayushgiri-ai-21.workers.dev/.well-known/security.txt
+Policy: https://skilltube.ayushgiri-ai-21.workers.dev/legal/security/
