@@ -22,6 +22,11 @@
 .notification-dot.blue { background:#0b84ff; }
 .notification-dot.red { background:#e61c24; }
 .update-card { margin-bottom:12px; }
+dialog.report-dialog { width:min(520px,calc(100% - 24px)); max-height:90vh; overflow:auto; border:1px solid var(--line); border-radius:8px; padding:24px; color:var(--ink); background:var(--surface-raised); }
+dialog.report-dialog::backdrop { background:rgba(0,0,0,.55); }
+dialog.report-dialog label { display:block; margin:12px 0; }
+dialog.report-dialog select,dialog.report-dialog textarea { display:block; width:100%; margin-top:6px; padding:10px; border:1px solid var(--line); background:var(--surface); }
+.dialog-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
 .drawer { position:fixed; inset:0 auto 0 0; width:min(320px,88vw); background:var(--surface-raised); transform:translateX(-100%); transition:transform .2s; z-index:80; padding:20px; box-shadow:var(--shadow); }
 .drawer.open { transform:none; }
 .drawer-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:79; }
