@@ -30,6 +30,7 @@ export default {
     }
     try {
       let m;
+      if (path === "/licenses/BRAND.md") return Response.redirect("https://github.com/Let-s-Code-India/SkillTube/blob/main/licenses/BRAND.md", 302);
       if (path === "/robots.txt") return robots(env, url);
       if (path === "/llms.txt") return llms(env, url);
       if (path === "/sitemap.xml" || path.startsWith("/sitemap-")) return cached(request, ctx, () => sitemap(env, url, path), 3600);
@@ -308,7 +309,15 @@ async function sitemap(env, url, path) {
     return xml(out, "sitemapindex");
   }
   if (path === "/sitemap-pages.xml") {
-    const pages = ["/","/developers/","/leaderboard/","/badges/","/faq/","/why-skilltube/","/about/","/help/","/contact/","/changelog/","/brand/","/status/","/legal/privacy/","/legal/terms/","/legal/community-guidelines/","/legal/acceptable-use/","/legal/copyright/","/legal/content-license/","/legal/cookies/","/legal/disclaimer/","/legal/grievance/","/legal/security/"];
+    const response = await env.ASSETS.fetch(new Request(new URL("/why-skilltube/posts.json", url)));
+    if (!response.ok) throw new Error(`Could not load blog sitemap source: ${response.status}`);
+    const posts = await response.json();
+    if (!Array.isArray(posts)) throw new Error("Blog sitemap source must be a post array.");
+    const blogPages = posts.map((post) => {
+      if (!/^[a-z0-9-]+$/.test(post.slug || "")) throw new Error("Invalid blog post slug in sitemap source.");
+      return `/why-skilltube/${post.slug}/`;
+    });
+    const pages = ["/","/developers/","/leaderboard/","/badges/","/faq/","/why-skilltube/","/about/","/help/","/contact/","/changelog/","/brand/","/status/","/legal/privacy/","/legal/terms/","/legal/community-guidelines/","/legal/acceptable-use/","/legal/copyright/","/legal/content-license/","/legal/cookies/","/legal/disclaimer/","/legal/grievance/","/legal/security/",...blogPages];
     return xml(pages.map((p) => `<url><loc>${base}${p}</loc></url>`).join(""), "urlset");
   }
   const m = path.match(/^\/sitemap-(skills|devs)-(\d{1,4})\.xml$/);

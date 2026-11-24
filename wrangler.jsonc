@@ -20,7 +20,8 @@
       "/leaderboard",
       "/leaderboard/",
       "/badges",
-      "/badges/"
+      "/badges/",
+      "/licenses/*"
     ]
   },
   "vars": {

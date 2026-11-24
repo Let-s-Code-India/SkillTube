@@ -11,4 +11,9 @@
 .faq-item summary { cursor:pointer; font-weight:700; }
 .faq-item p { color:var(--muted); }
 #faq-search { display:block; width:100%; margin-top:8px; padding:12px; border:1px solid var(--line); border-radius:4px; background:var(--surface-raised); }
+.post-grid { grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); }
+.post-content { margin:32px 0; }
+.post-content p { margin:0 0 1.2em; }
+.post-navigation { display:flex; flex-wrap:wrap; justify-content:space-between; gap:16px; margin-top:32px; }
+#share-post { margin:12px 12px 12px 0; }
 @media(max-width:900px) { .stat-grid,.post-grid { grid-template-columns:1fr; } }

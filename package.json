@@ -1,0 +1,12 @@
+{
+  "name": "skilltube-static-site-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate:posts": "node tools/make-post.mjs",
+    "check:posts": "node tools/make-post.mjs --check"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0"
+  }
+}
