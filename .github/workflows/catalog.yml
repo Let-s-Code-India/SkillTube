@@ -1,0 +1,31 @@
+# Every 6 hours: check that every listed repository still exists (see catalog/catalog.mjs).
+# Needs two repository secrets: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
+name: catalog
+
+on:
+  schedule:
+    - cron: "23 */6 * * *"      # 4 times a day (UTC)
+  workflow_dispatch: {}          # also a "Run workflow" button
+
+permissions:
+  contents: read
+
+concurrency:
+  group: catalog
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check repositories
+        run: node catalog/catalog.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
