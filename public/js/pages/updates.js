@@ -1,4 +1,4 @@
-import { getUpdatesFeed, markAllUpdatesSeen } from "../api.js";
+import { getUpdatesFeed, markAllUpdatesSeen, call } from "../api.js";
 import { showError } from "../errors.js";
 import { refreshNotificationDots } from "../components/notification-dots.js";
 export async function render(app) {
@@ -26,4 +26,49 @@ export async function render(app) {
     list.querySelectorAll(".notification-dot.blue").forEach((dot)=>dot.remove());
     await refreshNotificationDots();
   }catch(e){showError(error,e.code,e.arg);}
+  await renderReportNotices(app);
+}
+
+async function renderReportNotices(app) {
+  const section=document.createElement("section");section.className="report-notices";
+  const heading=document.createElement("h2");heading.textContent="Reports about your listings or channel";
+  const list=document.createElement("div");list.className="notice-list";const error=document.createElement("div");
+  section.append(heading,error,list);app.append(section);
+  let notices;
+  try{notices=await call("my_notices");}
+  catch(e){showError(error,e.code,e.arg);return;}
+  if(!notices.length){const empty=document.createElement("p");empty.className="mut";empty.textContent="No recent reports.";list.append(empty);return;}
+  for(const notice of notices){
+    const card=document.createElement("article");card.className="card";
+    const title=document.createElement("h3");title.textContent=notice.kind==="skill"?`Listing report: ${notice.skill_name||"AI resource"}`:"Channel report";
+    const status=document.createElement("p");status.textContent=`${notice.reason} · ${notice.status} · ${notice.days_left} days left to respond`;
+    card.append(title,status);
+    if(notice.serious){const serious=document.createElement("p");serious.className="error";serious.textContent="This serious report may have hidden the listing while it is reviewed.";card.append(serious);}
+    for(const message of notice.messages||[]){const row=document.createElement("p");row.textContent=`${message.from}: ${message.body}`;card.append(row);}
+    if(["open","answered"].includes(notice.status)){
+      const form=document.createElement("form");
+      const choiceLabel=document.createElement("label");choiceLabel.textContent="Your response";
+      const choice=document.createElement("select");
+      for(const [value,text] of [["fixed","Fixed"],["removed","Removed"],["disagree","Disagree"],["fork_credit","Added fork credit"],["report_false","Report is false"],["need_info","Need more information"]]){const option=document.createElement("option");option.value=value;option.textContent=text;choice.append(option);}
+      choiceLabel.append(choice);
+      const replyLabel=document.createElement("label");replyLabel.textContent="Reply (up to 1500 characters)";
+      const reply=document.createElement("textarea");replyLabel.append(reply);
+      const submit=document.createElement("button");submit.type="submit";submit.className="btn";submit.textContent="Send response";
+      const formError=document.createElement("div");form.append(choiceLabel,replyLabel,submit,formError);card.append(form);
+      form.addEventListener("submit",async(event)=>{event.preventDefault();if(Array.from(reply.value).length>1500){showError(formError,"REPLY_TOO_LONG");return;}submit.disabled=true;
+        try{await call("dev_answer_report",{p_report:notice.id,p_choice:choice.value,p_reply:reply.value.trim()||null});section.remove();await renderReportNotices(app);}
+        catch(e){showError(formError,e.code,e.arg);}finally{submit.disabled=false;}
+      });
+      const messageForm=document.createElement("form");
+      const messageLabel=document.createElement("label");messageLabel.textContent="Add a message";
+      const messageInput=document.createElement("textarea");messageLabel.append(messageInput);
+      const messageButton=document.createElement("button");messageButton.type="submit";messageButton.className="btn secondary";messageButton.textContent="Send message";
+      const messageError=document.createElement("div");messageForm.append(messageLabel,messageButton,messageError);card.append(messageForm);
+      messageForm.addEventListener("submit",async(event)=>{event.preventDefault();if(!messageInput.value.trim()||Array.from(messageInput.value).length>1500){showError(messageError,"BAD_LENGTH");return;}messageButton.disabled=true;
+        try{await call("dev_report_message",{p_report:notice.id,p_body:messageInput.value.trim()});section.remove();await renderReportNotices(app);}
+        catch(e){showError(messageError,e.code,e.arg);}finally{messageButton.disabled=false;}
+      });
+    }
+    list.append(card);
+  }
 }

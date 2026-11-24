@@ -33,7 +33,7 @@ const table = {
   PARENT_NOT_FOUND:"The comment you are replying to is no longer available.",
   PIN_ONLY_COMMENTS:"Only top-level comments can be pinned.",
   PIN_LIMIT:"This listing has reached its pinned-comment limit.",
-  BAD_LENGTH:"Enter a comment between 1 and 1500 characters.",
+  BAD_LENGTH:"Enter text between 1 and 1500 characters.",
   REPORT_CLOSED:"This report is already closed.",
   REPORT_NOT_FOUND:"This report could not be found.",
   BAD_CHOICE:"Choose a valid response.",

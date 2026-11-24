@@ -47,6 +47,11 @@ and arguments. High-level groups include `me`, `create_skill`, `edit_skill`,
   default null)` — signed-in users only. Resolves an eligible developer and
   records a channel report with the same validation and anonymous reporter
   handling as `file_report`.
+- `my_notices()` — signed-in developer report inbox, without reporter identity.
+- `dev_answer_report(p_report uuid, p_choice text, p_reply text)` — developer
+  response choices and up to 1500 characters.
+- `dev_report_message(p_report uuid, p_body text)` — developer follow-up message
+  on an open or answered report.
 
 Both functions require authentication, reject missing/blocked developers with
 `DEVELOPER_NOT_FOUND`, and grant execute only to `authenticated` and
