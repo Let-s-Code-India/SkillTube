@@ -2,9 +2,21 @@ import { call, followByUsername, markDeveloperSeenByUsername } from "../api.js";
 import { showError } from "../errors.js";
 import { toast } from "../components/toasts.js";
 import { reportButton } from "../components/report-dialog.js";
+import { badgeCard,getBadgeImagePaths,tickImage } from "../components/badges.js";
 export async function render(app,{id}) {
   const developer=await call("get_developer",{p_username:id});if(!developer){const p=document.createElement("p");p.textContent="Developer not found.";app.append(p);return;}
-  const h=document.createElement("h2");h.textContent=`@${developer.username}`;const bio=document.createElement("p");bio.textContent=developer.bio||"No bio yet.";app.append(h,bio);
+  const h=document.createElement("h2");h.textContent=`@${developer.username}`;
+  let images=new Map();
+  try{images=await getBadgeImagePaths();}
+  catch{const note=document.createElement("p");note.className="mut";note.textContent="Badge illustrations are temporarily unavailable.";app.append(note);}
+  const tick=tickImage(images,developer.tick);if(tick)h.append(" ",tick);
+  const bio=document.createElement("p");bio.textContent=developer.bio||"No bio yet.";app.append(h,bio);
+  if(developer.badges?.length){
+    const heading=document.createElement("h3");heading.textContent="Earned badges";app.append(heading);
+    const badges=document.createElement("div");badges.className="badge-grid";
+    for(const badge of developer.badges)badges.append(badgeCard(images,badge,{showReason:true}));
+    app.append(badges);
+  }
   if(developer.is_following) markDeveloperSeenByUsername(developer.username).catch((error)=>showError(app,error.code,error.arg));
   const count=document.createElement("p");count.textContent=`${developer.followers} followers`;
   const follow=document.createElement("button");follow.type="button";follow.className="btn";follow.textContent=developer.is_following?"Following":"Follow";
