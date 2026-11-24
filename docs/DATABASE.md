@@ -51,3 +51,5 @@ or sessionStorage. It is sent only to `add-skill` and account-gate.
 
 - Store the 18+ and Terms/Privacy acceptance timestamp on the profile. The
   frontend currently keeps this convenience flag in localStorage only.
+- Store age/Terms acceptance server-side if the product later requires a
+  durable audit record instead of the current localStorage convenience flag.

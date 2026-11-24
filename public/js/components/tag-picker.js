@@ -12,8 +12,7 @@ export function tagPicker(labelText, choices, count) {
     label.append(input,document.createTextNode(choice));
     field.append(label);
   });
+  field.prepend(legend);
   field.value=()=>[...selected];
-  field.append(legend);
-  field.insertBefore(legend,field.firstChild);
   return field;
 }
