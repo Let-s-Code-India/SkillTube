@@ -15,6 +15,9 @@ export function signOut() {
   sessionStorage.removeItem("skilltube.github_token");
   return client.auth.signOut();
 }
+export function getGithubToken() {
+  return sessionStorage.getItem("skilltube.github_token");
+}
 export async function gateSession(session) {
   if (!session) return { ok:false, code:"LOGIN_REQUIRED" };
   const token = session.provider_token;

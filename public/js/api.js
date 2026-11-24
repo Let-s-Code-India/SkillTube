@@ -26,3 +26,16 @@ export async function edge(name, body = {}) {
   if (!r.ok || data.ok === false) throw { code:data.code || "SERVER_ERROR", arg:data.arg || null, raw:data };
   return data;
 }
+
+export async function edgeForm(name, formData) {
+  const s = await session();
+  if (!s) throw { code:"LOGIN_REQUIRED" };
+  const r = await fetch(`${config.supabaseUrl}/functions/v1/${name}`, {
+    method:"POST",
+    headers:{ "Authorization":`Bearer ${s.access_token}`, "apikey":config.supabaseAnonKey },
+    body:formData
+  });
+  const data = await r.json().catch(() => ({ ok:false, code:"SERVER_ERROR" }));
+  if (!r.ok || data.ok === false) throw { code:data.code || "SERVER_ERROR", arg:data.arg || null, raw:data };
+  return data;
+}
