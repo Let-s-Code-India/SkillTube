@@ -12,13 +12,12 @@ behind Supabase Row Level Security or deployed Edge Functions.
 - `public_settings()` — public settings, including image rules.
 - `public_stats()` — public directory totals.
 - `trending_tags()` — public trending tags.
-- `dashboard()` — public signed-in dashboard data.
-  Returns JSON with `state` (`empty` or `live`), `week`, `top` (ranked
-  public developers), and `me` for a signed-in ready account. `me.state`
-  is `no_skill`, `waiting` (with `live_on` and `days_left`) or `live`
-  (with `rank`, `score`, and `best_band`). This function is callable
-  anonymously and by logged-in users; use `top` for the public leaderboard
-  and `me` for the app dashboard.
+- `dashboard()` — callable anonymously and by logged-in users. Returns the
+  latest weekly snapshot (`state`, `week`, `top`) with up to 50 ranked public
+  developers, including score, public username/name, display logo and tick.
+  Signed-in ready accounts also receive `me.state` (`no_skill`, `waiting` with
+  `live_on`/`days_left`, or `live` with rank/score/best band). Use `top` for the
+  public leaderboard and `me` for the app dashboard.
 - `badge_catalog()` — public badge rules.
 - `public_sitemap(p_kind text, p_page int default 0)` — public sitemap records.
 
@@ -32,7 +31,8 @@ and arguments. High-level groups include `me`, `create_skill`, `edit_skill`,
 `delete_skill`, `set_country`, `update_my_profile`, `toggle_star`, `toggle_follow`,
 `add_comment`, `list_comments`, `file_report`, `my_notices`, `dev_answer_report`,
 `dev_report_message`, `my_skills`, `my_updates_feed`, `mark_all_seen`,
-`record_view`, and `get_download_link`.
+`record_view`, `get_download_link`, `my_achievements`, `my_alert_count`, and
+`mark_alerts_seen`.
 
 `dashboard()` is public callable per the backend summary. Admin operations require
 `is_admin` or `is_admin_writer` server-side checks.
@@ -65,6 +65,13 @@ missing/blocked developers with `DEVELOPER_NOT_FOUND`, and grant execute only
 to `authenticated` and `service_role`. Use these when the UI has a username but
 must not expose the developer UUID.
 
+## Achievements and alerts
+
+- `my_achievements(p_limit int default 20)` returns the signed-in user's recent
+  badge awards, including revocation state and reason.
+- `my_alert_count()` and `mark_alerts_seen()` provide the signed-in alert count
+  and acknowledgement for new badge awards.
+
 ## Edge Functions
 
 - `account-gate` — POST, user JWT. Captures GitHub account age and account status.
@@ -82,3 +89,7 @@ or sessionStorage. It is sent only to `add-skill` and account-gate.
   frontend currently keeps this convenience flag in localStorage only.
 - Store age/Terms acceptance server-side if the product later requires a
   durable audit record instead of the current localStorage convenience flag.
+- Web-push notification delivery is not wired up. Although a
+  `push_subscriptions` table exists, there is no callable subscription API,
+  VAPID configuration, or delivery worker; implement and secure those backend
+  pieces before adding browser push subscriptions.

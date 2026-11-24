@@ -64,3 +64,18 @@ export function getAlertCounts() {
 export function markAllUpdatesSeen() {
   return call("mark_all_seen");
 }
+export function getDashboard() {
+  return call("dashboard");
+}
+export function getBadgeCatalog() {
+  return call("badge_catalog");
+}
+export function getMyAchievements(limit=20) {
+  return call("my_achievements",{p_limit:limit});
+}
+export function getMyState() {
+  return call("me_state");
+}
+export function markAlertsSeen() {
+  return call("mark_alerts_seen");
+}
