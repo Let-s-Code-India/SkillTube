@@ -15,7 +15,14 @@ export function imageFrame(image, alt, className = "listing-image-frame") {
   const frame = document.createElement("div");
   frame.className = className;
   const src = imageSource(image);
-  if (!src) return frame;
+  if (!src) {
+    const placeholder=document.createElement("span");
+    placeholder.className="listing-image-placeholder";
+    placeholder.textContent=Array.from(alt||"?")[0]||"?";
+    placeholder.setAttribute("aria-hidden","true");
+    frame.append(placeholder);
+    return frame;
+  }
   const img = document.createElement("img");
   img.src = src;
   img.alt = alt || "";
@@ -50,9 +57,12 @@ export function listingCard(skill) {
   title.href = safeUrl(`#/skill/${encodeURIComponent(skill.id)}`) || "#";
   title.textContent = skill.name || "Untitled listing";
   heading.append(title);
-  const description = document.createElement("p");
-  description.textContent = skill.short_desc || "";
-  content.append(heading, description);
+  content.append(heading);
+  if(skill.short_desc) {
+    const description = document.createElement("p");
+    description.textContent = skill.short_desc;
+    content.append(description);
+  }
 
   const developer = skill.developer || {};
   const byline = document.createElement("p");

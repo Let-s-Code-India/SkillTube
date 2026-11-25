@@ -20,6 +20,11 @@ export function renderMarkdown(container, markdown) {
     ALLOWED_URI_REGEXP: /^https:/i
   });
   const parsed = new DOMParser().parseFromString(safe, "text/html");
+  for(const heading of parsed.querySelectorAll("h1")) {
+    const replacement=parsed.createElement("h2");
+    replacement.replaceChildren(...heading.childNodes);
+    heading.replaceWith(replacement);
+  }
   for (const link of parsed.querySelectorAll("a")) {
     const href = link.getAttribute("href");
     try {

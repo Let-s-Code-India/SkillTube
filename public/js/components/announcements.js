@@ -41,7 +41,9 @@ export async function renderAnnouncementBanner(app) {
   link.href="#/announcements";
   link.textContent="View all announcements";
   section.append(link);
-  app.prepend(section);
+  const title=app.querySelector("h1");
+  if(title)title.after(section);
+  else app.prepend(section);
 }
 
 export function markAnnouncementsSeen(announcements) {

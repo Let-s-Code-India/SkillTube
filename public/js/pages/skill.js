@@ -59,7 +59,7 @@ async function renderDeveloperDetails(container, username, fallback) {
     identity.append(logo);
   }
   const link=element("a",`${developer?.name||username} (@${username})`);
-  link.href=`#/dev/${encodeURIComponent(username)}`;
+  link.href=safeUrl(`#/dev/${encodeURIComponent(username)}`)||"#";
   identity.append(link);
   const paths=await getBadgeImagePaths().catch(()=>{
     showError(info,"SERVER_ERROR");
