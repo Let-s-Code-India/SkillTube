@@ -4,5 +4,7 @@ export function hashRoute() {
 }
 export function routeParts(route) {
   const slash = route.indexOf("/");
-  return slash === -1 ? [route,""] : [route.slice(0,slash),route.slice(slash+1)];
+  return slash === -1
+    ? [route, ""]
+    : [route.slice(0, slash), route.slice(slash + 1)];
 }

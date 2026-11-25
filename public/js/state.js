@@ -1,4 +1,4 @@
 export const state = {
-  session:null,
-  profile:null
+  session: null,
+  profile: null,
 };
