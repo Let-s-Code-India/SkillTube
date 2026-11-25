@@ -17,8 +17,12 @@ npm ci
 npm run check:posts
 npm run check:schema
 npm run check:links
+npm run check:responsive
+npm run check:docs
 npm run check:worker
+npm run check:security
 node tools/stamp-footer.mjs --check
+node tools/check-public-location.mjs
 ```
 
 After editing a Markdown article or `public/why-skilltube/posts.json`, run
