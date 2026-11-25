@@ -68,7 +68,7 @@ are served from `public/`.
 - Each listing remains in its developer's repository; read the repository's
   license before using its contents.
 
-Read the [security model](docs/SECURITY_MODEL.md), [architecture](docs/ARCHITECTURE.md),
+Read the [documentation index](docs/README.md), [security model](docs/SECURITY_MODEL.md), [architecture](docs/ARCHITECTURE.md),
 [error-code guide](docs/ERROR_CODES.md) and
 [security reporting policy](https://github.com/Let-s-Code-India/.github/blob/main/SECURITY.md).
 
@@ -79,6 +79,7 @@ Read the [security model](docs/SECURITY_MODEL.md), [architecture](docs/ARCHITECT
 - [Leaderboard](https://skilltube.ayushgiri-ai-21.workers.dev/leaderboard/)
 - [Badges](https://skilltube.ayushgiri-ai-21.workers.dev/badges/)
 - [FAQ](https://skilltube.ayushgiri-ai-21.workers.dev/faq/)
+- [Documentation hub](https://skilltube.ayushgiri-ai-21.workers.dev/docs/)
 - [Privacy](https://skilltube.ayushgiri-ai-21.workers.dev/legal/privacy/)
 - [robots.txt](https://skilltube.ayushgiri-ai-21.workers.dev/robots.txt)
 - [Sitemap](https://skilltube.ayushgiri-ai-21.workers.dev/sitemap.xml)

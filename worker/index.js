@@ -150,7 +150,7 @@ ${o.ld ? `<script nonce="__CSP_NONCE__" type="application/ld+json">${JSON.string
 </head><body>
 <header><a class="brand" href="/">SkillTube</a><nav><a href="/developers/">Developers</a><a href="/">Sign in</a></nav></header>
 <main>${o.body}</main>
-<footer>Created by Ayush Giri, Founder of Let's Code India. © 2026 Let's Code India. Source code under the MIT License.<br><a href="/legal/privacy/">Privacy</a> · <a href="/legal/terms/">Terms</a> · <a href="/legal/community-guidelines/">Community Guidelines</a> · <a href="/legal/cookies/">Cookies</a> · <a href="/legal/security/">Security</a> · <a href="/brand/">Licenses</a> · <a href="/contact/">Contact</a> · <a href="/faq/">FAQ</a> · <a href="/why-skilltube/">Why SkillTube</a></footer>
+<footer>Created by Ayush Giri, Founder of Let's Code India. © 2026 Let's Code India. Source code under the MIT License.<br><a href="/legal/privacy/">Privacy</a> · <a href="/legal/terms/">Terms</a> · <a href="/legal/community-guidelines/">Community Guidelines</a> · <a href="/legal/cookies/">Cookies</a> · <a href="/legal/security/">Security</a> · <a href="/brand/">Licenses</a> · <a href="/contact/">Contact</a> · <a href="/faq/">FAQ</a> · <a href="/why-skilltube/">Why SkillTube</a> · <a href="/docs/">Docs</a></footer>
 </body></html>`, o.status || 200);
 }
 
@@ -341,7 +341,7 @@ async function sitemap(env, url, path) {
       if (!/^[a-z0-9-]+$/.test(post.slug || "")) throw new Error("Invalid blog post slug in sitemap source.");
       return `/why-skilltube/${post.slug}/`;
     });
-    const pages = ["/","/developers/","/leaderboard/","/badges/","/faq/","/why-skilltube/","/about/","/help/","/contact/","/changelog/","/brand/","/status/","/legal/privacy/","/legal/terms/","/legal/community-guidelines/","/legal/acceptable-use/","/legal/copyright/","/legal/content-license/","/legal/cookies/","/legal/disclaimer/","/legal/grievance/","/legal/security/",...blogPages];
+    const pages = ["/","/developers/","/leaderboard/","/badges/","/faq/","/why-skilltube/","/about/","/help/","/docs/","/contact/","/changelog/","/brand/","/status/","/legal/privacy/","/legal/terms/","/legal/community-guidelines/","/legal/acceptable-use/","/legal/copyright/","/legal/content-license/","/legal/cookies/","/legal/disclaimer/","/legal/grievance/","/legal/security/",...blogPages];
     return xml(pages.map((p) => `<url><loc>${base}${p}</loc></url>`).join(""), "urlset");
   }
   const m = path.match(/^\/sitemap-(skills|devs)-(\d{1,4})\.xml$/);
@@ -366,6 +366,7 @@ function llms(env, url) {
 - [Search public listings](${base}/developers/): search by listing name or topic; type @username to find a developer
 - [Sitemap index](${base}/sitemap.xml): static pages and paginated public listing sitemaps
 - [Static page sitemap](${base}/sitemap-pages.xml): legal, help, about, and article pages
+- [Documentation hub](${base}/docs/): product and developer documentation
 - [Weekly leaderboard](${base}/leaderboard/): public developer rankings
 - [Badge catalog](${base}/badges/): public badge information
 

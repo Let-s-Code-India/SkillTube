@@ -25,10 +25,11 @@ cached.set(`${env.SITE_URL}/sitemap-pages.xml`,new Response("<urlset><url><loc>s
 const sitemap=await worker.fetch(new Request(`${env.SITE_URL}/sitemap-pages.xml`),env,context);
 if(!sitemap.ok)throw new Error(`sitemap-pages.xml returned ${sitemap.status}`);
 const xml=await sitemap.text();
+if(!xml.includes(`<loc>${env.SITE_URL}/docs/</loc>`))throw new Error("Static sitemap omits the documentation hub.");
 for(const post of posts) {
   if(!xml.includes(`<loc>${env.SITE_URL}/why-skilltube/${post.slug}/</loc>`))throw new Error(`Sitemap omits ${post.slug}.`);
 }
-if((xml.match(/<url>/g)||[]).length!==22+posts.length)throw new Error("Sitemap page count did not match static pages and posts.");
+if((xml.match(/<url>/g)||[]).length!==23+posts.length)throw new Error("Sitemap page count did not match static pages and posts.");
 
 const brand=await worker.fetch(new Request(`${env.SITE_URL}/licenses/BRAND.md`),env,context);
 if(brand.status!==302||brand.headers.get("location")!=="https://github.com/Let-s-Code-India/SkillTube/blob/main/licenses/BRAND.md")throw new Error("Brand license route did not redirect to the source.");
@@ -43,7 +44,7 @@ for(const directive of ["Disallow: /app/","Disallow: /developers/?q=","Disallow:
 const llms=await worker.fetch(new Request(`${env.SITE_URL}/llms.txt`),env,context);
 const llmsText=await llms.text();
 if(!llms.ok||!llms.headers.get("content-type")?.startsWith("text/plain"))throw new Error("llms.txt did not return plain text.");
-for(const reference of [`${env.SITE_URL}/sitemap.xml`,`<id>.md`,`<username>.md`,`${env.SITE_URL}/legal/security/`,`${env.SITE_URL}/.well-known/security.txt`]) {
+for(const reference of [`${env.SITE_URL}/sitemap.xml`,`${env.SITE_URL}/docs/`,`<id>.md`,`<username>.md`,`${env.SITE_URL}/legal/security/`,`${env.SITE_URL}/.well-known/security.txt`]) {
   if(!llmsText.includes(reference))throw new Error(`llms.txt omits ${reference}.`);
 }
 await Promise.all(waitUntil);
