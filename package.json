@@ -1,6 +1,7 @@
 {
   "name": "skilltube-static-site-tools",
   "private": true,
+  "author": "Ayush Giri, Founder of Let's Code India",
   "type": "module",
   "scripts": {
     "generate:posts": "node tools/make-post.mjs",
