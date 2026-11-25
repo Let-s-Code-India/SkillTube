@@ -21,6 +21,7 @@ and to `errors.js` before a UI surfaces them.
 - `COUNTRY_UNVERIFIED`
 - `COUNTRY_LOCKED:n`
 - `BAD_COUNTRY`
+- `SOURCE_UNAVAILABLE` — The source repository link could not be opened.
 
 ## Publishing and editing
 

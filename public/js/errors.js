@@ -81,6 +81,7 @@ const table = {
   TOO_MANY_TAGS:"Choose no more than five profile tags.",
   NO_GITHUB:"This account is not linked to GitHub.",
   NO_LINKS:"Links are not allowed in comments.",
+  SOURCE_UNAVAILABLE:"The source repository link could not be opened. Please try again.",
   NOT_YOURS:"This action belongs to another account.",
   SERVER_ERROR:"Something went wrong. Please try again."
 };
