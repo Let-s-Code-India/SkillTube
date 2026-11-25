@@ -5,6 +5,7 @@ const files = [
   "public/css/layout.css",
   "public/css/components.css",
   "public/css/pages.css",
+  "public/js/components/comments.js",
 ];
 const source = (await Promise.all(files.map((file) => readFile(file, "utf8")))).join("\n");
 const requirements = [
@@ -13,6 +14,8 @@ const requirements = [
   ["44px button targets", /min-height:\s*44px/],
   ["drawer touch targets", /\.drawer nav a\s*\{[^}]*min-height:\s*44px/s],
   ["single-column listing grid", /\.listing-grid,[^}]*grid-template-columns:minmax\(0,1fr\)/s],
+  ["comment character limits", /input\.maxLength=200/],
+  ["comment text wrapping", /\.comment p\s*\{[^}]*overflow-wrap:\s*anywhere/s],
   ["reduced-motion support", /prefers-reduced-motion/],
 ];
 const failures = requirements.filter(([, pattern]) => !pattern.test(source)).map(([name]) => name);

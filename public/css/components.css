@@ -27,6 +27,9 @@
 .comment-thread { display:grid; gap:8px; }
 .comment { padding:14px; border:1px solid var(--line); border-radius:8px; background:var(--surface-raised); }
 .comment.pinned { border-color:var(--gold); }
+.comment p { margin:.35em 0; white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.65; }
+.comment-form label,.reply-form label { display:grid; gap:6px; }
+.comment-form textarea,.reply-form textarea { min-height:96px; resize:vertical; }
 .comment-thread > .comment:not(:first-child) { margin-left:clamp(12px,4vw,36px); }
 .comment-meta { color:var(--muted); font-size:14px; margin-top:0; }
 .comment-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }

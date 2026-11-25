@@ -4,6 +4,7 @@
 .docs-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)); gap:16px; margin:24px 0; }
 .docs-page { max-width:76ch; }
 .docs-content { overflow-wrap:anywhere; }
+.docs-content p,.skill-long-description p,.post-content p { line-height:1.75; }
 .docs-content pre,.docs-content table { max-width:100%; overflow:auto; }
 .docs-toc { margin:24px 0; padding:16px; border:1px solid var(--line); border-radius:8px; background:var(--section-surface); }
 .docs-toc h2 { margin-top:0; }

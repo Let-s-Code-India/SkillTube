@@ -39,7 +39,11 @@ function showReplyForm(article,parent,skillId,onChanged) {
   const form=document.createElement("form");form.className="reply-form";
   const label=document.createElement("label");label.textContent="Reply (up to 100 characters)";
   const input=document.createElement("textarea");input.required=true;
+  input.maxLength=100;
+  input.setAttribute("aria-describedby","reply-character-count");
   const counter=document.createElement("small");counter.className="mut";counter.textContent="0 / 100";
+  counter.id="reply-character-count";
+  counter.setAttribute("aria-live","polite");
   input.addEventListener("input",()=>{counter.textContent=`${Array.from(input.value).length} / 100`;});
   const error=document.createElement("div");
   const button=document.createElement("button");button.type="submit";button.className="btn";button.textContent="Reply";
@@ -53,7 +57,11 @@ export async function renderComments(container,skillId,{mine=false}={}) {
   const form=document.createElement("form");form.className="comment-form";
   const label=document.createElement("label");label.textContent="Add a comment (up to 200 characters)";
   const input=document.createElement("textarea");input.required=true;
+  input.maxLength=200;
+  input.setAttribute("aria-describedby","comment-character-count");
   const counter=document.createElement("small");counter.className="mut";counter.textContent="0 / 200";
+  counter.id="comment-character-count";
+  counter.setAttribute("aria-live","polite");
   input.addEventListener("input",()=>{counter.textContent=`${Array.from(input.value).length} / 200`;});
   label.append(input,counter);
   const button=document.createElement("button");button.type="submit";button.className="btn";button.textContent="Comment";
