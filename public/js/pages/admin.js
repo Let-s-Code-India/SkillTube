@@ -1,6 +1,8 @@
 import { call } from "../api.js";
 import { showError } from "../errors.js";
 import { toast } from "../components/toasts.js";
+import { renderMarkdown } from "../components/markdown.js";
+import { confirmDialog } from "../components/dialogs.js";
 
 const el=(tag,text,className="")=>{
   const node=document.createElement(tag);
@@ -19,6 +21,10 @@ export async function render(app) {
   try { state=await call("me_state"); }
   catch(error) { showError(app,error.code,error.arg); return; }
   if(state?.is_admin!==true) { showError(app,"NOT_ADMIN"); return; }
+  let admins;
+  try { admins=await call("admin_list"); }
+  catch(error) { showError(app,error.code,error.arg); return; }
+  const isOwner=(admins||[]).some((admin)=>admin.user_id===state.id&&admin.role==="owner");
 
   const nav=el("nav",undefined,"admin-tabs");
   const content=el("div");
@@ -29,7 +35,11 @@ export async function render(app) {
     ["Reports",renderReports],
     ["Users",renderUsers],
     ["Settings",renderSettings],
-    ["Blocked accounts",renderBlocked]
+    ["Blocked accounts",renderBlocked],
+    ["Announcements",renderAnnouncements],
+    ["Revoke badge",renderBadgeRevocation],
+    ["Audit log",renderAuditLog],
+    ["Admin team",renderAdminTeam]
   ];
   for(const [label,renderPanel] of panels) {
     const button=el("button",label,"btn secondary");button.type="button";
@@ -38,9 +48,247 @@ export async function render(app) {
       const panel=section(label);content.append(panel);
       if(!canWrite)panel.append(el("p","Read-only administrator access.","mut"));
       const error=el("div");panel.append(error);
-      try{await renderPanel(panel,error,canWrite);}catch(e){showError(error,e.code,e.arg);}
+      try{await renderPanel(panel,error,canWrite,isOwner);}catch(e){showError(error,e.code,e.arg);}
     });
     nav.append(button);
+  }
+
+  async function renderAnnouncements(panel,error,canWrite) {
+    const form=document.createElement("form");
+    const titleLabel=el("label","Title (up to 120 characters)");
+    const title=document.createElement("input");
+    title.maxLength=120;
+    title.required=true;
+    titleLabel.append(title);
+    const bodyLabel=el("label","Markdown body");
+    const body=document.createElement("textarea");
+    body.maxLength=102400;
+    bodyLabel.append(body);
+    const pinnedLabel=el("label","Pin announcement");
+    const pinned=document.createElement("input");
+    pinned.type="checkbox";
+    pinnedLabel.prepend(pinned);
+    const startsLabel=el("label","Start time (optional)");
+    const starts=document.createElement("input");
+    starts.type="datetime-local";
+    startsLabel.append(starts);
+    const endsLabel=el("label","End time (optional)");
+    const ends=document.createElement("input");
+    ends.type="datetime-local";
+    endsLabel.append(ends);
+    const preview=el("section",undefined,"card announcement-preview");
+    preview.append(el("h3","Preview"));
+    const previewBody=el("div");
+    preview.append(previewBody);
+    body.addEventListener("input",()=>{
+      previewBody.replaceChildren();
+      try { renderMarkdown(previewBody,body.value); }
+      catch { showError(previewBody,"SERVER_ERROR"); }
+    });
+    const submit=el("button","Publish announcement","btn");
+    submit.type="submit";
+    submit.disabled=!canWrite;
+    form.append(titleLabel,bodyLabel,pinnedLabel,startsLabel,endsLabel,submit);
+    panel.append(form,preview);
+    form.addEventListener("submit",async(event)=>{
+      event.preventDefault();
+      if(title.value.trim().length<1){showError(error,"TITLE_REQUIRED");return;}
+      if(title.value.length>120||new TextEncoder().encode(body.value).length>102400){showError(error,"ANNOUNCEMENT_TOO_BIG");return;}
+      const asIso=(value)=>value?new Date(value).toISOString():null;
+      const startTime=starts.value?Date.parse(starts.value):Date.now();
+      const endTime=ends.value?Date.parse(ends.value):null;
+      if(!Number.isFinite(startTime)||(endTime!==null&&(!Number.isFinite(endTime)||endTime<=startTime))) {
+        showError(error,"BAD_TIMES");
+        return;
+      }
+      submit.disabled=true;
+      try {
+        await call("admin_announce",{
+          p_title:title.value.trim(),
+          p_body:body.value,
+          p_pinned:pinned.checked,
+          p_starts:asIso(starts.value),
+          p_ends:asIso(ends.value)
+        });
+        toast("Announcement published.");
+        await load();
+      } catch(e) {
+        showError(error,e.code,e.arg);
+      } finally {
+        submit.disabled=!canWrite;
+      }
+    });
+
+    const list=el("div",undefined,"admin-list");
+    panel.append(el("h3","Published and scheduled announcements"),list);
+    async function load() {
+      list.replaceChildren();
+      let rows;
+      try { rows=await call("admin_announcements"); }
+      catch(e) { showError(error,e.code,e.arg);return; }
+      if(!rows.length){list.append(el("p","No announcements have been created."));return;}
+      for(const announcement of rows) {
+        const card=el("article",undefined,"card");
+        card.append(el("h4",announcement.title));
+        card.append(el("p",`${announcement.pinned?"Pinned · ":""}Starts ${new Date(announcement.starts_at).toLocaleString()}${announcement.ends_at?` · Ends ${new Date(announcement.ends_at).toLocaleString()}`:""}`,"mut"));
+        const remove=el("button","Delete announcement","btn danger");
+        remove.type="button";
+        remove.disabled=!canWrite;
+        remove.addEventListener("click",async()=>{
+          if(!confirmDialog(`Delete the announcement "${announcement.title}"?`))return;
+          remove.disabled=true;
+          try {
+            await call("admin_announcement_delete",{p_id:announcement.id});
+            await load();
+          } catch(e) {
+            showError(error,e.code,e.arg);
+            remove.disabled=!canWrite;
+          }
+        });
+        card.append(remove);
+        list.append(card);
+      }
+    }
+    await load();
+  }
+
+  async function renderBadgeRevocation(panel,error,canWrite) {
+    const form=document.createElement("form");
+    const searchLabel=el("label","Find a developer by username or name");
+    const query=document.createElement("input");
+    query.type="search";
+    query.minLength=2;
+    searchLabel.append(query);
+    const keyLabel=el("label","Badge key");
+    const key=document.createElement("input");
+    key.required=true;
+    keyLabel.append(key);
+    const reasonLabel=el("label","Reason (required)");
+    const reason=document.createElement("textarea");
+    reason.maxLength=300;
+    reasonLabel.append(reason);
+    const submit=el("button","Search developers","btn");
+    submit.type="submit";
+    submit.disabled=!canWrite;
+    const results=el("div",undefined,"admin-list");
+    form.append(searchLabel,keyLabel,reasonLabel,submit);
+    panel.append(form,results);
+    form.addEventListener("submit",async(event)=>{
+      event.preventDefault();
+      if(reason.value.trim().length<3){showError(error,"REASON_REQUIRED");return;}
+      results.replaceChildren();
+      submit.disabled=true;
+      try {
+        const users=await call("admin_users_search",{p_q:query.value.trim()});
+        if(!users.length){results.append(el("p","No matching developers."));return;}
+        for(const user of users) {
+          const row=el("article",undefined,"card");
+          row.append(el("h3",`@${user.username} — ${user.name}`));
+          const revoke=el("button","Revoke badge","btn danger");
+          revoke.type="button";
+          revoke.disabled=!canWrite;
+          revoke.addEventListener("click",async()=>{
+            revoke.disabled=true;
+            try {
+              await call("admin_revoke_badge",{p_user:user.id,p_key:key.value.trim(),p_reason:reason.value.trim()});
+              toast("Badge revocation recorded.");
+            } catch(e) {
+              showError(row,e.code,e.arg);
+              revoke.disabled=!canWrite;
+            }
+          });
+          row.append(revoke);
+          results.append(row);
+        }
+      } catch(e) {
+        showError(error,e.code,e.arg);
+      } finally {
+        submit.disabled=!canWrite;
+      }
+    });
+  }
+
+  async function renderAuditLog(panel,error) {
+    let rows;
+    try { rows=await call("admin_audit",{p_limit:100}); }
+    catch(e) { showError(error,e.code,e.arg);return; }
+    if(!rows.length){panel.append(el("p","There are no audit entries."));return;}
+    const list=el("div",undefined,"admin-list");
+    for(const entry of rows) {
+      const card=el("article",undefined,"card");
+      card.append(el("h3",entry.action||"Admin action"));
+      card.append(el("p",`${entry.at?new Date(entry.at).toLocaleString():"Time unavailable"} · ${entry.actor||"Unknown actor"} · ${entry.target||"No target"}`));
+      if(entry.detail)card.append(el("pre",JSON.stringify(entry.detail,null,2)));
+      list.append(card);
+    }
+    panel.append(list);
+  }
+
+  async function renderAdminTeam(panel,error,canWrite,isOwner) {
+    if(!isOwner) {
+      panel.append(el("p","Only the project owner can change administrator access. This list is read-only for your role.","mut"));
+    }
+    const form=document.createElement("form");
+    const usernameLabel=el("label","Developer username");
+    const username=document.createElement("input");
+    username.autocomplete="off";
+    usernameLabel.append(username);
+    const roleLabel=el("label","Role");
+    const role=document.createElement("select");
+    for(const value of ["admin","viewer"]) {
+      const option=el("option",value);
+      option.value=value;
+      role.append(option);
+    }
+    roleLabel.append(role);
+    const add=el("button","Add or update role","btn");
+    add.type="submit";
+    add.disabled=!isOwner||!canWrite;
+    form.append(usernameLabel,roleLabel,add);
+    panel.append(form);
+    form.addEventListener("submit",async(event)=>{
+      event.preventDefault();
+      add.disabled=true;
+      try {
+        await call("admin_add",{p_username:username.value.trim(),p_role:role.value});
+        toast("Administrator role updated.");
+        await load();
+      } catch(e) {
+        showError(error,e.code,e.arg);
+      } finally {
+        add.disabled=!isOwner||!canWrite;
+      }
+    });
+    const list=el("div",undefined,"admin-list");
+    panel.append(list);
+    async function load() {
+      list.replaceChildren();
+      let rows;
+      try { rows=await call("admin_list"); }
+      catch(e) { showError(error,e.code,e.arg);return; }
+      for(const admin of rows) {
+        const card=el("article",undefined,"card");
+        card.append(el("h3",`@${admin.username||"unknown"} · ${admin.role}`));
+        if(admin.role!=="owner") {
+          const remove=el("button","Remove access","btn danger");
+          remove.type="button";
+          remove.disabled=!isOwner||!canWrite;
+          remove.addEventListener("click",async()=>{
+            remove.disabled=true;
+            try {
+              await call("admin_remove",{p_user:admin.user_id});
+              await load();
+            } catch(e) {
+              showError(card,e.code,e.arg);
+              remove.disabled=!isOwner||!canWrite;
+            }
+          });
+          card.append(remove);
+        }
+        list.append(card);
+      }
+    }
+    await load();
   }
   nav.querySelector("button")?.click();
 }
