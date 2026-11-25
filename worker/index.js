@@ -141,9 +141,9 @@ ${o.noindex ? '<meta name="robots" content="noindex,follow">' : '<meta name="rob
 ${canon ? `<link rel="canonical" href="${esc(canon)}">` : ""}
 ${o.md ? `<link rel="alternate" type="text/markdown" href="${esc(base + o.md)}">` : ""}
 <meta property="og:type" content="${o.ogType || "website"}"><meta property="og:site_name" content="SkillTube"><meta property="og:title" content="${esc(o.title)}"><meta property="og:description" content="${esc(o.desc)}">
-${canon ? `<meta property="og:url" content="${esc(canon)}">` : ""}<meta property="og:image" content="${esc(o.image || base + "/og-image.jpg")}">
+${canon ? `<meta property="og:url" content="${esc(canon)}">` : ""}<meta property="og:image" content="${esc(o.image || base + "/og-image.png")}">
 <meta property="og:image:width" content="2658"><meta property="og:image:height" content="1634">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${esc(o.image || base + "/og-image.jpg")}">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${esc(o.image || base + "/og-image.png")}">
 <link rel="icon" href="/image/app/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/css/worker.css">
 ${o.ld ? `<script nonce="__CSP_NONCE__" type="application/ld+json">${JSON.stringify(o.ld).replace(/</g, "\\u003c")}</script>` : ""}

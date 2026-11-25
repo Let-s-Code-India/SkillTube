@@ -67,8 +67,10 @@ for(const file of await htmlFiles(publicRoot)) {
       try {
         const bytes=await readFile(imagePath);
         const ext=path.extname(imagePath).toLowerCase();
-        if((ext===".jpg"||ext===".jpeg")&&!(bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff))problems.push(`${relative}: Open Graph JPEG has an invalid file signature`);
-        if(ext===".png"&&bytes.subarray(0,8).toString("hex")!=="89504e470d0a1a0a")problems.push(`${relative}: Open Graph PNG has an invalid file signature`);
+        const png=bytes.subarray(0,8).toString("hex")==="89504e470d0a1a0a";
+        const jpeg=bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff;
+        const webp=bytes.subarray(0,4).toString("ascii")==="RIFF"&&bytes.subarray(8,12).toString("ascii")==="WEBP";
+        if(!png&&!jpeg&&!webp)problems.push(`${relative}: Open Graph image has an unsupported or invalid file signature`);
       } catch(error) {
         problems.push(`${relative}: Open Graph image is unavailable (${error.message})`);
       }
