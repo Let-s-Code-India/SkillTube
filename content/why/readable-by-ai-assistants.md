@@ -6,7 +6,7 @@ A developer channel helps connect related listings. Instead of asking a crawler 
 
 Readable metadata is only useful when it is accurate. Developers should write descriptions that distinguish what the project does from what it does not do, and keep the repository's own documentation current. Search crawlers can misinterpret ambiguous claims, so examples, requirements and limitations should be stated plainly.
 
-Public pages intentionally do not expose repository download URLs. The service uses a separate app action for signed-in users to request a download link. This keeps public discovery separate from the action that opens a repository, and avoids putting unnecessary links into the public page body.
+Public pages intentionally do not expose repository URLs. Signed-in users can use the Source action in the app to open a repository. This keeps public discovery separate from the action that opens a repository, and avoids putting unnecessary links into the public page body.
 
 No page format can guarantee that a particular assistant will index or interpret content in a specific way. The aim is narrower: publish complete, structured and accessible information that machines and people can read. Inspect the public page and its Markdown version to see what the directory actually presents.
 

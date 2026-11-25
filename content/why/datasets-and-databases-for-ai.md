@@ -6,7 +6,7 @@ Data deserves careful handling. A public repository should not contain leaked or
 
 Structured tags help people search across broad categories, but they do not make unlike resources interchangeable. A benchmark, a vector database and a small sample corpus answer different needs. Descriptions should say what is included and what is not, and should avoid implying that a dataset represents a population or proves a model's quality without evidence.
 
-Keeping files in the original repository also preserves the developer's ability to maintain versions and release notes. SkillTube can expose the discovery fields and an app download action, but the repository remains the place to inspect data files, hashes, schemas and licence text. Users should prefer documented releases over unverified copies.
+Keeping files in the original repository also preserves the developer's ability to maintain versions and release notes. SkillTube can expose the discovery fields and an in-app Source action, but the repository remains the place to inspect data files, hashes, schemas and licence text. Users should prefer documented releases over unverified copies.
 
 By welcoming data-oriented projects, the directory can better reflect how AI systems are built: instructions, tools and data often work together. Developers can list a useful dataset or database with the same structured fields while giving the project-specific caveats the space they need.
 

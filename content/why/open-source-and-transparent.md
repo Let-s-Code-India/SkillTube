@@ -1,6 +1,6 @@
 Open-source software makes it possible to inspect how a service is built and to propose improvements. SkillTube's code is released under the MIT License, and the repository includes its architecture, security model, backend function contracts and frontend error-code table. Those documents make important design decisions easier to discuss than a product whose behaviour is entirely hidden.
 
-Transparency also means explaining what the service does not do. SkillTube is a directory rather than a code host. It does not put repository download links on public Worker pages, does not expose a developer's country, and does not store IP addresses in its database. It does use providers to host pages, authenticate accounts and store application data, as described in the policies.
+Transparency also means explaining what the service does not do. SkillTube is a directory rather than a code host. It does not put repository links on public Worker pages, does not expose a developer's country, and does not store IP addresses. It does use providers to host pages, authenticate accounts and store application data, as described in the policies.
 
 Publishing requires GitHub sign-in and ownership checks. Reports follow a developer response flow, and administrative actions use backend permission checks. These mechanisms are implemented in source code and SQL files. Their presence does not prove that every deployment is configured correctly, so the owner must apply backend changes and verify live behaviour.
 

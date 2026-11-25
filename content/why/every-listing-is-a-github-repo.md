@@ -6,7 +6,7 @@ Each listing adds discovery information around that repository: a name, short an
 
 The same approach works for AI skills, MCP servers, datasets, databases, prompts, agents and other AI tools. Their contents differ, and each requires its own context. A listing can explain the basic purpose and give a visitor a route to the source; it cannot safely capture every technical detail or operational warning in a small card.
 
-This boundary also limits what SkillTube promises. The directory does not guarantee that repository content is safe, available forever or compatible with a particular assistant. A developer controls their project and its licence. A visitor chooses whether to download, run or rely on it. Reports and moderation help respond to concerns, but they do not turn the directory into a code audit service.
+This boundary also limits what SkillTube promises. The directory does not guarantee that repository content is safe, available forever or compatible with a particular assistant. A developer controls their project and its licence. A visitor chooses whether to open, run or rely on it. Reports and moderation help respond to concerns, but they do not turn the directory into a code audit service.
 
 When you find a promising listing, follow the link to GitHub. Check the owner, recent history, documentation, dependencies and licence. If you publish, list only a public repository you own and keep its description accurate. SkillTube's job is to make the route to that source clearer.
 

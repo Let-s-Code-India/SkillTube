@@ -1,4 +1,4 @@
-A discovery site should be comfortable to use on the device a visitor already has. SkillTube uses native HTML, CSS and JavaScript modules without a frontend framework or bundling step. Public listing and developer pages are rendered by the Worker, so their main information can be read without downloading a large application bundle or running JavaScript.
+A discovery site should be comfortable to use on the device a visitor already has. SkillTube uses native HTML, CSS and JavaScript modules without a frontend framework or bundling step. Public listing and developer pages are rendered by the Worker, so their main information can be read without requiring a large application bundle or running JavaScript.
 
 The visual system uses a small set of locally hosted fonts and responsive layouts. Cards wrap into a single column on narrow screens, images use explicit dimensions where possible, and decorative movement respects reduced-motion preferences. These choices help the interface adapt to a phone or tablet, though real-device testing is still needed for touch targets, text size and keyboard focus.
 

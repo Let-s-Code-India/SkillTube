@@ -1,6 +1,6 @@
 A directory is more useful when a listing points to the person or organisation that maintains its source. SkillTube uses GitHub sign-in and checks that the signed-in account has the required access to the public repository being listed. This is different from accepting an anonymous file upload: the project stays under its repository owner, and visitors can inspect the source directly.
 
-The check uses GitHub account identity and repository permissions rather than trusting a typed claim alone. A listing includes the repository URL privately in the app workflow, while public SkillTube pages avoid exposing that URL and instead provide the intended download action inside the signed-in app. This keeps the public page focused on discovery while leaving ownership checks to the publishing flow.
+The check uses GitHub account identity and repository permissions rather than trusting a typed claim alone. A listing includes the repository URL privately in the app workflow, while public SkillTube pages avoid exposing that URL and instead provide the Source action inside the signed-in app. This keeps the public page focused on discovery while leaving ownership checks to the publishing flow.
 
 Verification is not a security review. A person can own a repository that contains broken, misleading or harmful code. GitHub ownership only helps answer who controls the repository at the time of the check. Readers still need to review the code, dependencies, licence and behaviour before installing a skill, server, tool or dataset.
 
