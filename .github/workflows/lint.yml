@@ -12,3 +12,5 @@ jobs:
           if grep -RInE '<script>|<script[[:space:]]+[^>]*type="text/javascript"|style="| onclick=' public --include='*.html'; then exit 1; fi
       - name: Check common footer
         run: node tools/stamp-footer.mjs --check
+      - name: Reject precise location wording
+        run: node tools/check-public-location.mjs
