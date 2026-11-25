@@ -1,0 +1,62 @@
+[
+  {
+    "slug": "getting-started",
+    "title": "Getting started",
+    "summary": "Sign in with GitHub to publish and manage AI resources on SkillTube. AI skills are the main focus; MCP servers, datasets, databases, prompts, agents, AI tools and guides are welcome too.",
+    "updated": "2026-11-25"
+  },
+  {
+    "slug": "limits-and-rules",
+    "title": "Limits and rules",
+    "summary": "SkillTube uses activity limits and cooldowns to keep publishing and community actions manageable. The app shows an error when an action is unavailable.",
+    "updated": "2026-11-25"
+  },
+  {
+    "slug": "reporting-content",
+    "title": "Reporting content",
+    "summary": "Report a listing or developer channel when you believe it breaks the community rules. Reports are reviewed, and a report is not by itself proof that a claim is true.",
+    "updated": "2026-11-25"
+  },
+  {
+    "slug": "responding-to-reports",
+    "title": "Responding to reports",
+    "summary": "If someone reports your listing or channel, SkillTube gives you a private notice and a response window. You can see what was reported, but never who submitted the report.",
+    "updated": "2026-11-25"
+  },
+  {
+    "slug": "removals-and-appeals",
+    "title": "Removals and appeals",
+    "summary": "This guide explains what happens when a listing or account is removed and how to ask the team to review a decision.",
+    "updated": "2026-11-25"
+  },
+  {
+    "slug": "contacting-us",
+    "title": "Contacting us",
+    "summary": "Contact Let's Code India for account support, grievances, copyright notices or other questions about SkillTube.",
+    "updated": "2026-11-25"
+  },
+  {
+    "slug": "announcements-and-updates",
+    "title": "Announcements and updates",
+    "summary": "Announcements share news from the SkillTube team. Updates help you follow new activity from developers you follow.",
+    "updated": "2026-11-25"
+  },
+  {
+    "slug": "badges-and-ranking",
+    "title": "Badges and ranking",
+    "summary": "Badges and ticks are automatic activity signals displayed on SkillTube. They are not identity verification, and they appear only on SkillTube.",
+    "updated": "2026-11-25"
+  },
+  {
+    "slug": "privacy-and-data",
+    "title": "Privacy and data",
+    "summary": "SkillTube stores account and activity information needed to run the service. Some profile and listing information is public; private account details are not.",
+    "updated": "2026-11-25"
+  },
+  {
+    "slug": "for-ai-tools",
+    "title": "For AI tools",
+    "summary": "SkillTube publishes readable public pages for people, assistants and crawlers. AI skills are the main focus; the directory also covers MCP servers, datasets, databases, prompts, agents, AI tools and guides.",
+    "updated": "2026-11-25"
+  }
+]

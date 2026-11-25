@@ -6,6 +6,8 @@
   "scripts": {
     "generate:posts": "node tools/make-post.mjs",
     "check:posts": "node tools/make-post.mjs --check",
+    "generate:docs": "node tools/make-docs.mjs",
+    "check:docs": "node tools/make-docs.mjs --check",
     "check:schema": "node tools/check-schema.mjs",
     "check:links": "node tools/check-links.mjs",
     "check:worker": "node tools/check-worker.mjs",

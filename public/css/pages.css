@@ -1,6 +1,15 @@
 .stat-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
 .stat-grid strong { display:block; font-size:32px; }
 .post-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+.docs-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)); gap:16px; margin:24px 0; }
+.docs-page { max-width:76ch; }
+.docs-content { overflow-wrap:anywhere; }
+.docs-content pre,.docs-content table { max-width:100%; overflow:auto; }
+.docs-toc { margin:24px 0; padding:16px; border:1px solid var(--line); border-radius:8px; background:var(--section-surface); }
+.docs-toc h2 { margin-top:0; }
+.docs-toc-level-3,.docs-toc-level-4 { margin-left:18px; }
+.docs-help { margin-top:28px; }
+.docs-help h2 { margin-top:0; }
 .listing-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)); gap:16px; margin:18px 0; }
 .skill-big-card { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:24px; }
 .skill-big-image { grid-row:span 2; aspect-ratio:4/3; overflow:hidden; background:var(--section-surface); }

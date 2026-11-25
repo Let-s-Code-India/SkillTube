@@ -37,7 +37,7 @@ export default {
         });
       }
       if (path === "/robots.txt") return robots(env, url);
-      if (path === "/llms.txt") return llms(env, url);
+      if (path === "/llms.txt") return await llms(env, url);
       if (path === "/sitemap-pages.xml") {
         const response = await sitemap(env, url, path);
         response.headers.set("Cache-Control", "public, max-age=300");
@@ -148,7 +148,7 @@ ${canon ? `<meta property="og:url" content="${esc(canon)}">` : ""}<meta property
 <link rel="stylesheet" href="/css/worker.css">
 ${o.ld ? `<script nonce="__CSP_NONCE__" type="application/ld+json">${JSON.stringify(o.ld).replace(/</g, "\\u003c")}</script>` : ""}
 </head><body>
-<header><a class="brand" href="/">SkillTube</a><nav><a href="/developers/">Developers</a><a href="/">Sign in</a></nav></header>
+<header><a class="brand" href="/">SkillTube</a><nav><a href="/developers/">Developers</a><a href="/docs/">Docs</a><a href="/">Sign in</a></nav></header>
 <main>${o.body}</main>
 <footer>Created by Ayush Giri, Founder of Let's Code India. © 2026 Let's Code India. Source code under the MIT License.<br><a href="/legal/privacy/">Privacy</a> · <a href="/legal/terms/">Terms</a> · <a href="/legal/community-guidelines/">Community Guidelines</a> · <a href="/legal/cookies/">Cookies</a> · <a href="/legal/security/">Security</a> · <a href="/brand/">Licenses</a> · <a href="/contact/">Contact</a> · <a href="/faq/">FAQ</a> · <a href="/why-skilltube/">Why SkillTube</a> · <a href="/docs/">Docs</a></footer>
 </body></html>`, o.status || 200);
@@ -333,15 +333,25 @@ async function sitemap(env, url, path) {
     return xml(out, "sitemapindex");
   }
   if (path === "/sitemap-pages.xml") {
-    const response = await env.ASSETS.fetch(new Request(new URL("/why-skilltube/posts.json", url)));
+    const [response, docsResponse] = await Promise.all([
+      env.ASSETS.fetch(new Request(new URL("/why-skilltube/posts.json", url))),
+      env.ASSETS.fetch(new Request(new URL("/docs/docs.json", url))),
+    ]);
     if (!response.ok) throw new Error(`Could not load blog sitemap source: ${response.status}`);
+    if (!docsResponse.ok) throw new Error(`Could not load documentation sitemap source: ${docsResponse.status}`);
     const posts = await response.json();
+    const docs = await docsResponse.json();
     if (!Array.isArray(posts)) throw new Error("Blog sitemap source must be a post array.");
+    if (!Array.isArray(docs)) throw new Error("Documentation sitemap source must be a guide array.");
     const blogPages = posts.map((post) => {
       if (!/^[a-z0-9-]+$/.test(post.slug || "")) throw new Error("Invalid blog post slug in sitemap source.");
       return `/why-skilltube/${post.slug}/`;
     });
-    const pages = ["/","/developers/","/leaderboard/","/badges/","/faq/","/why-skilltube/","/about/","/help/","/docs/","/contact/","/changelog/","/brand/","/status/","/legal/privacy/","/legal/terms/","/legal/community-guidelines/","/legal/acceptable-use/","/legal/copyright/","/legal/content-license/","/legal/cookies/","/legal/disclaimer/","/legal/grievance/","/legal/security/",...blogPages];
+    const docsPages = docs.map((doc) => {
+      if (!/^[a-z0-9-]+$/.test(doc.slug || "") || !doc.title || !doc.summary) throw new Error("Invalid documentation metadata in sitemap source.");
+      return `/docs/${doc.slug}/`;
+    });
+    const pages = ["/","/developers/","/leaderboard/","/badges/","/faq/","/why-skilltube/","/about/","/help/","/docs/","/contact/","/changelog/","/brand/","/status/","/legal/privacy/","/legal/terms/","/legal/community-guidelines/","/legal/acceptable-use/","/legal/copyright/","/legal/content-license/","/legal/cookies/","/legal/disclaimer/","/legal/grievance/","/legal/security/",...blogPages,...docsPages];
     return xml(pages.map((p) => `<url><loc>${base}${p}</loc></url>`).join(""), "urlset");
   }
   const m = path.match(/^\/sitemap-(skills|devs)-(\d{1,4})\.xml$/);
@@ -356,8 +366,16 @@ function robots(env, url) {
   return plain(`User-agent: *\nAllow: /\nDisallow: /app/\nDisallow: /developers/?q=\nDisallow: /developers/?page=\n\nSitemap: ${base}/sitemap.xml\n`, "text/plain");
 }
 
-function llms(env, url) {
+async function llms(env, url) {
   const base = site(env, url);
+  const response = await env.ASSETS.fetch(new Request(new URL("/docs/docs.json", url)));
+  if (!response.ok) throw new Error(`Could not load documentation guide source: ${response.status}`);
+  const docs = await response.json();
+  if (!Array.isArray(docs)) throw new Error("Documentation guide source must be an array.");
+  const guideLinks = docs.map((doc) => {
+    if (!/^[a-z0-9-]+$/.test(doc.slug || "") || !doc.title || !doc.summary) throw new Error("Invalid documentation metadata in LLM guide.");
+    return `- [${doc.title}](${base}/docs/${doc.slug}/): ${doc.summary} Markdown: ${base}/docs/${doc.slug}.md`;
+  }).join("\n");
   return plain(`# SkillTube
 
 > SkillTube is a free, open discovery layer for AI skills, MCP servers, datasets, databases, prompts, agents, AI tools and guides. Every listing lives in its own public GitHub repository. Pages here show the name, description, topics, views and developer. Source links are available only after signing in with GitHub.
@@ -369,6 +387,7 @@ function llms(env, url) {
 - [Documentation hub](${base}/docs/): product and developer documentation
 - [Weekly leaderboard](${base}/leaderboard/): public developer rankings
 - [Badge catalog](${base}/badges/): public badge information
+- [Documentation hub](${base}/docs/): guides for using the service
 
 ## Listing formats
 - HTML listing: ${base}/skill/<id>
@@ -376,6 +395,9 @@ function llms(env, url) {
 - HTML developer profile: ${base}/dev/<username>
 - Plain-text developer profile: ${base}/dev/<username>.md
 - Public pages expose listing metadata, not private account data or source repository URLs.
+
+## Documentation guides
+${guideLinks}
 
 ## Policies and contact
 - [Privacy](${base}/legal/privacy/)

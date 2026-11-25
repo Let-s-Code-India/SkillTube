@@ -1,5 +1,11 @@
 # Documentation
 
+## Visitor guides
+
+The public guides at `/docs/` are authored in `content/docs/*.md` and generated
+as static HTML, Markdown twins and `public/docs/docs.json` by
+`npm run generate:docs`. Run `npm run check:docs` to verify generated files.
+
 ## Public product and developer guidance
 
 - [Architecture](ARCHITECTURE.md) — system boundaries and design decisions.
