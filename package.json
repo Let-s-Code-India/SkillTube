@@ -8,7 +8,8 @@
     "check:posts": "node tools/make-post.mjs --check",
     "check:schema": "node tools/check-schema.mjs",
     "check:links": "node tools/check-links.mjs",
-    "check:worker": "node tools/check-worker.mjs"
+    "check:worker": "node tools/check-worker.mjs",
+    "check:security": "node tools/check-security.mjs"
   },
   "devDependencies": {
     "ajv": "^8.17.1",

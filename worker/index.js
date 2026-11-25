@@ -26,11 +26,16 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
     if (request.method !== "GET" && request.method !== "HEAD") {
-      return new Response("Method not allowed", { status: 405, headers: { Allow: "GET, HEAD" } });
+      return new Response("Method not allowed", { status: 405, headers: { ...SEC, Allow: "GET, HEAD" } });
     }
     try {
       let m;
-      if (path === "/licenses/BRAND.md") return Response.redirect("https://github.com/Let-s-Code-India/SkillTube/blob/main/licenses/BRAND.md", 302);
+      if (path === "/licenses/BRAND.md") {
+        return new Response(null, {
+          status: 302,
+          headers: { ...SEC, Location: "https://github.com/Let-s-Code-India/SkillTube/blob/main/licenses/BRAND.md" },
+        });
+      }
       if (path === "/robots.txt") return robots(env, url);
       if (path === "/llms.txt") return llms(env, url);
       if (path === "/sitemap-pages.xml") {
@@ -38,17 +43,17 @@ export default {
         response.headers.set("Cache-Control", "public, max-age=300");
         return request.method === "HEAD" ? new Response(null, response) : response;
       }
-      if (path === "/sitemap.xml" || path.startsWith("/sitemap-")) return cached(request, ctx, () => sitemap(env, url, path), 3600);
-      if ((m = path.match(/^\/topic\/([A-Za-z0-9-]+)\/?$/))) return cached(request, ctx, () => topicPage(env, url, m[1]), 600);
-      if (path === "/leaderboard" || path === "/leaderboard/") return cached(request, ctx, () => leaderboardPage(env, url), 600);
-      if (path === "/badges" || path === "/badges/") return cached(request, ctx, () => badgesPage(env, url), 600);
-      if ((m = path.match(/^\/skill\/([0-9a-fA-F-]{36})(\.md)?$/))) return cached(request, ctx, () => skillPage(env, url, m[1], !!m[2]), 900);
-      if ((m = path.match(/^\/dev\/([A-Za-z0-9-]{1,39})(\.md)?$/))) return cached(request, ctx, () => devPage(env, url, m[1], !!m[2]), 900);
+      if (path === "/sitemap.xml" || path.startsWith("/sitemap-")) return await cached(request, ctx, () => sitemap(env, url, path), 3600);
+      if ((m = path.match(/^\/topic\/([A-Za-z0-9-]+)\/?$/))) return await cached(request, ctx, () => topicPage(env, url, m[1]), 600);
+      if (path === "/leaderboard" || path === "/leaderboard/") return await cached(request, ctx, () => leaderboardPage(env, url), 600);
+      if (path === "/badges" || path === "/badges/") return await cached(request, ctx, () => badgesPage(env, url), 600);
+      if ((m = path.match(/^\/skill\/([0-9a-fA-F-]{36})(\.md)?$/))) return await cached(request, ctx, () => skillPage(env, url, m[1], !!m[2]), 900);
+      if ((m = path.match(/^\/dev\/([A-Za-z0-9-]{1,39})(\.md)?$/))) return await cached(request, ctx, () => devPage(env, url, m[1], !!m[2]), 900);
       if (path === "/developers" || path === "/developers/") return developers(request, env, ctx, url);
       return env.ASSETS.fetch(request);
     } catch (e) {
       return new Response("SkillTube is busy for a moment. Please try again in a minute.", {
-        status: 503, headers: { "Retry-After": "60", "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
+        status: 503, headers: { ...SEC, "Retry-After": "60", "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
       });
     }
   },
@@ -88,8 +93,11 @@ async function cached(request, ctx, make, ttl) {
 }
 
 const SEC = {
+  "Strict-Transport-Security": "max-age=31536000",
+  "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "geolocation=(), camera=(), microphone=()",
 };
 function html(env, body, status = 200) {
   const nonce = bytesToHex(crypto.getRandomValues(new Uint8Array(16)));
@@ -99,7 +107,7 @@ function html(env, body, status = 200) {
     headers: {
       ...SEC,
       "Content-Type": "text/html; charset=utf-8",
-      "Content-Security-Policy": `default-src 'none'; script-src 'nonce-${nonce}'; script-src-elem 'nonce-${nonce}'; style-src 'self'; img-src 'self' ${env.SUPABASE_URL} https://avatars.githubusercontent.com data:; connect-src 'self' ${env.SUPABASE_URL}; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'`,
+      "Content-Security-Policy": `default-src 'none'; script-src 'nonce-${nonce}'; script-src-elem 'nonce-${nonce}'; style-src 'self'; img-src 'self' ${env.SUPABASE_URL} https://avatars.githubusercontent.com data:; connect-src 'self' ${env.SUPABASE_URL}; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests`,
     },
   });
 }
@@ -250,7 +258,10 @@ async function developers(request, env, ctx, url) {
     if (USER_RE.test(name)) {
       const r = await rpc(env, "public_search", { p_q: "@" + name, p_page: 0 });
       if (r && r.developer && r.developer.username) {
-        return new Response(null, { status: 302, headers: { Location: `/dev/${r.developer.username}`, "Cache-Control": "public, max-age=60" } });
+        return new Response(null, {
+          status: 302,
+          headers: { ...SEC, Location: `/dev/${r.developer.username}`, "Cache-Control": "public, max-age=60" },
+        });
       }
     }
     return searchPage(env, url, q, page, [], `No developer named ${q}. Type the full username after @.`);
@@ -259,7 +270,7 @@ async function developers(request, env, ctx, url) {
     const [r, tt] = await Promise.all([rpc(env, "public_search", { p_q: q, p_page: page }), q || page ? Promise.resolve([]) : rpc(env, "trending_tags", {}).catch(() => [])]);
     return searchPage(env, url, q, page, (r && r.items) || [], null, Array.isArray(tt) ? tt : []);
   };
-  return cached(request, ctx, make, q ? 120 : 600);
+  return await cached(request, ctx, make, q ? 120 : 600);
 }
 
 function searchPage(env, url, q, page, items, notice, trending = []) {
