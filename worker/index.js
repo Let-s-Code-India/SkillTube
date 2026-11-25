@@ -353,22 +353,38 @@ async function sitemap(env, url, path) {
 
 function robots(env, url) {
   const base = site(env, url);
-  return plain(`User-agent: *\nAllow: /\nDisallow: /developers/?*q=\nDisallow: /developers/?*page=\n\nSitemap: ${base}/sitemap.xml\n`, "text/plain");
+  return plain(`User-agent: *\nAllow: /\nDisallow: /app/\nDisallow: /developers/?q=\nDisallow: /developers/?page=\n\nSitemap: ${base}/sitemap.xml\n`, "text/plain");
 }
 
 function llms(env, url) {
   const base = site(env, url);
   return plain(`# SkillTube
 
-> SkillTube is a free, open discovery layer for AI skills, MCP servers, datasets, databases, prompts, agents and AI tools. Every listing lives in its own public GitHub repository. Pages here show the name, description, topics, views and the developer. Source links are available only after signing in with GitHub.
+> SkillTube is a free, open discovery layer for AI skills, MCP servers, datasets, databases, prompts, agents, AI tools and guides. Every listing lives in its own public GitHub repository. Pages here show the name, description, topics, views and developer. Source links are available only after signing in with GitHub.
 
-## Where to read
-- [All skills and search](${base}/developers/): search by skill name or topic; type @username to find a developer
-- [Sitemap](${base}/sitemap.xml): every public skill and developer page
-- Every skill page is /skill/<id> and every developer page is /dev/<username>. Add .md to either address for a plain-text version.
+## Discovery
+- [Search public listings](${base}/developers/): search by listing name or topic; type @username to find a developer
+- [Sitemap index](${base}/sitemap.xml): static pages and paginated public listing sitemaps
+- [Static page sitemap](${base}/sitemap-pages.xml): legal, help, about, and article pages
+- [Weekly leaderboard](${base}/leaderboard/): public developer rankings
+- [Badge catalog](${base}/badges/): public badge information
 
-## Rules for readers and robots
-- The public pages contain the same content for people and for robots.
-- Please do not try to sign in or scrape source links; they are intentionally not public.
+## Listing formats
+- HTML listing: ${base}/skill/<id>
+- Plain-text listing: ${base}/skill/<id>.md
+- HTML developer profile: ${base}/dev/<username>
+- Plain-text developer profile: ${base}/dev/<username>.md
+- Public pages expose listing metadata, not private account data or source repository URLs.
+
+## Policies and contact
+- [Privacy](${base}/legal/privacy/)
+- [Terms](${base}/legal/terms/)
+- [Community Guidelines](${base}/legal/community-guidelines/)
+- [Security policy](${base}/legal/security/)
+- [Security contact](${base}/.well-known/security.txt)
+
+## Guidance
+- Public HTML and plain-text pages represent the same public listing information.
+- Do not attempt to sign in, access private data, or infer repository source URLs.
 `, "text/plain");
 }
