@@ -31,10 +31,6 @@ discovery, useful tags, public developer channels and community signals.
 - Report content through a documented review and response flow.
 - Use a responsive interface designed for keyboard, touch and small screens.
 
-## Screenshots
-
-Screenshots will be added after the public launch.
-
 ## Architecture
 
 ```mermaid
@@ -97,8 +93,12 @@ Cloudflare Workers Builds deployment for the live service. For local checks:
 ```sh
 npm ci
 npm run check:posts
+npm run check:schema
 npm run check:links
+npm run check:worker
+npm run check:security
 node tools/stamp-footer.mjs --check
+node tools/check-public-location.mjs
 ```
 
 The post generator runs at commit time and writes static HTML; visitors do not
