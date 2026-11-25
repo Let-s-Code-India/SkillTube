@@ -42,7 +42,7 @@ if(brand.status!==302||brand.headers.get("location")!=="https://github.com/Let-s
 const robots=await worker.fetch(new Request(`${env.SITE_URL}/robots.txt`),env,context);
 const robotsText=await robots.text();
 if(!robots.ok||!robots.headers.get("content-type")?.startsWith("text/plain"))throw new Error("robots.txt did not return plain text.");
-for(const directive of ["Disallow: /app/","Disallow: /developers/?q=","Disallow: /developers/?page=",`Sitemap: ${env.SITE_URL}/sitemap.xml`]) {
+for(const directive of ["Disallow: /app/","Disallow: /404.html","Disallow: /offline.html","Disallow: /developers/?q=","Disallow: /developers/?page=",`Sitemap: ${env.SITE_URL}/sitemap.xml`]) {
   if(!robotsText.includes(directive))throw new Error(`robots.txt omits ${directive}.`);
 }
 

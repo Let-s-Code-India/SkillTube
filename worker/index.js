@@ -363,7 +363,7 @@ async function sitemap(env, url, path) {
 
 function robots(env, url) {
   const base = site(env, url);
-  return plain(`User-agent: *\nAllow: /\nDisallow: /app/\nDisallow: /developers/?q=\nDisallow: /developers/?page=\n\nSitemap: ${base}/sitemap.xml\n`, "text/plain");
+  return plain(`User-agent: *\nAllow: /\nDisallow: /app/\nDisallow: /404.html\nDisallow: /offline.html\nDisallow: /developers/?q=\nDisallow: /developers/?page=\n\nSitemap: ${base}/sitemap.xml\n`, "text/plain");
 }
 
 async function llms(env, url) {
