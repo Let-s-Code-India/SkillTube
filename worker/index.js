@@ -141,16 +141,16 @@ ${o.noindex ? '<meta name="robots" content="noindex,follow">' : '<meta name="rob
 ${canon ? `<link rel="canonical" href="${esc(canon)}">` : ""}
 ${o.md ? `<link rel="alternate" type="text/markdown" href="${esc(base + o.md)}">` : ""}
 <meta property="og:type" content="${o.ogType || "website"}"><meta property="og:site_name" content="SkillTube"><meta property="og:title" content="${esc(o.title)}"><meta property="og:description" content="${esc(o.desc)}">
-${canon ? `<meta property="og:url" content="${esc(canon)}">` : ""}<meta property="og:image" content="${esc(o.image || base + "/og-image.png")}">
+${canon ? `<meta property="og:url" content="${esc(canon)}">` : ""}<meta property="og:image" content="${esc(o.image || base + "/og-image.jpg")}">
 <meta property="og:image:width" content="2658"><meta property="og:image:height" content="1634">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${esc(o.image || base + "/og-image.png")}">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${esc(o.image || base + "/og-image.jpg")}">
 <link rel="icon" href="/image/app/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/css/worker.css">
 ${o.ld ? `<script nonce="__CSP_NONCE__" type="application/ld+json">${JSON.stringify(o.ld).replace(/</g, "\\u003c")}</script>` : ""}
 </head><body>
 <header><a class="brand" href="/">SkillTube</a><nav><a href="/developers/">Developers</a><a href="/docs/">Docs</a><a href="/">Sign in</a></nav></header>
 <main>${o.body}</main>
-<footer>Created by Ayush Giri, Founder of Let's Code India. © 2026 Let's Code India. Source code under the MIT License.<br><a href="/legal/privacy/">Privacy</a> · <a href="/legal/terms/">Terms</a> · <a href="/legal/community-guidelines/">Community Guidelines</a> · <a href="/legal/cookies/">Cookies</a> · <a href="/legal/security/">Security</a> · <a href="/brand/">Licenses</a> · <a href="/contact/">Contact</a> · <a href="/faq/">FAQ</a> · <a href="/why-skilltube/">Why SkillTube</a> · <a href="/docs/">Docs</a></footer>
+<footer>Created by Ayush Giri, Founder of <a href="https://let-s-code-india.github.io/">Let's Code India</a>. © 2026 <a href="https://let-s-code-india.github.io/">Let's Code India</a>. Source code under the MIT License.<br><a href="/legal/privacy/">Privacy</a> · <a href="/legal/terms/">Terms</a> · <a href="/legal/community-guidelines/">Community Guidelines</a> · <a href="/legal/cookies/">Cookies</a> · <a href="/legal/security/">Security</a> · <a href="/brand/">Licenses</a> · <a href="/contact/">Contact</a> · <a href="/faq/">FAQ</a> · <a href="/why-skilltube/">Why SkillTube</a> · <a href="/docs/">Docs</a></footer>
 </body></html>`, o.status || 200);
 }
 
