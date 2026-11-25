@@ -10,6 +10,7 @@
     "check:docs": "node tools/make-docs.mjs --check",
     "check:schema": "node tools/check-schema.mjs",
     "check:links": "node tools/check-links.mjs",
+    "check:responsive": "node tools/check-responsive.mjs",
     "check:worker": "node tools/check-worker.mjs",
     "check:security": "node tools/check-security.mjs"
   },

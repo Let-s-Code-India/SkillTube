@@ -20,7 +20,24 @@ main { min-height:60vh; }
 @media(max-width:900px) {
   .nav-links { display:none; }
   .drawer-toggle { display:inline-grid; }
-  .hero { min-height:auto; padding:70px 0; }
-  .section { padding:70px 28px; }
+  .container { width:min(var(--content), calc(100% - 32px)); }
+  .reading { width:min(var(--reading), calc(100% - 32px)); }
+  .hero { min-height:auto; padding:56px 0; }
+  .hero h1 { font-size:clamp(42px,12vw,68px); }
+  .hero p { font-size:18px; }
+  .section { padding:56px 0; }
   .grid-3 { grid-template-columns:1fr; }
+}
+
+@media(max-width:375px) {
+  .container,.reading { width:calc(100% - 24px); }
+  .nav { gap:8px; }
+  .brand { gap:7px; }
+  .brand img { width:32px; height:32px; }
+  .nav-actions { min-width:0; }
+  .nav-actions .btn { max-width:180px; padding-inline:10px; font-size:11px; }
+  .hero { padding:44px 0; }
+  .hero h1 { font-size:42px; }
+  .footer-links { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .footer-links a { min-height:44px; align-content:center; }
 }

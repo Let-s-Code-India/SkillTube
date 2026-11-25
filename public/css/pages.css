@@ -44,3 +44,13 @@
 #share-post { margin:12px 12px 12px 0; }
 @media(max-width:900px) { .stat-grid,.post-grid { grid-template-columns:1fr; } }
 @media(max-width:700px) { .skill-big-card { grid-template-columns:1fr; } .skill-big-image { grid-row:auto; } .skill-big-summary,.skill-developer-details,.skill-long-description,.skill-topics,.skill-actions { grid-column:1; } }
+@media(max-width:375px) {
+  .listing-grid,.badge-grid { grid-template-columns:minmax(0,1fr); }
+  .rank-row { grid-template-columns:2.5rem minmax(0,1fr); }
+  .rank-score { grid-column:2; }
+  .comment-thread > .comment:not(:first-child) { margin-left:8px; }
+  .dialog-actions { display:grid; grid-template-columns:1fr; }
+  .dialog-actions .btn { width:100%; }
+  .docs-grid,.post-grid { grid-template-columns:minmax(0,1fr); }
+  .table-wrap { margin-inline:-12px; padding-inline:12px; }
+}

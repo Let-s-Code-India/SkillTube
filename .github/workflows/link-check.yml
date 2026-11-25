@@ -17,6 +17,7 @@ jobs:
       - run: npm run check:posts
       - run: npm run check:docs
       - run: npm run check:links
+      - run: npm run check:responsive
       - run: npm run check:worker
       - run: npm run check:security
       - run: node tools/stamp-footer.mjs --check

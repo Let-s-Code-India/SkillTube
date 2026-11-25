@@ -1,4 +1,4 @@
-.btn { display:inline-flex; align-items:center; justify-content:center; min-height:42px; border-radius:7px; border:1px solid var(--ink); padding:10px 16px; background:var(--ink); color:var(--paper); text-decoration:none; font:700 12px/1 var(--font-mono); text-transform:uppercase; letter-spacing:.04em; }
+.btn { display:inline-flex; align-items:center; justify-content:center; min-height:44px; border-radius:7px; border:1px solid var(--ink); padding:10px 16px; background:var(--ink); color:var(--paper); text-decoration:none; font:700 12px/1 var(--font-mono); text-transform:uppercase; letter-spacing:.04em; }
 .btn.secondary { background:transparent; color:var(--ink); }
 .btn.danger { border-color:var(--red); background:var(--red); color:#fff; }
 .eyebrow { font:500 12px/1.2 var(--font-mono); text-transform:uppercase; letter-spacing:.08em; color:var(--small-red); }
@@ -66,3 +66,4 @@ dialog.report-dialog select,dialog.report-dialog textarea { display:block; width
 .drawer { position:fixed; inset:0 auto 0 0; width:min(320px,88vw); background:var(--surface-raised); transform:translateX(-100%); transition:transform .2s; z-index:80; padding:20px; box-shadow:var(--shadow); }
 .drawer.open { transform:none; }
 .drawer-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:79; }
+.drawer nav a { display:flex; align-items:center; min-height:44px; }
