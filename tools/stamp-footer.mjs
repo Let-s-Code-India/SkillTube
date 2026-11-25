@@ -1,14 +1,6 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-
-const footer = `<footer class="footer"><div class="container">
-  <nav class="footer-links" aria-label="Footer">
-    <a href="/legal/privacy/">Privacy</a><a href="/legal/terms/">Terms</a>
-    <a href="/legal/community-guidelines/">Community Guidelines</a><a href="/legal/cookies/">Cookies</a>
-    <a href="/legal/security/">Security</a><a href="/brand/">Licenses</a><a href="/contact/">Contact</a>
-    <a href="/faq/">FAQ</a><a href="/why-skilltube/">Why SkillTube</a>
-  </nav>
-  <p>© 2026 Let's Code India. Source code under the MIT License.</p></div></footer>`;
+import { footerMarkup } from "../public/js/footer.js";
 
 async function htmlFiles(dir) {
   const out=[];
@@ -24,11 +16,14 @@ async function stamp() {
   let failed=false;
   for(const file of await htmlFiles("public")) {
     const text=await readFile(file,"utf8");
-    if(!/<footer class="footer">/.test(text)) {
-      if(check){ console.error(`Missing footer: ${file}`); failed=true; }
-      else {
-        const stamped=text.replace(/<\/body>/i,`${footer}\n</body>`);
-        await writeFile(file,stamped);
+    const footerPattern=/<footer class="footer">[\s\S]*?<\/footer>/i;
+    const existing=text.match(footerPattern)?.[0];
+    if(existing!==footerMarkup()) {
+      if(check){ console.error(`Missing or outdated footer: ${file}`); failed=true; }
+      else if(existing) {
+        await writeFile(file,text.replace(footerPattern,footerMarkup()));
+      } else {
+        await writeFile(file,text.replace(/<\/body>/i,`${footerMarkup()}\n</body>`));
       }
     }
   }
