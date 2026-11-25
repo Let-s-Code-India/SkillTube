@@ -1,3 +1,8 @@
+/*
+ * Purpose: Generate sanitized static article pages and the public article index.
+ * Called by: the corresponding npm generator or repository check.
+ * Security: Sanitize authored Markdown before HTML output; do not include private data in sources.
+ */
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { JSDOM } from "jsdom";
@@ -10,19 +15,28 @@ const parseMarkdown = globalThis.marked;
 const createDOMPurify = globalThis.DOMPurify;
 const dom = new JSDOM("");
 const purifier = createDOMPurify(dom.window);
+// Article content and generated public page configuration.
 const posts = JSON.parse(
   await readFile("public/why-skilltube/posts.json", "utf8"),
 );
 const check = process.argv.includes("--check");
 const baseUrl = siteInfo.siteUrl;
-purifier.addHook("afterSanitizeAttributes", (node) => {
-  if (node.tagName === "A")
-    node.setAttribute("rel", "noopener noreferrer nofollow ugc");
-});
+purifier.addHook(
+  "afterSanitizeAttributes",
+  /* Add safe link attributes after sanitizing article markup. */
+  (node) => {
+    if (node.tagName === "A")
+      node.setAttribute("rel", "noopener noreferrer nofollow ugc");
+  },
+);
 
+// Article validation, sanitization, and static page rendering.
+// Escape HTML text before inserting it into generated markup.
 function escapeHtml(value) {
   return String(value ?? "").replace(
     /[&<>"']/g,
+
+    /* Format each matched value. */
     (char) =>
       ({
         "&": "&amp;",
@@ -34,6 +48,7 @@ function escapeHtml(value) {
   );
 }
 
+// Render authored article Markdown through the HTML sanitizer.
 function sanitizeMarkdown(source) {
   const rendered = parseMarkdown.parse(source, { gfm: false, breaks: false });
   return purifier.sanitize(rendered, {
@@ -57,6 +72,7 @@ function sanitizeMarkdown(source) {
   });
 }
 
+// Render the shared static article page shell.
 function pageShell({ title, description, canonical, body, script = "" }) {
   const safeTitle = escapeHtml(title);
   const safeDescription = escapeHtml(description);
@@ -65,6 +81,7 @@ function pageShell({ title, description, canonical, body, script = "" }) {
 </body></html>`;
 }
 
+// Validate posts.
 function validatePosts() {
   if (posts.length !== 19)
     throw new Error(`Expected 19 posts, found ${posts.length}.`);
@@ -83,9 +100,11 @@ function validatePosts() {
   }
 }
 
+// Build index.
 function buildIndex() {
   const cards = posts
     .map(
+      /* Build a display value for each post. */
       (post) =>
         `<article class="card"><p class="eyebrow">${escapeHtml(post.tags.join(" · "))}</p><h2><a href="/why-skilltube/${escapeHtml(post.slug)}/">${escapeHtml(post.title)}</a></h2><p>${escapeHtml(post.summary)}</p><time datetime="${escapeHtml(post.date)}">${escapeHtml(post.date)}</time></article>`,
     )
@@ -99,6 +118,7 @@ function buildIndex() {
   });
 }
 
+// Build post.
 async function buildPost(post, index) {
   const source = await readFile(`content/why/${post.slug}.md`, "utf8");
   const words = source.match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu) || [];
@@ -116,7 +136,10 @@ async function buildPost(post, index) {
     : "";
   const navigation = `<nav class="post-navigation" aria-label="Article navigation">${previousLink}${nextLink}</nav>`;
   const tags = post.tags
-    .map((tag) => `<span class="chip">${escapeHtml(tag)}</span>`)
+    .map(
+      /* Build a display value for each tag. */
+      (tag) => `<span class="chip">${escapeHtml(tag)}</span>`,
+    )
     .join("");
   const body = `<p class="eyebrow">Why SkillTube · ${index + 1} of ${posts.length}</p><h1>${escapeHtml(post.title)}</h1><p class="mut">${escapeHtml(post.summary)}</p><time datetime="${escapeHtml(post.date)}">${escapeHtml(post.date)}</time><button id="share-post" class="btn secondary" type="button">Copy link</button><span id="share-status" class="mut" aria-live="polite"></span><div class="chips">${tags}</div><article class="post-content">${sanitizeMarkdown(source)}</article><p><strong>What you can do:</strong> <a href="/app/#/home">sign in</a> or <a href="/developers/">browse developers</a>.</p>${navigation}`;
   return pageShell({

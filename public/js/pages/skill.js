@@ -1,3 +1,8 @@
+/*
+ * Purpose: Render the skill detail page and coordinate its UI actions.
+ * Called by: public/js/app.js for the skill detail route.
+ * Security: Treat route parameters and backend values as untrusted; backend authorization remains authoritative.
+ */
 import { call, markDeveloperSeenByUsername } from "../api.js";
 import { showError } from "../errors.js";
 import { renderMarkdown } from "../components/markdown.js";
@@ -11,6 +16,7 @@ import {
 } from "../components/badges.js";
 import { safeUrl } from "../safe-url.js";
 
+// Create an element with optional text and a CSS class.
 function element(tag, text, className = "") {
   const node = document.createElement(tag);
   if (text !== undefined) node.textContent = text;
@@ -18,6 +24,7 @@ function element(tag, text, className = "") {
   return node;
 }
 
+// Build an accessible time element for the date.
 function dateValue(value, label) {
   const time = element("time");
   if (value) {
@@ -29,6 +36,7 @@ function dateValue(value, label) {
   return time;
 }
 
+// Build topic links for links.
 function topicLinks(tags) {
   const section = element("section", undefined, "skill-topics");
   for (const [key, label] of [
@@ -56,6 +64,7 @@ function topicLinks(tags) {
   return section;
 }
 
+// Render developer details.
 async function renderDeveloperDetails(container, username, fallback) {
   const info = element("div", undefined, "skill-developer-details");
   container.append(info);
@@ -77,10 +86,13 @@ async function renderDeveloperDetails(container, username, fallback) {
   const link = element("a", `${developer?.name || username} (@${username})`);
   link.href = safeUrl(`#/dev/${encodeURIComponent(username)}`) || "#";
   identity.append(link);
-  const paths = await getBadgeImagePaths().catch(() => {
-    showError(info, "SERVER_ERROR");
-    return new Map();
-  });
+  const paths = await getBadgeImagePaths().catch(
+    /* Handle a rejected asynchronous operation. */
+    () => {
+      showError(info, "SERVER_ERROR");
+      return new Map();
+    },
+  );
   const tick = tickImage(paths, developer?.tick);
   if (tick) identity.append(tick);
   info.append(identity);
@@ -96,6 +108,7 @@ async function renderDeveloperDetails(container, username, fallback) {
   }
 }
 
+// Render the skill route into its container.
 export async function render(app, { id }) {
   const error = element("div");
   app.append(error);
@@ -125,8 +138,9 @@ export async function render(app, { id }) {
   summary.append(developer);
   const developerUsername = detail.developer?.username;
   if (developerUsername) {
-    markDeveloperSeenByUsername(developerUsername).catch((e) =>
-      showError(error, e.code, e.arg),
+    markDeveloperSeenByUsername(developerUsername).catch(
+      /* Handle a rejected asynchronous operation. */
+      (e) => showError(error, e.code, e.arg),
     );
     await renderDeveloperDetails(
       developer,
@@ -168,48 +182,56 @@ export async function render(app, { id }) {
   );
   star.type = "button";
   const actionError = element("div");
-  star.addEventListener("click", async () => {
-    star.disabled = true;
-    try {
-      const result = await call("toggle_star", { p_skill: id });
-      star.textContent = `${result.starred ? "Unstar" : "Star"} · ${Number(result.stars || 0).toLocaleString()}`;
-      actionError.textContent = "";
-    } catch (e) {
-      showError(actionError, e.code, e.arg);
-    } finally {
-      star.disabled = false;
-    }
-  });
+  star.addEventListener(
+    "click",
+    /* Handle the click event. */
+    async () => {
+      star.disabled = true;
+      try {
+        const result = await call("toggle_star", { p_skill: id });
+        star.textContent = `${result.starred ? "Unstar" : "Star"} · ${Number(result.stars || 0).toLocaleString()}`;
+        actionError.textContent = "";
+      } catch (e) {
+        showError(actionError, e.code, e.arg);
+      } finally {
+        star.disabled = false;
+      }
+    },
+  );
   const source = element("button", undefined, "btn");
   source.type = "button";
   source.setAttribute("aria-label", "Open source repository on GitHub");
   const icon = element("span", "↗");
   icon.setAttribute("aria-hidden", "true");
   source.append(icon, document.createTextNode(" Source"));
-  source.addEventListener("click", async () => {
-    source.disabled = true;
-    actionError.textContent = "";
-    try {
-      const repository = await call("get_download_link", { p_skill: id });
-      if (
-        typeof repository !== "string" ||
-        !repository.startsWith("https://github.com/")
-      ) {
-        showError(actionError, "SOURCE_UNAVAILABLE");
-        return;
+  source.addEventListener(
+    "click",
+    /* Handle the click event. */
+    async () => {
+      source.disabled = true;
+      actionError.textContent = "";
+      try {
+        const repository = await call("get_download_link", { p_skill: id });
+        if (
+          typeof repository !== "string" ||
+          !repository.startsWith("https://github.com/")
+        ) {
+          showError(actionError, "SOURCE_UNAVAILABLE");
+          return;
+        }
+        const url = safeUrl(repository, { allowHash: false, allowPath: false });
+        if (!url || new URL(url).hostname !== "github.com") {
+          showError(actionError, "SOURCE_UNAVAILABLE");
+          return;
+        }
+        window.open(url, "_blank", "noopener,noreferrer");
+      } catch (e) {
+        showError(actionError, e.code, e.arg);
+      } finally {
+        source.disabled = false;
       }
-      const url = safeUrl(repository, { allowHash: false, allowPath: false });
-      if (!url || new URL(url).hostname !== "github.com") {
-        showError(actionError, "SOURCE_UNAVAILABLE");
-        return;
-      }
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch (e) {
-      showError(actionError, e.code, e.arg);
-    } finally {
-      source.disabled = false;
-    }
-  });
+    },
+  );
   actions.append(star, source);
   if (detail.mine !== true) actions.append(reportButton({ kind: "skill", id }));
   article.append(actions, actionError);
@@ -220,11 +242,16 @@ export async function render(app, { id }) {
   const viewError = element("div");
   app.append(comments, viewError);
   if (detail.mine !== true) {
-    setTimeout(() => {
-      call("record_view", { p_skill: id }).catch((e) =>
-        showError(viewError, e.code, e.arg),
-      );
-    }, 2000);
+    setTimeout(
+      /* Run the follow-up action after the delay. */
+      () => {
+        call("record_view", { p_skill: id }).catch(
+          /* Handle a rejected asynchronous operation. */
+          (e) => showError(viewError, e.code, e.arg),
+        );
+      },
+      2000,
+    );
   }
   await renderComments(comments, id, { mine: detail.mine === true });
 }

@@ -1,3 +1,8 @@
+/*
+ * Purpose: Reject prohibited location-specific wording in public content.
+ * Called by: npm scripts and GitHub checks for check public location.
+ * Security: Reads local repository content and does not transmit source files or use production credentials.
+ */
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -34,6 +39,7 @@ const extensions = new Set([
 ]);
 const failures = [];
 
+// Check directory.
 async function checkDirectory(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const file = path.join(directory, entry.name);

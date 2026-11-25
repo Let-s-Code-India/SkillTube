@@ -1,3 +1,6 @@
+# Purpose: Run generators and public link, responsive, Worker, and security checks.
+# Trigger: Triggered on pushes and pull requests.
+# Security: Use local fixtures and read-only repository access; do not use production secrets.
 name: link-check
 on: [push, pull_request]
 

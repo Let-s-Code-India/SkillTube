@@ -1,3 +1,6 @@
+# Purpose: Recheck availability of public GitHub repositories listed in the catalog.
+# Trigger: Triggered every six hours or manually through workflow dispatch.
+# Security: Read the service-role key only from GitHub Actions secrets and never print it.
 # Every 6 hours: check that every listed repository still exists (see catalog/catalog.mjs).
 # Needs two repository secrets: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
 name: catalog

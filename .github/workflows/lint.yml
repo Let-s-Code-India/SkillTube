@@ -1,3 +1,6 @@
+# Purpose: Reject inline scripts and handlers and verify common footer and location wording.
+# Trigger: Triggered on pushes and pull requests.
+# Security: Use read-only repository permissions; application secrets are not required.
 name: lint
 on: [push, pull_request]
 jobs:

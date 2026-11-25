@@ -1,3 +1,8 @@
+/*
+ * Purpose: Validate URLs before they are used in links or navigation.
+ * Called by: the app entry point and related browser modules.
+ * Security: Reject executable schemes and unapproved external hosts.
+ */
 export function safeUrl(
   value,
   { allowHash = true, allowPath = true, allowHttps = true } = {},

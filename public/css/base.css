@@ -1,3 +1,8 @@
+/*
+ * Purpose: Define global element defaults, focus styling, and motion preferences.
+ * Loaded by: the public static pages and app shell.
+ * Security: Presentation only; do not use CSS as an access-control boundary.
+ */
 * {
   box-sizing: border-box;
 }

@@ -1,9 +1,15 @@
+/*
+ * Purpose: Render the my listings page and coordinate its UI actions.
+ * Called by: public/js/app.js for the my listings route.
+ * Security: Treat route parameters and backend values as untrusted; backend authorization remains authoritative.
+ */
 import { call, edgeForm } from "../api.js";
 import { showError } from "../errors.js";
 import { confirmDialog } from "../components/dialogs.js";
 import { toast } from "../components/toasts.js";
 import { listingCard } from "../components/cards.js";
 
+// Create a labeled input or textarea with its initial value.
 function field(labelText, value = "", textarea = false) {
   const label = document.createElement("label");
   const span = document.createElement("span");
@@ -15,6 +21,7 @@ function field(labelText, value = "", textarea = false) {
   return { label, input };
 }
 
+// Calculate the remaining listing restore period.
 function undoRemaining(deletedAt) {
   const deleted = Date.parse(deletedAt || "");
   return Number.isFinite(deleted)
@@ -22,11 +29,13 @@ function undoRemaining(deletedAt) {
     : 0;
 }
 
+// Format remaining.
 function formatRemaining(milliseconds) {
   const minutes = Math.ceil(milliseconds / 60000);
   return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 }
 
+// Render the my listings route into its container.
 export async function render(app) {
   const host = document.createElement("div");
   host.className = "listing-grid";
@@ -34,6 +43,7 @@ export async function render(app) {
   await loadSkills(host);
 }
 
+// Load the author's listings and render the empty or populated state.
 async function loadSkills(host) {
   host.replaceChildren();
   const skeleton = document.createElement("div");
@@ -63,6 +73,7 @@ async function loadSkills(host) {
   for (const skill of skills) host.append(renderSkillCard(host, skill));
 }
 
+// Render one listing with its available management actions.
 function renderSkillCard(host, skill) {
   const card = listingCard(skill);
   const status = document.createElement("p");
@@ -81,18 +92,22 @@ function renderSkillCard(host, skill) {
       restore.className = "btn secondary";
       restore.textContent = "Undo delete";
       const error = document.createElement("div");
-      restore.addEventListener("click", async () => {
-        restore.disabled = true;
-        try {
-          await call("restore_skill", { p_skill: skill.id });
-          toast("Listing restored.");
-          await loadSkills(host);
-        } catch (e) {
-          showError(error, e.code, e.arg);
-        } finally {
-          restore.disabled = false;
-        }
-      });
+      restore.addEventListener(
+        "click",
+        /* Handle the click event. */
+        async () => {
+          restore.disabled = true;
+          try {
+            await call("restore_skill", { p_skill: skill.id });
+            toast("Listing restored.");
+            await loadSkills(host);
+          } catch (e) {
+            showError(error, e.code, e.arg);
+          } finally {
+            restore.disabled = false;
+          }
+        },
+      );
       actions.append(restore);
       card.append(error);
     }
@@ -117,13 +132,30 @@ function renderSkillCard(host, skill) {
   update.textContent = "I released a new version";
   actions.append(edit, remove, image, update);
 
-  edit.addEventListener("click", () => openEdit(card, skill));
-  remove.addEventListener("click", () => deleteSkill(host, card, skill));
-  image.addEventListener("click", () => openImage(card, skill));
-  update.addEventListener("click", () => openVersionForm(card, skill));
+  edit.addEventListener(
+    "click",
+    /* Handle the click event. */
+    () => openEdit(card, skill),
+  );
+  remove.addEventListener(
+    "click",
+    /* Handle the click event. */
+    () => deleteSkill(host, card, skill),
+  );
+  image.addEventListener(
+    "click",
+    /* Handle the click event. */
+    () => openImage(card, skill),
+  );
+  update.addEventListener(
+    "click",
+    /* Handle the click event. */
+    () => openVersionForm(card, skill),
+  );
   return card;
 }
 
+// Edit listing descriptions and image positioning.
 function openEdit(card, skill) {
   const old = card.querySelector(".edit-panel");
   if (old) old.remove();
@@ -144,36 +176,41 @@ function openEdit(card, skill) {
   submit.textContent = "Save";
   panel.append(short.label, long.label, zoom.label, submit);
   card.append(panel);
-  submit.addEventListener("click", async () => {
-    if (
-      short.input.value.length < 10 ||
-      short.input.value.length > 150 ||
-      long.input.value.length < 30 ||
-      long.input.value.length > 1500
-    ) {
-      showError(panel, "BAD_SHORT");
-      return;
-    }
-    submit.disabled = true;
-    try {
-      await call("edit_skill", {
-        p_skill: skill.id,
-        p_short: short.input.value,
-        p_long: long.input.value,
-        p_tags: null,
-        p_zoom: Number(zoom.input.value),
-        p_x: skill.image?.x || 0,
-        p_y: skill.image?.y || 0,
-      });
-      toast("Listing updated.");
-      location.reload();
-    } catch (error) {
-      showError(panel, error.code, error.arg);
-      submit.disabled = false;
-    }
-  });
+  submit.addEventListener(
+    "click",
+    /* Handle the click event. */
+    async () => {
+      if (
+        short.input.value.length < 10 ||
+        short.input.value.length > 150 ||
+        long.input.value.length < 30 ||
+        long.input.value.length > 1500
+      ) {
+        showError(panel, "BAD_SHORT");
+        return;
+      }
+      submit.disabled = true;
+      try {
+        await call("edit_skill", {
+          p_skill: skill.id,
+          p_short: short.input.value,
+          p_long: long.input.value,
+          p_tags: null,
+          p_zoom: Number(zoom.input.value),
+          p_x: skill.image?.x || 0,
+          p_y: skill.image?.y || 0,
+        });
+        toast("Listing updated.");
+        location.reload();
+      } catch (error) {
+        showError(panel, error.code, error.arg);
+        submit.disabled = false;
+      }
+    },
+  );
 }
 
+// Delete a listing after confirmation; backend rules control restoration.
 async function deleteSkill(host, card, skill) {
   if (
     !confirmDialog(`Delete "${skill.name}"? You can undo this within 12 hours.`)
@@ -189,6 +226,7 @@ async function deleteSkill(host, card, skill) {
   }
 }
 
+// Share a new-version update with the listing's followers.
 function openVersionForm(card, skill) {
   const old = card.querySelector(".version-panel");
   if (old) old.remove();
@@ -206,28 +244,33 @@ function openVersionForm(card, skill) {
   label.append(note);
   form.append(label, error, submit);
   card.append(form);
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (Array.from(note.value).length > 140) {
-      showError(error, "BAD_LENGTH", "140");
-      return;
-    }
-    submit.disabled = true;
-    try {
-      await call("announce_update", {
-        p_skill: skill.id,
-        p_note: note.value.trim() || null,
-      });
-      toast("Version update shared with your followers.");
-      form.remove();
-    } catch (e) {
-      showError(error, e.code, e.arg);
-    } finally {
-      submit.disabled = false;
-    }
-  });
+  form.addEventListener(
+    "submit",
+    /* Handle the submit event. */
+    async (event) => {
+      event.preventDefault();
+      if (Array.from(note.value).length > 140) {
+        showError(error, "BAD_LENGTH", "140");
+        return;
+      }
+      submit.disabled = true;
+      try {
+        await call("announce_update", {
+          p_skill: skill.id,
+          p_note: note.value.trim() || null,
+        });
+        toast("Version update shared with your followers.");
+        form.remove();
+      } catch (e) {
+        showError(error, e.code, e.arg);
+      } finally {
+        submit.disabled = false;
+      }
+    },
+  );
 }
 
+// Validate and upload a replacement listing image.
 function openImage(card, skill) {
   const old = card.querySelector(".image-panel");
   if (old) old.remove();
@@ -245,45 +288,49 @@ function openImage(card, skill) {
   upload.textContent = "Upload";
   panel.append(help, input, upload);
   card.append(panel);
-  upload.addEventListener("click", async () => {
-    const file = input.files?.[0];
-    if (!file) {
-      showError(panel, "BAD_IMAGE");
-      return;
-    }
-    let rules;
-    try {
-      rules = (await call("me_state"))?.image_rules;
-    } catch (error) {
-      showError(panel, error.code, error.arg);
-      return;
-    }
-    const maxBytes = rules?.skill_max_bytes || 3072;
-    if (file.size > maxBytes) {
-      showError(panel, "FILE_TOO_BIG", String(maxBytes));
-      return;
-    }
-    if (file.type === "image/png" && !rules?.skill_png) {
-      showError(panel, "PNG_NOT_ALLOWED");
-      return;
-    }
-    if (file.type !== "image/png" && file.type !== "image/svg+xml") {
-      showError(panel, "BAD_IMAGE");
-      return;
-    }
-    const form = new FormData();
-    form.append("action", "upload");
-    form.append("target", "skill");
-    form.append("skill_id", skill.id);
-    form.append("file", file, file.name);
-    upload.disabled = true;
-    try {
-      await edgeForm("save-image", form);
-      toast("Listing image updated.");
-      location.reload();
-    } catch (error) {
-      showError(panel, error.code, error.arg);
-      upload.disabled = false;
-    }
-  });
+  upload.addEventListener(
+    "click",
+    /* Handle the click event. */
+    async () => {
+      const file = input.files?.[0];
+      if (!file) {
+        showError(panel, "BAD_IMAGE");
+        return;
+      }
+      let rules;
+      try {
+        rules = (await call("me_state"))?.image_rules;
+      } catch (error) {
+        showError(panel, error.code, error.arg);
+        return;
+      }
+      const maxBytes = rules?.skill_max_bytes || 3072;
+      if (file.size > maxBytes) {
+        showError(panel, "FILE_TOO_BIG", String(maxBytes));
+        return;
+      }
+      if (file.type === "image/png" && !rules?.skill_png) {
+        showError(panel, "PNG_NOT_ALLOWED");
+        return;
+      }
+      if (file.type !== "image/png" && file.type !== "image/svg+xml") {
+        showError(panel, "BAD_IMAGE");
+        return;
+      }
+      const form = new FormData();
+      form.append("action", "upload");
+      form.append("target", "skill");
+      form.append("skill_id", skill.id);
+      form.append("file", file, file.name);
+      upload.disabled = true;
+      try {
+        await edgeForm("save-image", form);
+        toast("Listing image updated.");
+        location.reload();
+      } catch (error) {
+        showError(panel, error.code, error.arg);
+        upload.disabled = false;
+      }
+    },
+  );
 }

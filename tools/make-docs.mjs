@@ -1,3 +1,8 @@
+/*
+ * Purpose: Generate sanitized public documentation HTML, Markdown twins, and metadata.
+ * Called by: the corresponding npm generator or repository check.
+ * Security: Sanitize authored Markdown before HTML output; do not include private data in sources.
+ */
 import { readdir, readFile, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { JSDOM } from "jsdom";
@@ -7,6 +12,7 @@ import { footerMarkup } from "../public/js/footer.js";
 await import("../public/vendor/marked.min.js");
 await import("../public/vendor/dompurify.min.js");
 
+// Source and output locations for the public documentation generator.
 const expectedSlugs = [
   "getting-started",
   "limits-and-rules",
@@ -26,9 +32,13 @@ const check = process.argv.includes("--check");
 const dom = new JSDOM("");
 const purifier = globalThis.DOMPurify(dom.window);
 
+// Markdown parsing, sanitization, and static HTML rendering.
+// Escape html.
 function escapeHtml(value) {
   return String(value ?? "").replace(
     /[&<>"']/g,
+
+    /* Format each matched value. */
     (character) =>
       ({
         "&": "&amp;",
@@ -40,6 +50,7 @@ function escapeHtml(value) {
   );
 }
 
+// Parse document.
 function parseDocument(slug, source) {
   const match = source.match(
     /^# (.+)\r?\n\r?\n([\s\S]+?)\r?\n\r?\nLast updated: (\d{4}-\d{2}-\d{2})\r?\n\r?\n([\s\S]+)$/,
@@ -67,6 +78,7 @@ function parseDocument(slug, source) {
   };
 }
 
+// Serialize sanitized DOM nodes and escape text and attributes.
 function serialize(node) {
   if (node.nodeType === 3) return escapeHtml(node.nodeValue);
   if (node.nodeType !== 1)
@@ -74,6 +86,8 @@ function serialize(node) {
   const tag = node.tagName.toLowerCase();
   const attributes = Array.from(
     node.attributes,
+
+    /* Import sanitized child nodes into the parser document. */
     (attribute) => ` ${attribute.name}="${escapeHtml(attribute.value)}"`,
   ).join("");
   const children = Array.from(node.childNodes, serialize).join("");
@@ -82,6 +96,7 @@ function serialize(node) {
     : `<${tag}${attributes}>${children}</${tag}>`;
 }
 
+// Create a URL-safe slug for heading.
 function slugifyHeading(value, used) {
   const base =
     value
@@ -95,6 +110,7 @@ function slugifyHeading(value, used) {
   return slug;
 }
 
+// Render authored Markdown through the HTML sanitizer.
 function sanitizeBody(markdown) {
   const rendered = globalThis.marked.parse(markdown, {
     gfm: true,
@@ -143,6 +159,7 @@ function sanitizeBody(markdown) {
     if (/^https:/i.test(href)) link.setAttribute("rel", "noopener noreferrer");
   }
   const helpHeading = Array.from(parsed.querySelectorAll("h2")).find(
+    /* Find the heading that matches the current condition. */
     (heading) => heading.textContent.trim() === "Need help?",
   );
   if (!helpHeading)
@@ -166,15 +183,18 @@ function sanitizeBody(markdown) {
   };
 }
 
+// Build a table of contents from sanitized document headings.
 function tableOfContents(headings) {
   return `<nav class="docs-toc" aria-label="Table of contents"><h2>On this page</h2><ol>${headings
     .map(
+      /* Build a display value for each item. */
       ({ id, text, level }) =>
         `<li class="docs-toc-level-${level}"><a href="#${escapeHtml(id)}">${escapeHtml(text)}</a></li>`,
     )
     .join("")}</ol></nav>`;
 }
 
+// Render the shared public documentation page shell.
 function articleShell(document, body, headings, navigation) {
   const title = escapeHtml(document.title);
   const summary = escapeHtml(document.summary);
@@ -226,9 +246,12 @@ function articleShell(document, body, headings, navigation) {
 </html>`;
 }
 
+// Build generated Markdown and HTML outputs for each documentation page.
+// Build markdown.
 function buildMarkdown(document, headings, previous, next) {
   const contents = headings
     .map(
+      /* Build a display value for each item. */
       ({ id, text, level }) => `${"  ".repeat(level - 2)}- [${text}](#${id})`,
     )
     .join("\n");
@@ -241,9 +264,11 @@ function buildMarkdown(document, headings, previous, next) {
   return `# ${document.title}\n\n${document.summary}\n\nLast updated: ${document.updated}\n\n## Contents\n\n${contents}\n\n${document.body.trim()}\n\n## Page navigation\n\n${links || "This is the only page in the documentation section."}\n`;
 }
 
+// Build index.
 function buildIndex(documents) {
   const cards = documents
     .map(
+      /* Build a display value for each document. */
       (document) =>
         `<article class="card"><p class="eyebrow">Documentation</p><h2><a href="/docs/${document.slug}/">${escapeHtml(document.title)}</a></h2><p>${escapeHtml(document.summary)}</p><p><a href="/docs/${document.slug}.md">Read Markdown</a></p><time datetime="${document.updated}">Updated ${document.updated}</time></article>`,
     )
@@ -279,11 +304,18 @@ function buildIndex(documents) {
 </html>`;
 }
 
+// Build outputs.
 async function buildOutputs() {
   const sourceFiles = (await readdir(sourceDirectory))
-    .filter((file) => file.endsWith(".md"))
+    .filter(
+      /* Keep file values that match the current view. */
+      (file) => file.endsWith(".md"),
+    )
     .sort();
-  const expectedFiles = [...expectedSlugs].sort().map((slug) => `${slug}.md`);
+  const expectedFiles = [...expectedSlugs].sort().map(
+    /* Build a display value for each slug. */
+    (slug) => `${slug}.md`,
+  );
   if (JSON.stringify(sourceFiles) !== JSON.stringify(expectedFiles)) {
     throw new Error(
       "The documentation source directory must contain exactly the ten published Markdown guides.",
@@ -295,12 +327,15 @@ async function buildOutputs() {
     documents.push(parseDocument(slug, source));
   }
   const outputs = [];
-  const metadata = documents.map(({ slug, title, summary, updated }) => ({
-    slug,
-    title,
-    summary,
-    updated,
-  }));
+  const metadata = documents.map(
+    /* Build a display value for each item. */
+    ({ slug, title, summary, updated }) => ({
+      slug,
+      title,
+      summary,
+      updated,
+    }),
+  );
   outputs.push([
     `${outputDirectory}/docs.json`,
     `${JSON.stringify(metadata, null, 2)}\n`,

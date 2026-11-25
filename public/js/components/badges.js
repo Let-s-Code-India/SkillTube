@@ -1,17 +1,29 @@
+/*
+ * Purpose: Provide reusable badges UI for the browser app.
+ * Called by: App route modules and shared page components.
+ * Security: Treat API data as untrusted. Use safe DOM APIs and validate user-controlled URLs.
+ */
 import { fetchAssetJson } from "../api.js";
 
 let imagePathsPromise;
 
+// Return badge image paths.
 export async function getBadgeImagePaths() {
   if (!imagePathsPromise) {
     imagePathsPromise = fetchAssetJson("/image/catalog.json").then(
+      /* Process the result after the asynchronous operation completes. */
       (catalog) => {
         const entries = [
           ...(catalog.badges || []),
           ...(catalog.weekly || []),
           ...(catalog.ticks || []),
         ];
-        return new Map(entries.map(({ key, file }) => [key, `/image/${file}`]));
+        return new Map(
+          entries.map(
+            /* Build a display value for each item. */
+            ({ key, file }) => [key, `/image/${file}`],
+          ),
+        );
       },
     );
   }
@@ -23,6 +35,7 @@ export async function getBadgeImagePaths() {
   }
 }
 
+// Return the validated public image URL for a badge.
 export function badgeImage(paths, key, alt = "") {
   const src = paths.get(key);
   if (!src) return null;
@@ -34,6 +47,7 @@ export function badgeImage(paths, key, alt = "") {
   return image;
 }
 
+// Return the validated public image URL for a verified-owner tick.
 export function tickImage(paths, key) {
   if (!key) return null;
   const image = badgeImage(
@@ -45,6 +59,7 @@ export function tickImage(paths, key) {
   return image;
 }
 
+// Render a badge card and its public details.
 export function badgeCard(
   paths,
   badge,

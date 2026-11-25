@@ -1,16 +1,24 @@
+/*
+ * Purpose: Provide reusable announcements UI for the browser app.
+ * Called by: App route modules and shared page components.
+ * Security: Treat API data as untrusted. Use safe DOM APIs and validate user-controlled URLs.
+ */
 import { call } from "../api.js";
 import { renderMarkdown } from "./markdown.js";
 
 const lastSeenKey = "skilltube.announcements.last_seen_id";
 
+// Select the most recent active announcement.
 function latestAnnouncement(announcements) {
   return (
     [...announcements].sort(
+      /* Compare the two values to order the collection. */
       (a, b) => Date.parse(b.starts_at || 0) - Date.parse(a.starts_at || 0),
     )[0] || null
   );
 }
 
+// Update announcement dot.
 export function updateAnnouncementDot(announcements) {
   const dot = document.querySelector("#announcement-dot");
   if (!dot) return;
@@ -25,6 +33,7 @@ export function updateAnnouncementDot(announcements) {
   );
 }
 
+// Render announcement banner.
 export async function renderAnnouncementBanner(app) {
   const announcements = await call("active_announcements");
   updateAnnouncementDot(announcements || []);
@@ -55,6 +64,7 @@ export async function renderAnnouncementBanner(app) {
   else app.prepend(section);
 }
 
+// Mark announcements seen.
 export function markAnnouncementsSeen(announcements) {
   const latest = latestAnnouncement(announcements || []);
   if (latest) localStorage.setItem(lastSeenKey, String(latest.id));

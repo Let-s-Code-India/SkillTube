@@ -1,3 +1,8 @@
+/*
+ * Purpose: Style shared buttons, cards, forms, dialogs, and app components.
+ * Loaded by: the public static pages and app shell.
+ * Security: Presentation only; do not use CSS as an access-control boundary.
+ */
 .btn {
   display: inline-flex;
   align-items: center;

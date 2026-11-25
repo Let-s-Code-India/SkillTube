@@ -1,3 +1,6 @@
+# Purpose: Validate public fixtures against their JSON schemas.
+# Trigger: Triggered on pushes and pull requests.
+# Security: Use local fixtures and read-only repository access; do not access private backend data.
 name: schema-check
 on: [push, pull_request]
 

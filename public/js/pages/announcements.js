@@ -1,8 +1,14 @@
+/*
+ * Purpose: Render the announcements page and coordinate its UI actions.
+ * Called by: public/js/app.js for the announcements route.
+ * Security: Treat route parameters and backend values as untrusted; backend authorization remains authoritative.
+ */
 import { call } from "../api.js";
 import { showError } from "../errors.js";
 import { renderMarkdown } from "../components/markdown.js";
 import { markAnnouncementsSeen } from "../components/announcements.js";
 
+// Render the announcements route into its container.
 export async function render(app) {
   const status = document.createElement("div");
   status.className = "skeleton";
@@ -25,6 +31,7 @@ export async function render(app) {
     return;
   }
   const sorted = [...announcements].sort(
+    /* Compare the two values to order the collection. */
     (a, b) =>
       Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) ||
       Date.parse(b.starts_at || 0) - Date.parse(a.starts_at || 0),

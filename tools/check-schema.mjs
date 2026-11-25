@@ -1,3 +1,8 @@
+/*
+ * Purpose: Validate public content fixtures against their JSON schemas.
+ * Called by: npm scripts and GitHub checks for check schema.
+ * Security: Reads local repository content and does not transmit source files or use production credentials.
+ */
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import { readFile, readdir } from "node:fs/promises";
@@ -14,8 +19,9 @@ let count = 0;
 for (const file of await readdir("schema/fixtures")) {
   if (!file.endsWith(".json")) continue;
   const kind = file.replace(".json", "");
-  const schema = schemas.find((item) =>
-    item.title.toLowerCase().includes(kind),
+  const schema = schemas.find(
+    /* Find the item that matches the current condition. */
+    (item) => item.title.toLowerCase().includes(kind),
   );
   if (!schema) throw new Error(`No schema found for fixture ${file}.`);
   const fixture = JSON.parse(await readFile(`schema/fixtures/${file}`, "utf8"));

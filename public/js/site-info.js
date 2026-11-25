@@ -1,3 +1,8 @@
+/*
+ * Purpose: Share public operator, contact, and grievance information.
+ * Called by: the app entry point and related browser modules.
+ * Security: Treat route parameters and backend data as untrusted; server-side authorization remains authoritative.
+ */
 export const siteInfo = Object.freeze({
   operator: "Let's Code India",
   service: "SkillTube",

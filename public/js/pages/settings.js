@@ -1,3 +1,8 @@
+/*
+ * Purpose: Render the settings page and coordinate its UI actions.
+ * Called by: public/js/app.js for the settings route.
+ * Security: Treat route parameters and backend values as untrusted; backend authorization remains authoritative.
+ */
 import { call, edge, edgeForm } from "../api.js";
 import { signOut } from "../auth.js";
 import { showError } from "../errors.js";
@@ -21,6 +26,7 @@ const topics = [
   "education",
 ];
 
+// Create an element with optional text and a CSS class.
 function node(tag, text, className = "") {
   const element = document.createElement(tag);
   if (text !== undefined) element.textContent = text;
@@ -28,12 +34,14 @@ function node(tag, text, className = "") {
   return element;
 }
 
+// Create a titled settings section for a group of related controls.
 function section(title) {
   const element = node("section", undefined, "card settings-section");
   element.append(node("h2", title));
   return element;
 }
 
+// Render the settings route into its container.
 export async function render(app) {
   let profile;
   try {
@@ -43,6 +51,7 @@ export async function render(app) {
     return;
   }
 
+  // Profile details and self-selected tags.
   const profileSection = section("Profile");
   const profileForm = document.createElement("form");
   const bioLabel = node("label", "Bio (up to 150 characters)");
@@ -62,39 +71,47 @@ export async function render(app) {
   saveProfile.type = "submit";
   const profileError = node("div");
   profileForm.append(bioLabel, tagsLabel, profileError, saveProfile);
-  profileForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (Array.from(bio.value).length > 150) {
-      showError(profileError, "BAD_LENGTH", "150");
-      return;
-    }
-    const selfTags = tags.value
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter(Boolean);
-    if (selfTags.length > 5) {
-      showError(profileError, "TOO_MANY_TAGS");
-      return;
-    }
-    saveProfile.disabled = true;
-    try {
-      await call("update_my_profile", {
-        p_name: profile.name || null,
-        p_bio: bio.value,
-        p_self_tags: selfTags,
-        p_zoom: null,
-        p_x: null,
-        p_y: null,
-      });
-      toast("Profile saved.");
-    } catch (error) {
-      showError(profileError, error.code, error.arg);
-    } finally {
-      saveProfile.disabled = false;
-    }
-  });
+  profileForm.addEventListener(
+    "submit",
+    /* Handle the submit event. */
+    async (event) => {
+      event.preventDefault();
+      if (Array.from(bio.value).length > 150) {
+        showError(profileError, "BAD_LENGTH", "150");
+        return;
+      }
+      const selfTags = tags.value
+        .split(",")
+        .map(
+          /* Build a display value for each tag. */
+          (tag) => tag.trim(),
+        )
+        .filter(Boolean);
+      if (selfTags.length > 5) {
+        showError(profileError, "TOO_MANY_TAGS");
+        return;
+      }
+      saveProfile.disabled = true;
+      try {
+        await call("update_my_profile", {
+          p_name: profile.name || null,
+          p_bio: bio.value,
+          p_self_tags: selfTags,
+          p_zoom: null,
+          p_x: null,
+          p_y: null,
+        });
+        toast("Profile saved.");
+      } catch (error) {
+        showError(profileError, error.code, error.arg);
+      } finally {
+        saveProfile.disabled = false;
+      }
+    },
+  );
   profileSection.append(profileForm);
 
+  // Private recommendation interests.
   const interestsSection = section("Interests");
   interestsSection.append(
     node(
@@ -111,15 +128,19 @@ export async function render(app) {
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.value = topic;
-    checkbox.addEventListener("change", () => {
-      if (checkbox.checked && selected.size >= 3) {
-        checkbox.checked = false;
-        showError(interestError, "PICK_THREE_TOPICS");
-        return;
-      }
-      if (checkbox.checked) selected.add(topic);
-      else selected.delete(topic);
-    });
+    checkbox.addEventListener(
+      "change",
+      /* Handle the change event. */
+      () => {
+        if (checkbox.checked && selected.size >= 3) {
+          checkbox.checked = false;
+          showError(interestError, "PICK_THREE_TOPICS");
+          return;
+        }
+        if (checkbox.checked) selected.add(topic);
+        else selected.delete(topic);
+      },
+    );
     label.append(checkbox, document.createTextNode(topic));
     interests.append(label);
   }
@@ -128,36 +149,47 @@ export async function render(app) {
   saveInterests.type = "button";
   const clearInterests = node("button", "Clear interests", "btn secondary");
   clearInterests.type = "button";
-  saveInterests.addEventListener("click", async () => {
-    if (selected.size !== 3) {
-      showError(interestError, "PICK_THREE_TOPICS");
-      return;
-    }
-    saveInterests.disabled = true;
-    try {
-      await call("set_interests", { p_topics: [...selected] });
-      toast("Interests saved.");
-    } catch (error) {
-      showError(interestError, error.code, error.arg);
-    } finally {
-      saveInterests.disabled = false;
-    }
-  });
-  clearInterests.addEventListener("click", async () => {
-    clearInterests.disabled = true;
-    try {
-      await call("clear_interests");
-      selected.clear();
-      interests.querySelectorAll("input[type=checkbox]").forEach((checkbox) => {
-        checkbox.checked = false;
-      });
-      toast("Interests cleared.");
-    } catch (error) {
-      showError(interestError, error.code, error.arg);
-    } finally {
-      clearInterests.disabled = false;
-    }
-  });
+  saveInterests.addEventListener(
+    "click",
+    /* Handle the click event. */
+    async () => {
+      if (selected.size !== 3) {
+        showError(interestError, "PICK_THREE_TOPICS");
+        return;
+      }
+      saveInterests.disabled = true;
+      try {
+        await call("set_interests", { p_topics: [...selected] });
+        toast("Interests saved.");
+      } catch (error) {
+        showError(interestError, error.code, error.arg);
+      } finally {
+        saveInterests.disabled = false;
+      }
+    },
+  );
+  clearInterests.addEventListener(
+    "click",
+    /* Handle the click event. */
+    async () => {
+      clearInterests.disabled = true;
+      try {
+        await call("clear_interests");
+        selected.clear();
+        interests.querySelectorAll("input[type=checkbox]").forEach(
+          /* Process each checkbox in the collection. */
+          (checkbox) => {
+            checkbox.checked = false;
+          },
+        );
+        toast("Interests cleared.");
+      } catch (error) {
+        showError(interestError, error.code, error.arg);
+      } finally {
+        clearInterests.disabled = false;
+      }
+    },
+  );
   interestsSection.append(
     interests,
     interestError,
@@ -165,6 +197,7 @@ export async function render(app) {
     clearInterests,
   );
 
+  // Public visibility and profile image controls.
   const privacySection = section("Privacy");
   const hideLabel = node("label", "Hide my channel from public pages");
   const hide = document.createElement("input");
@@ -172,22 +205,26 @@ export async function render(app) {
   hide.checked = profile?.hide_public === true;
   hideLabel.prepend(hide);
   const hideError = node("div");
-  hide.addEventListener("change", async () => {
-    hide.disabled = true;
-    try {
-      await call("set_hide_public", { p_hide: hide.checked });
-      toast(
-        hide.checked
-          ? "Your channel is hidden from public pages."
-          : "Your channel is visible on public pages.",
-      );
-    } catch (error) {
-      hide.checked = !hide.checked;
-      showError(hideError, error.code, error.arg);
-    } finally {
-      hide.disabled = false;
-    }
-  });
+  hide.addEventListener(
+    "change",
+    /* Handle the change event. */
+    async () => {
+      hide.disabled = true;
+      try {
+        await call("set_hide_public", { p_hide: hide.checked });
+        toast(
+          hide.checked
+            ? "Your channel is hidden from public pages."
+            : "Your channel is visible on public pages.",
+        );
+      } catch (error) {
+        hide.checked = !hide.checked;
+        showError(hideError, error.code, error.arg);
+      } finally {
+        hide.disabled = false;
+      }
+    },
+  );
   privacySection.append(hideLabel, hideError);
 
   const imageSection = section("Profile image");
@@ -202,42 +239,47 @@ export async function render(app) {
   const upload = node("button", "Upload image", "btn");
   upload.type = "button";
   const imageError = node("div");
-  upload.addEventListener("click", async () => {
-    const file = imageInput.files?.[0];
-    if (!file) {
-      showError(imageError, "BAD_IMAGE");
-      return;
-    }
-    const rules = profile?.image_rules || {};
-    const maxBytes = rules.logo_max_bytes || 3072;
-    if (file.size > maxBytes) {
-      showError(imageError, "FILE_TOO_BIG", String(maxBytes));
-      return;
-    }
-    if (file.type === "image/png" && !rules.logo_png) {
-      showError(imageError, "PNG_NOT_ALLOWED");
-      return;
-    }
-    if (file.type !== "image/png" && file.type !== "image/svg+xml") {
-      showError(imageError, "BAD_IMAGE");
-      return;
-    }
-    const form = new FormData();
-    form.append("action", "upload");
-    form.append("target", "profile");
-    form.append("file", file, file.name);
-    upload.disabled = true;
-    try {
-      await edgeForm("save-image", form);
-      toast("Profile image updated.");
-    } catch (error) {
-      showError(imageError, error.code, error.arg);
-    } finally {
-      upload.disabled = false;
-    }
-  });
+  upload.addEventListener(
+    "click",
+    /* Handle the click event. */
+    async () => {
+      const file = imageInput.files?.[0];
+      if (!file) {
+        showError(imageError, "BAD_IMAGE");
+        return;
+      }
+      const rules = profile?.image_rules || {};
+      const maxBytes = rules.logo_max_bytes || 3072;
+      if (file.size > maxBytes) {
+        showError(imageError, "FILE_TOO_BIG", String(maxBytes));
+        return;
+      }
+      if (file.type === "image/png" && !rules.logo_png) {
+        showError(imageError, "PNG_NOT_ALLOWED");
+        return;
+      }
+      if (file.type !== "image/png" && file.type !== "image/svg+xml") {
+        showError(imageError, "BAD_IMAGE");
+        return;
+      }
+      const form = new FormData();
+      form.append("action", "upload");
+      form.append("target", "profile");
+      form.append("file", file, file.name);
+      upload.disabled = true;
+      try {
+        await edgeForm("save-image", form);
+        toast("Profile image updated.");
+      } catch (error) {
+        showError(imageError, error.code, error.arg);
+      } finally {
+        upload.disabled = false;
+      }
+    },
+  );
   imageSection.append(help, imageInput, upload, imageError);
 
+  // Country setting and invitation shortcut.
   const countrySection = section("Private country");
   const countryLabel = node("label", "Country code");
   const country = document.createElement("input");
@@ -259,18 +301,22 @@ export async function render(app) {
       ),
     );
   }
-  countryButton.addEventListener("click", async () => {
-    countryButton.disabled = true;
-    try {
-      await edge("set-country", {
-        country: country.value.trim().toUpperCase(),
-      });
-      toast("Country saved.");
-    } catch (error) {
-      showError(countryError, error.code, error.arg);
-      countryButton.disabled = false;
-    }
-  });
+  countryButton.addEventListener(
+    "click",
+    /* Handle the click event. */
+    async () => {
+      countryButton.disabled = true;
+      try {
+        await edge("set-country", {
+          country: country.value.trim().toUpperCase(),
+        });
+        toast("Country saved.");
+      } catch (error) {
+        showError(countryError, error.code, error.arg);
+        countryButton.disabled = false;
+      }
+    },
+  );
   countrySection.append(countryLabel, countryButton, countryError);
 
   const shortcutSection = section("Invite");
@@ -278,19 +324,24 @@ export async function render(app) {
   invite.href = "#/invite";
   shortcutSection.append(invite);
 
+  // Session and account lifecycle actions.
   const signOutSection = section("Sign out");
   const signOutButton = node("button", "Sign out", "btn secondary");
   signOutButton.type = "button";
   const signOutError = node("div");
-  signOutButton.addEventListener("click", async () => {
-    signOutButton.disabled = true;
-    try {
-      await signOut();
-    } catch (error) {
-      showError(signOutError, error.code, error.arg);
-      signOutButton.disabled = false;
-    }
-  });
+  signOutButton.addEventListener(
+    "click",
+    /* Handle the click event. */
+    async () => {
+      signOutButton.disabled = true;
+      try {
+        await signOut();
+      } catch (error) {
+        showError(signOutError, error.code, error.arg);
+        signOutButton.disabled = false;
+      }
+    },
+  );
   signOutSection.append(signOutButton, signOutError);
 
   const deleteSection = section("Delete my account");
@@ -308,23 +359,27 @@ export async function render(app) {
   const deleteError = node("div");
   const deleteButton = node("button", "Delete account", "btn danger");
   deleteButton.type = "button";
-  deleteButton.addEventListener("click", async () => {
-    if (confirmation.value !== "DELETE") {
-      deleteError.textContent =
-        "Type DELETE exactly to confirm account deletion.";
-      deleteError.className = "error";
-      return;
-    }
-    deleteButton.disabled = true;
-    try {
-      await call("delete_my_account");
-      await signOut();
-      location.replace("/");
-    } catch (error) {
-      showError(deleteError, error.code, error.arg);
-      deleteButton.disabled = false;
-    }
-  });
+  deleteButton.addEventListener(
+    "click",
+    /* Handle the click event. */
+    async () => {
+      if (confirmation.value !== "DELETE") {
+        deleteError.textContent =
+          "Type DELETE exactly to confirm account deletion.";
+        deleteError.className = "error";
+        return;
+      }
+      deleteButton.disabled = true;
+      try {
+        await call("delete_my_account");
+        await signOut();
+        location.replace("/");
+      } catch (error) {
+        showError(deleteError, error.code, error.arg);
+        deleteButton.disabled = false;
+      }
+    },
+  );
   deleteSection.append(confirmationLabel, deleteButton, deleteError);
 
   app.append(

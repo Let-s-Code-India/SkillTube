@@ -1,3 +1,8 @@
+/*
+ * Purpose: Render the badges page and coordinate its UI actions.
+ * Called by: public/js/app.js for the badges route.
+ * Security: Treat route parameters and backend values as untrusted; backend authorization remains authoritative.
+ */
 import {
   getAlertCounts,
   getBadgeCatalog,
@@ -13,12 +18,14 @@ import {
 } from "../components/badges.js";
 import { refreshNotificationDots } from "../components/notification-dots.js";
 
+// Render the page heading and brief badge introduction.
 function heading(text) {
   const title = document.createElement("h2");
   title.textContent = text;
   return title;
 }
 
+// Render the badges route into its container.
 export async function render(app) {
   const error = document.createElement("div");
   app.append(error);
@@ -47,7 +54,10 @@ export async function render(app) {
   const earned = document.createElement("section");
   earned.className = "badge-section";
   earned.append(heading("Your badges"));
-  const activeAchievements = achievements.filter((badge) => !badge.revoked);
+  const activeAchievements = achievements.filter(
+    /* Keep badge values that match the current view. */
+    (badge) => !badge.revoked,
+  );
   if (account?.tick) {
     const tick = document.createElement("p");
     tick.className = "account-tick";

@@ -1,3 +1,8 @@
+/*
+ * Purpose: Render the developer profile page and coordinate its UI actions.
+ * Called by: public/js/app.js for the developer profile route.
+ * Security: Treat route parameters and backend values as untrusted; backend authorization remains authoritative.
+ */
 import { call, followByUsername, markDeveloperSeenByUsername } from "../api.js";
 import { showError } from "../errors.js";
 import { toast } from "../components/toasts.js";
@@ -8,6 +13,7 @@ import {
   tickImage,
 } from "../components/badges.js";
 import { listingCard } from "../components/cards.js";
+// Render the dev route into its container.
 export async function render(app, { id }) {
   const loading = document.createElement("div");
   loading.className = "skeleton";
@@ -56,8 +62,9 @@ export async function render(app, { id }) {
     app.append(badges);
   }
   if (developer.is_following)
-    markDeveloperSeenByUsername(developer.username).catch((error) =>
-      showError(app, error.code, error.arg),
+    markDeveloperSeenByUsername(developer.username).catch(
+      /* Handle a rejected asynchronous operation. */
+      (error) => showError(app, error.code, error.arg),
     );
   const count = document.createElement("p");
   count.textContent = `${developer.followers} followers`;
@@ -67,23 +74,27 @@ export async function render(app, { id }) {
   follow.textContent = developer.is_following ? "Following" : "Follow";
   follow.disabled = developer.is_me === true;
   const message = document.createElement("div");
-  follow.addEventListener("click", async () => {
-    follow.disabled = true;
-    try {
-      const result = await followByUsername(developer.username);
-      follow.textContent = result.following ? "Following" : "Follow";
-      count.textContent = `${result.followers} followers`;
-      toast(
-        result.following
-          ? "You are following this developer."
-          : "You unfollowed this developer.",
-      );
-    } catch (error) {
-      showError(message, error.code, error.arg);
-    } finally {
-      follow.disabled = developer.is_me === true;
-    }
-  });
+  follow.addEventListener(
+    "click",
+    /* Handle the click event. */
+    async () => {
+      follow.disabled = true;
+      try {
+        const result = await followByUsername(developer.username);
+        follow.textContent = result.following ? "Following" : "Follow";
+        count.textContent = `${result.followers} followers`;
+        toast(
+          result.following
+            ? "You are following this developer."
+            : "You unfollowed this developer.",
+        );
+      } catch (error) {
+        showError(message, error.code, error.arg);
+      } finally {
+        follow.disabled = developer.is_me === true;
+      }
+    },
+  );
   app.append(count, follow, message);
   const listingsHeading = document.createElement("h3");
   listingsHeading.textContent = "Listings";

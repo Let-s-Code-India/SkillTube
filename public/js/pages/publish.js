@@ -1,8 +1,14 @@
+/*
+ * Purpose: Render the publish wizard page and coordinate its UI actions.
+ * Called by: public/js/app.js for the publish wizard route.
+ * Security: Treat route parameters and backend values as untrusted; backend authorization remains authoritative.
+ */
 import { call, edge } from "../api.js";
 import { getGithubToken } from "../auth.js";
 import { showError } from "../errors.js";
 import { toast } from "../components/toasts.js";
 
+// Listing categories and description templates shown in the first wizard step.
 const listingTypes = {
   "AI skill": "AI skill",
   "MCP server": "MCP server",
@@ -48,6 +54,7 @@ const topics = [
   "education",
 ];
 
+// Create a labeled text input or textarea.
 function field(labelText, type = "text") {
   const wrap = document.createElement("label");
   wrap.className = "field";
@@ -61,6 +68,7 @@ function field(labelText, type = "text") {
   return { wrap, input };
 }
 
+// Render the publish route into its container.
 export async function render(app) {
   const profile = await call("me_state");
   if (profile?.country_days_left === undefined || profile.country == null) {
@@ -68,6 +76,7 @@ export async function render(app) {
     p.textContent = "Choose your country in Settings before publishing.";
     app.append(p);
   }
+  // Keep the wizard choices in memory until the final submission.
   let step = 0;
   let type = "AI skill";
   let topicChoices = [];
@@ -85,6 +94,7 @@ export async function render(app) {
   const host = document.createElement("section");
   app.append(host);
 
+  // Render the active step and its matching form.
   function setStep(next) {
     step = next;
     host.replaceChildren();
@@ -98,37 +108,50 @@ export async function render(app) {
     if (step === 4) renderLevelTags(3);
   }
 
+  // Let the author choose a listing category before entering its details.
   function renderType() {
     const choices = document.createElement("fieldset");
     const legend = document.createElement("legend");
     legend.textContent = "What are you listing?";
     choices.append(legend);
-    Object.keys(listingTypes).forEach((label) => {
-      const wrap = document.createElement("label");
-      wrap.className = "chip";
-      const radio = document.createElement("input");
-      radio.type = "radio";
-      radio.name = "listing-type";
-      radio.value = label;
-      radio.checked = label === type;
-      radio.addEventListener("change", () => {
-        type = label;
-        if (!values.long) values.long = templates[label];
-      });
-      wrap.append(radio, document.createTextNode(label));
-      choices.append(wrap);
-    });
+    Object.keys(listingTypes).forEach(
+      /* Process each label in the collection. */
+      (label) => {
+        const wrap = document.createElement("label");
+        wrap.className = "chip";
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = "listing-type";
+        radio.value = label;
+        radio.checked = label === type;
+        radio.addEventListener(
+          "change",
+          /* Handle the change event. */
+          () => {
+            type = label;
+            if (!values.long) values.long = templates[label];
+          },
+        );
+        wrap.append(radio, document.createTextNode(label));
+        choices.append(wrap);
+      },
+    );
     const next = document.createElement("button");
     next.type = "button";
     next.className = "btn";
     next.textContent = "Continue";
-    next.addEventListener("click", () => {
-      if (!values.long) values.long = templates[type];
-      setStep(1);
-    });
+    next.addEventListener(
+      "click",
+      /* Handle the click event. */
+      () => {
+        if (!values.long) values.long = templates[type];
+        setStep(1);
+      },
+    );
     host.append(choices, next);
   }
 
+  // Collect the public repository and listing descriptions.
   function renderRepoAndText() {
     const repo = field("Public GitHub repository URL");
     repo.input.value = values.repo;
@@ -146,49 +169,63 @@ export async function render(app) {
     next.type = "button";
     next.className = "btn";
     next.textContent = "Continue";
-    next.addEventListener("click", () => {
-      values.repo = repo.input.value.trim();
-      values.name = name.input.value.trim();
-      values.short = short.input.value.trim();
-      values.long = long.input.value.trim();
-      setStep(2);
-    });
+    next.addEventListener(
+      "click",
+      /* Handle the click event. */
+      () => {
+        values.repo = repo.input.value.trim();
+        values.name = name.input.value.trim();
+        values.short = short.input.value.trim();
+        values.long = long.input.value.trim();
+        setStep(2);
+      },
+    );
     host.append(next);
   }
 
+  // Topic and level-specific tag selection.
+  // Render bounded checkbox controls and retain selected values.
   function checkboxGroup(labelText, choices, count, selected, limitText) {
     const fieldset = document.createElement("fieldset");
     const legend = document.createElement("legend");
     legend.textContent = `${labelText} (${limitText})`;
     fieldset.append(legend);
-    choices.forEach((choice) => {
-      const label = document.createElement("label");
-      label.className = "chip";
-      const input = document.createElement("input");
-      input.type = "checkbox";
-      input.value = typeof choice === "string" ? choice : choice.slug;
-      if (selected.includes(input.value)) input.checked = true;
-      input.addEventListener("change", () => {
-        const value = input.value;
-        if (input.checked && selected.length >= count) {
-          input.checked = false;
-          toast(`Choose exactly ${count} tags.`);
-          return;
-        }
-        if (input.checked) selected.push(value);
-        else selected.splice(selected.indexOf(value), 1);
-      });
-      label.append(
-        input,
-        document.createTextNode(
-          typeof choice === "string" ? choice : choice.label || choice.slug,
-        ),
-      );
-      fieldset.append(label);
-    });
+    choices.forEach(
+      /* Process each choice in the collection. */
+      (choice) => {
+        const label = document.createElement("label");
+        label.className = "chip";
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.value = typeof choice === "string" ? choice : choice.slug;
+        if (selected.includes(input.value)) input.checked = true;
+        input.addEventListener(
+          "change",
+          /* Handle the change event. */
+          () => {
+            const value = input.value;
+            if (input.checked && selected.length >= count) {
+              input.checked = false;
+              toast(`Choose exactly ${count} tags.`);
+              return;
+            }
+            if (input.checked) selected.push(value);
+            else selected.splice(selected.indexOf(value), 1);
+          },
+        );
+        label.append(
+          input,
+          document.createTextNode(
+            typeof choice === "string" ? choice : choice.label || choice.slug,
+          ),
+        );
+        fieldset.append(label);
+      },
+    );
     return fieldset;
   }
 
+  // Load and render the main-topic choices.
   async function renderTopics() {
     topicChoices = await call("tag_picker", { p_level: 1, p_q: "" });
     const group = checkboxGroup(
@@ -202,16 +239,21 @@ export async function render(app) {
     next.type = "button";
     next.className = "btn";
     next.textContent = "Continue";
-    next.addEventListener("click", () => {
-      if (values.t1.length !== 3) {
-        showError(host, "PICK_THREE_TOPICS");
-        return;
-      }
-      setStep(3);
-    });
+    next.addEventListener(
+      "click",
+      /* Handle the click event. */
+      () => {
+        if (values.t1.length !== 3) {
+          showError(host, "PICK_THREE_TOPICS");
+          return;
+        }
+        setStep(3);
+      },
+    );
     host.append(group, next);
   }
 
+  // Load and render the level-specific tag choices.
   async function renderLevelTags(level) {
     const choices = await call("tag_picker", { p_level: level, p_q: "" });
     const count = level === 2 ? 9 : 27;
@@ -227,18 +269,23 @@ export async function render(app) {
     submit.type = "button";
     submit.className = "btn";
     submit.textContent = level === 2 ? "Continue" : "Publish";
-    submit.addEventListener("click", () => {
-      if (level === 2) {
-        if (selected.length !== 9) {
-          showError(host, "TAGS_COUNT", "level 2 needs exactly 9 tags");
-          return;
-        }
-        setStep(4);
-      } else publish();
-    });
+    submit.addEventListener(
+      "click",
+      /* Handle the click event. */
+      () => {
+        if (level === 2) {
+          if (selected.length !== 9) {
+            showError(host, "TAGS_COUNT", "level 2 needs exactly 9 tags");
+            return;
+          }
+          setStep(4);
+        } else publish();
+      },
+    );
     host.append(group, submit);
   }
 
+  // Validate the completed listing and submit it to the backend.
   async function publish() {
     if (values.t3.length !== 27) {
       showError(host, "TAGS_COUNT", "level 3 needs exactly 27 tags");

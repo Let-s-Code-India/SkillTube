@@ -1,3 +1,8 @@
+/*
+ * Purpose: Display live public API availability on the status page.
+ * Called by: the app entry point and related browser modules.
+ * Security: Treat route parameters and backend data as untrusted; server-side authorization remains authoritative.
+ */
 import { call } from "./api.js";
 import { showError } from "./errors.js";
 

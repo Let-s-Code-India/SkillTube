@@ -1,7 +1,13 @@
+/*
+ * Purpose: Apply or verify the shared footer across static HTML pages.
+ * Called by: the corresponding npm generator or repository check.
+ * Security: Writes only generated footer markup under public/ and never embeds runtime secrets.
+ */
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { footerMarkup } from "../public/js/footer.js";
 
+// Find public HTML pages that need the shared footer.
 async function htmlFiles(dir) {
   const out = [];
   for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -16,6 +22,7 @@ async function htmlFiles(dir) {
   }
   return out;
 }
+// Add or verify shared footer markup in each public page.
 async function stamp() {
   const check = process.argv.includes("--check");
   let failed = false;

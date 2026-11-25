@@ -1,3 +1,8 @@
+/*
+ * Purpose: Provide reusable report dialog UI for the browser app.
+ * Called by: App route modules and shared page components.
+ * Security: Treat API data as untrusted. Use safe DOM APIs and validate user-controlled URLs.
+ */
 import { call } from "../api.js";
 import { showError } from "../errors.js";
 import { toast } from "./toasts.js";
@@ -12,16 +17,22 @@ const reasons = [
   ["other", "Other"],
 ];
 
+// Create a report button bound to the current content item.
 export function reportButton(target) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "btn secondary";
   button.textContent =
     target.kind === "skill" ? "Report listing" : "Report channel";
-  button.addEventListener("click", () => openReportDialog(target));
+  button.addEventListener(
+    "click",
+    /* Handle the click event. */
+    () => openReportDialog(target),
+  );
   return button;
 }
 
+// Open report dialog.
 function openReportDialog(target) {
   const dialog = document.createElement("dialog");
   dialog.className = "report-dialog";
@@ -64,32 +75,45 @@ function openReportDialog(target) {
   form.append(heading, privacy, reasonLabel, noteLabel, error, actions);
   dialog.append(form);
   document.body.append(dialog);
-  cancel.addEventListener("click", () => dialog.close());
-  dialog.addEventListener("close", () => dialog.remove(), { once: true });
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    submit.disabled = true;
-    try {
-      if (target.kind === "skill")
-        await call("file_report", {
-          p_skill: target.id,
-          p_channel: null,
-          p_reason: select.value,
-          p_note: note.value.trim() || null,
-        });
-      else
-        await call("file_report_channel_by_username", {
-          p_username: target.username,
-          p_reason: select.value,
-          p_note: note.value.trim() || null,
-        });
-      dialog.close();
-      toast("Report sent. The developer's identity remains private.");
-    } catch (e) {
-      showError(error, e.code, e.arg);
-    } finally {
-      submit.disabled = false;
-    }
-  });
+  cancel.addEventListener(
+    "click",
+    /* Handle the click event. */
+    () => dialog.close(),
+  );
+  dialog.addEventListener(
+    "close",
+    /* Handle the close event. */
+    () => dialog.remove(),
+    { once: true },
+  );
+  form.addEventListener(
+    "submit",
+    /* Handle the submit event. */
+    async (event) => {
+      event.preventDefault();
+      submit.disabled = true;
+      try {
+        if (target.kind === "skill")
+          await call("file_report", {
+            p_skill: target.id,
+            p_channel: null,
+            p_reason: select.value,
+            p_note: note.value.trim() || null,
+          });
+        else
+          await call("file_report_channel_by_username", {
+            p_username: target.username,
+            p_reason: select.value,
+            p_note: note.value.trim() || null,
+          });
+        dialog.close();
+        toast("Report sent. The developer's identity remains private.");
+      } catch (e) {
+        showError(error, e.code, e.arg);
+      } finally {
+        submit.disabled = false;
+      }
+    },
+  );
   dialog.showModal();
 }

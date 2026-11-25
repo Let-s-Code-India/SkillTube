@@ -1,3 +1,8 @@
+/*
+ * Purpose: Check public HTML metadata, local links, image assets, and social cards.
+ * Called by: npm scripts and GitHub checks for check links.
+ * Security: Reads local repository content and does not transmit source files or use production credentials.
+ */
 import { readdir, readFile, access } from "node:fs/promises";
 import path from "node:path";
 
@@ -21,6 +26,7 @@ const workerRoutePatterns = [
   /^\/topic\/[A-Za-z0-9-]+\/?$/,
 ];
 
+// Collect generated public HTML files for link validation.
 async function htmlFiles(directory) {
   const files = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -31,6 +37,7 @@ async function htmlFiles(directory) {
   return files;
 }
 
+// Check whether a local HTML or asset target exists.
 async function targetExists(pathname) {
   let decoded;
   try {
@@ -40,7 +47,10 @@ async function targetExists(pathname) {
   }
   if (
     externalRoutes.has(decoded) ||
-    workerRoutePatterns.some((pattern) => pattern.test(decoded))
+    workerRoutePatterns.some(
+      /* Check whether any pattern matches the current condition. */
+      (pattern) => pattern.test(decoded),
+    )
   )
     return true;
   const relative = decoded.replace(/^\/+/, "");

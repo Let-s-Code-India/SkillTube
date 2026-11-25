@@ -1,3 +1,8 @@
+/*
+ * Purpose: Map backend error codes to friendly messages and display them safely.
+ * Called by: the app entry point and related browser modules.
+ * Security: Treat server error text as untrusted and render it as text.
+ */
 const table = {
   LOGIN_REQUIRED: "Please sign in with GitHub first.",
   ACCOUNT_NOT_READY:
@@ -90,6 +95,7 @@ const table = {
   NOT_YOURS: "This action belongs to another account.",
   SERVER_ERROR: "Something went wrong. Please try again.",
 };
+// Look up a friendly message for a backend error code.
 export function errorMessage(code, arg) {
   const key = String(code || "SERVER_ERROR").split(":")[0];
   let message = table[key] || table.SERVER_ERROR;
@@ -105,6 +111,7 @@ export function errorMessage(code, arg) {
     message = `This comment must be no more than ${arg} characters.`;
   return message;
 }
+// Show error.
 export function showError(target, code, arg) {
   const el =
     typeof target === "string" ? document.querySelector(target) : target;

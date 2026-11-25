@@ -1,3 +1,8 @@
+/*
+ * Purpose: Render the dashboard page and coordinate its UI actions.
+ * Called by: public/js/app.js for the dashboard route.
+ * Security: Treat route parameters and backend values as untrusted; backend authorization remains authoritative.
+ */
 import { getDashboard, getMyAchievements, getMyState } from "../api.js";
 import { showError } from "../errors.js";
 import {
@@ -6,6 +11,7 @@ import {
   tickImage,
 } from "../components/badges.js";
 
+// Create a DOM element and assign supplied text without parsing HTML.
 function el(tag, text, className = "") {
   const node = document.createElement(tag);
   if (text !== undefined) node.textContent = text;
@@ -13,11 +19,13 @@ function el(tag, text, className = "") {
   return node;
 }
 
+// Format week.
 function formatWeek(week) {
   const match = String(week || "").match(/^(\d{4})(\d{2})$/);
   return match ? `Week ${Number(match[2])}, ${match[1]}` : "Weekly ranking";
 }
 
+// Fetch the dashboard ranking data and display any RPC error.
 function rankingState(container, data) {
   const section = el("section", undefined, "card");
   section.append(el("h2", "Your dashboard"));
@@ -67,6 +75,7 @@ function rankingState(container, data) {
   container.append(section);
 }
 
+// Render a ranked list of public developer or listing results.
 function rankingList(container, data, images) {
   const section = el("section", undefined, "card");
   section.append(el("h2", "Weekly top 10"));
@@ -108,6 +117,7 @@ function rankingList(container, data, images) {
   container.append(section);
 }
 
+// Render the dashboard route into its container.
 export async function render(app) {
   const loading = el("div", undefined, "skeleton");
   loading.setAttribute("aria-label", "Loading dashboard");

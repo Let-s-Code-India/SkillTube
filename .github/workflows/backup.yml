@@ -1,3 +1,6 @@
+# Purpose: Optionally create an encrypted database backup in the configured private repository.
+# Trigger: Triggered manually after the owner configures private repository secrets and variables.
+# Security: Mask secret values and scope the write token to the private backup repository only.
 # OPTIONAL. Every Sunday: copy the data, lock it with a password, store it in a PRIVATE repository.
 # Turn it on later by adding (Settings -> Secrets and variables -> Actions):
 #   Secrets:   SUPABASE_DB_URL      (Supabase -> Connect -> "Session pooler" connection string, with your DB password)

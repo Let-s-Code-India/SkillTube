@@ -1,3 +1,8 @@
+/*
+ * Purpose: Exercise Worker sitemap, crawler, and public route output.
+ * Called by: npm scripts and GitHub checks for check worker.
+ * Security: Reads local repository content and does not transmit source files or use production credentials.
+ */
 import { readFile } from "node:fs/promises";
 import worker from "../worker/index.js";
 
@@ -8,9 +13,11 @@ const docs = JSON.parse(await readFile("public/docs/docs.json", "utf8"));
 const cached = new Map();
 globalThis.caches = {
   default: {
+    // Mock cache lookup for Worker route tests.
     async match(request) {
       return cached.get(request.url);
     },
+    // Mock cache writes for Worker route tests.
     async put(request, response) {
       cached.set(request.url, response);
     },
@@ -20,6 +27,7 @@ globalThis.caches = {
 const env = {
   SITE_URL: "https://skilltube.ayushgiri-ai-21.workers.dev",
   ASSETS: {
+    // Serve fixture content for static assets requested by the Worker.
     async fetch(request) {
       if (new URL(request.url).pathname === "/why-skilltube/posts.json")
         return Response.json(posts);
@@ -31,6 +39,7 @@ const env = {
 };
 const waitUntil = [];
 const context = {
+  // Keep background cache writes observable to the test harness.
   waitUntil(promise) {
     waitUntil.push(promise);
   },

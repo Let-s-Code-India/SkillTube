@@ -1,3 +1,8 @@
+/*
+ * Purpose: Exercise security policies, URL validation, Markdown sanitization, and Worker headers.
+ * Called by: npm scripts and GitHub checks for check security.
+ * Security: Reads local repository content and does not transmit source files or use production credentials.
+ */
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { JSDOM } from "jsdom";
@@ -92,9 +97,18 @@ dom.window.close();
 
 const originalFetch = globalThis.fetch;
 const originalCaches = Object.getOwnPropertyDescriptor(globalThis, "caches");
-globalThis.fetch = async () => new Response("null", { status: 200 });
+globalThis.fetch =
+  /* Mock a successful backend response during Worker security checks. */
+  async () => new Response("null", { status: 200 });
 globalThis.caches = {
-  default: { match: async () => null, put: async () => {} },
+  default: {
+    match:
+      /* Mock cache lookup for Worker security tests. */
+      async () => null,
+    put:
+      /* Mock cache writes for Worker security tests. */
+      async () => {},
+  },
 };
 try {
   const response = await worker.fetch(
@@ -106,7 +120,11 @@ try {
       SUPABASE_ANON_KEY: "test-key",
       SITE_URL: "https://skilltube.test",
     },
-    { waitUntil: () => {} },
+    {
+      waitUntil:
+        /* Keep the background cache write observable to the test harness. */
+        () => {},
+    },
   );
   assert.equal(response.status, 404);
   const workerCsp = response.headers.get("content-security-policy") || "";
@@ -139,8 +157,9 @@ try {
   assert.equal(redirect.status, 302);
   assert.equal(redirect.headers.get("x-frame-options"), "DENY");
 
-  globalThis.fetch = async () =>
-    new Response("upstream failure", { status: 500 });
+  globalThis.fetch =
+    /* Mock an upstream failure to verify the Worker error response. */
+    async () => new Response("upstream failure", { status: 500 });
   const failure = await worker.fetch(
     new Request(
       "https://skilltube.test/skill/00000000-0000-0000-0000-000000000000",
@@ -150,7 +169,11 @@ try {
       SUPABASE_ANON_KEY: "test-key",
       SITE_URL: "https://skilltube.test",
     },
-    { waitUntil: () => {} },
+    {
+      waitUntil:
+        /* Keep the background cache write observable to the test harness. */
+        () => {},
+    },
   );
   assert.equal(failure.status, 503);
   assert.equal(failure.headers.get("x-content-type-options"), "nosniff");

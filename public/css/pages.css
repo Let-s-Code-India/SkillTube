@@ -1,3 +1,8 @@
+/*
+ * Purpose: Style page-specific layouts for listings, guides, rankings, and articles.
+ * Loaded by: the public static pages and app shell.
+ * Security: Presentation only; do not use CSS as an access-control boundary.
+ */
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

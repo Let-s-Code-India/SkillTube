@@ -1,3 +1,8 @@
+/*
+ * Purpose: Render the updates page and coordinate its UI actions.
+ * Called by: public/js/app.js for the updates route.
+ * Security: Treat route parameters and backend values as untrusted; backend authorization remains authoritative.
+ */
 import {
   getUpdatesFeed,
   markAllUpdatesSeen,
@@ -9,6 +14,8 @@ import {
 import { showError } from "../errors.js";
 import { refreshNotificationDots } from "../components/notification-dots.js";
 import { listingCard } from "../components/cards.js";
+
+// Followed-developer feed and unread state.
 export async function render(app) {
   const controls = document.createElement("div");
   const mark = document.createElement("button");
@@ -79,25 +86,31 @@ export async function render(app) {
     card.append(detail, listing, when);
     list.append(card);
   }
-  mark.addEventListener("click", async () => {
-    mark.disabled = true;
-    try {
-      await markAllUpdatesSeen();
-      await refreshNotificationDots();
-      list
-        .querySelectorAll(".notification-dot.blue")
-        .forEach((dot) => dot.remove());
-    } catch (e) {
-      showError(error, e.code, e.arg);
-    } finally {
-      mark.disabled = false;
-    }
-  });
+  mark.addEventListener(
+    "click",
+    /* Handle the click event. */
+    async () => {
+      mark.disabled = true;
+      try {
+        await markAllUpdatesSeen();
+        await refreshNotificationDots();
+        list.querySelectorAll(".notification-dot.blue").forEach(
+          /* Process each dot in the collection. */
+          (dot) => dot.remove(),
+        );
+      } catch (e) {
+        showError(error, e.code, e.arg);
+      } finally {
+        mark.disabled = false;
+      }
+    },
+  );
   try {
     await markAllUpdatesSeen();
-    list
-      .querySelectorAll(".notification-dot.blue")
-      .forEach((dot) => dot.remove());
+    list.querySelectorAll(".notification-dot.blue").forEach(
+      /* Process each dot in the collection. */
+      (dot) => dot.remove(),
+    );
     await refreshNotificationDots();
   } catch (e) {
     showError(error, e.code, e.arg);
@@ -106,6 +119,7 @@ export async function render(app) {
   await renderAchievementNotices(app);
 }
 
+// Badge achievements and their unread alerts.
 async function renderAchievementNotices(app) {
   const section = document.createElement("section");
   section.className = "badge-section";
@@ -128,7 +142,10 @@ async function renderAchievementNotices(app) {
   }
 
   const unseen = Math.max(0, Number(alerts?.badges) || 0);
-  const active = (achievements || []).filter((badge) => !badge.revoked);
+  const active = (achievements || []).filter(
+    /* Keep badge values that match the current view. */
+    (badge) => !badge.revoked,
+  );
   if (!active.length) {
     const empty = document.createElement("p");
     empty.className = "mut";
@@ -173,6 +190,7 @@ async function renderAchievementNotices(app) {
   }
 }
 
+// Report notices and the developer response flow.
 async function renderReportNotices(app) {
   const section = document.createElement("section");
   section.className = "report-notices";
@@ -250,27 +268,31 @@ async function renderReportNotices(app) {
       const formError = document.createElement("div");
       form.append(choiceLabel, replyLabel, submit, formError);
       card.append(form);
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        if (Array.from(reply.value).length > 1500) {
-          showError(formError, "REPLY_TOO_LONG");
-          return;
-        }
-        submit.disabled = true;
-        try {
-          await call("dev_answer_report", {
-            p_report: notice.id,
-            p_choice: choice.value,
-            p_reply: reply.value.trim() || null,
-          });
-          section.remove();
-          await renderReportNotices(app);
-        } catch (e) {
-          showError(formError, e.code, e.arg);
-        } finally {
-          submit.disabled = false;
-        }
-      });
+      form.addEventListener(
+        "submit",
+        /* Handle the submit event. */
+        async (event) => {
+          event.preventDefault();
+          if (Array.from(reply.value).length > 1500) {
+            showError(formError, "REPLY_TOO_LONG");
+            return;
+          }
+          submit.disabled = true;
+          try {
+            await call("dev_answer_report", {
+              p_report: notice.id,
+              p_choice: choice.value,
+              p_reply: reply.value.trim() || null,
+            });
+            section.remove();
+            await renderReportNotices(app);
+          } catch (e) {
+            showError(formError, e.code, e.arg);
+          } finally {
+            submit.disabled = false;
+          }
+        },
+      );
       const messageForm = document.createElement("form");
       const messageLabel = document.createElement("label");
       messageLabel.textContent = "Add a message";
@@ -283,29 +305,33 @@ async function renderReportNotices(app) {
       const messageError = document.createElement("div");
       messageForm.append(messageLabel, messageButton, messageError);
       card.append(messageForm);
-      messageForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        if (
-          !messageInput.value.trim() ||
-          Array.from(messageInput.value).length > 1500
-        ) {
-          showError(messageError, "BAD_LENGTH");
-          return;
-        }
-        messageButton.disabled = true;
-        try {
-          await call("dev_report_message", {
-            p_report: notice.id,
-            p_body: messageInput.value.trim(),
-          });
-          section.remove();
-          await renderReportNotices(app);
-        } catch (e) {
-          showError(messageError, e.code, e.arg);
-        } finally {
-          messageButton.disabled = false;
-        }
-      });
+      messageForm.addEventListener(
+        "submit",
+        /* Handle the submit event. */
+        async (event) => {
+          event.preventDefault();
+          if (
+            !messageInput.value.trim() ||
+            Array.from(messageInput.value).length > 1500
+          ) {
+            showError(messageError, "BAD_LENGTH");
+            return;
+          }
+          messageButton.disabled = true;
+          try {
+            await call("dev_report_message", {
+              p_report: notice.id,
+              p_body: messageInput.value.trim(),
+            });
+            section.remove();
+            await renderReportNotices(app);
+          } catch (e) {
+            showError(messageError, e.code, e.arg);
+          } finally {
+            messageButton.disabled = false;
+          }
+        },
+      );
     }
     list.append(card);
   }

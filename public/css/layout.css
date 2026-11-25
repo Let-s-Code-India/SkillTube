@@ -1,3 +1,8 @@
+/*
+ * Purpose: Define page containers, navigation, hero, sections, and footer layout.
+ * Loaded by: the public static pages and app shell.
+ * Security: Presentation only; do not use CSS as an access-control boundary.
+ */
 .container {
   width: min(var(--content), calc(100% - 40px));
   margin-inline: auto;

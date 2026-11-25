@@ -1,7 +1,13 @@
+/*
+ * Purpose: Render the invite page and coordinate its UI actions.
+ * Called by: public/js/app.js for the invite route.
+ * Security: Treat route parameters and backend values as untrusted; backend authorization remains authoritative.
+ */
 import { call } from "../api.js";
 import { showError } from "../errors.js";
 import { toast } from "../components/toasts.js";
 
+// Render the invite route into its container.
 export async function render(app) {
   let state;
   try {
@@ -48,29 +54,39 @@ export async function render(app) {
   form.append(label, redeem, skip, error);
   section.append(form);
   app.append(section);
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    redeem.disabled = true;
-    try {
-      await call("redeem_invite", { p_code: input.value.trim().toUpperCase() });
-      toast("Invite code accepted.");
-      location.hash = "#/home";
-    } catch (e) {
-      showError(error, e.code, e.arg);
-    } finally {
-      redeem.disabled = false;
-    }
-  });
-  skip.addEventListener("click", async () => {
-    skip.disabled = true;
-    try {
-      await call("skip_invite_prompt");
-      toast("Invite prompt skipped.");
-      location.hash = "#/home";
-    } catch (e) {
-      showError(error, e.code, e.arg);
-    } finally {
-      skip.disabled = false;
-    }
-  });
+  form.addEventListener(
+    "submit",
+    /* Handle the submit event. */
+    async (event) => {
+      event.preventDefault();
+      redeem.disabled = true;
+      try {
+        await call("redeem_invite", {
+          p_code: input.value.trim().toUpperCase(),
+        });
+        toast("Invite code accepted.");
+        location.hash = "#/home";
+      } catch (e) {
+        showError(error, e.code, e.arg);
+      } finally {
+        redeem.disabled = false;
+      }
+    },
+  );
+  skip.addEventListener(
+    "click",
+    /* Handle the click event. */
+    async () => {
+      skip.disabled = true;
+      try {
+        await call("skip_invite_prompt");
+        toast("Invite prompt skipped.");
+        location.hash = "#/home";
+      } catch (e) {
+        showError(error, e.code, e.arg);
+      } finally {
+        skip.disabled = false;
+      }
+    },
+  );
 }

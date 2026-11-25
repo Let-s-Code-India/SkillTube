@@ -1,12 +1,21 @@
+/*
+ * Purpose: Provide reusable cards UI for the browser app.
+ * Called by: App route modules and shared page components.
+ * Security: Treat API data as untrusted. Validate external links before rendering.
+ */
 import { config } from "../config.js";
 import { safeUrl } from "../safe-url.js";
 
+// Resolve the image source for source.
 function imageSource(image) {
   const path = image?.path;
   if (
     typeof path !== "string" ||
     !path ||
-    path.split("/").some((part) => part === "." || part === "..")
+    path.split("/").some(
+      /* Check whether any part matches the current condition. */
+      (part) => part === "." || part === "..",
+    )
   )
     return null;
   const encoded = path.split("/").map(encodeURIComponent).join("/");
@@ -19,6 +28,7 @@ function imageSource(image) {
   );
 }
 
+// Resolve the image source for frame.
 export function imageFrame(image, alt, className = "listing-image-frame") {
   const frame = document.createElement("div");
   frame.className = className;
@@ -58,6 +68,7 @@ export function imageFrame(image, alt, className = "listing-image-frame") {
   return frame;
 }
 
+// Convert a tag into a URL-safe slug.
 function tagSlug(value) {
   return String(value || "")
     .trim()
@@ -66,6 +77,7 @@ function tagSlug(value) {
     .replace(/^-|-$/g, "");
 }
 
+// Render a public listing card using text-safe DOM nodes.
 export function listingCard(skill) {
   const article = document.createElement("article");
   article.className = "card listing-card";
@@ -109,7 +121,10 @@ export function listingCard(skill) {
   }
   content.append(byline);
 
-  const tags = ["t1", "t2", "t3"].flatMap((level) => skill.tags?.[level] || []);
+  const tags = ["t1", "t2", "t3"].flatMap(
+    /* Handle the callback for flatMap. */
+    (level) => skill.tags?.[level] || [],
+  );
   if (tags.length) {
     const chips = document.createElement("div");
     chips.className = "chips listing-tags";
@@ -133,6 +148,7 @@ export function listingCard(skill) {
   return article;
 }
 
+// Render a preview card for an external resource link.
 export function resourceCard(name, description, meta) {
   const article = document.createElement("article");
   article.className = "card";

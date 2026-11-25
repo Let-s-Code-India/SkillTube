@@ -1,21 +1,29 @@
+/*
+ * Purpose: Render the admin tools page and coordinate its UI actions.
+ * Called by: public/js/app.js for the admin tools route.
+ * Security: Treat route parameters and backend values as untrusted; backend authorization remains authoritative.
+ */
 import { call } from "../api.js";
 import { showError } from "../errors.js";
 import { toast } from "../components/toasts.js";
 import { renderMarkdown } from "../components/markdown.js";
 import { confirmDialog } from "../components/dialogs.js";
 
+// Create a DOM element and assign supplied text without parsing HTML.
 const el = (tag, text, className = "") => {
   const node = document.createElement(tag);
   if (text !== undefined) node.textContent = text;
   if (className) node.className = className;
   return node;
 };
+// Create a labeled section for an admin panel.
 const section = (title) => {
   const node = el("section", undefined, "admin-section");
   node.append(el("h2", title));
   return node;
 };
 
+// Render the admin route into its container.
 export async function render(app) {
   let state;
   try {
@@ -36,6 +44,7 @@ export async function render(app) {
     return;
   }
   const isOwner = (admins || []).some(
+    /* Check whether any admin matches the current condition. */
     (admin) => admin.user_id === state.id && admin.role === "owner",
   );
 
@@ -43,6 +52,7 @@ export async function render(app) {
   const content = el("div");
   app.append(nav, content);
   const canWrite = state.admin_can_write === true;
+  // Admin panels are loaded only after server-confirmed admin access.
   const panels = [
     ["Overview", renderOverview],
     ["Reports", renderReports],
@@ -57,23 +67,28 @@ export async function render(app) {
   for (const [label, renderPanel] of panels) {
     const button = el("button", label, "btn secondary");
     button.type = "button";
-    button.addEventListener("click", async () => {
-      content.replaceChildren();
-      const panel = section(label);
-      content.append(panel);
-      if (!canWrite)
-        panel.append(el("p", "Read-only administrator access.", "mut"));
-      const error = el("div");
-      panel.append(error);
-      try {
-        await renderPanel(panel, error, canWrite, isOwner);
-      } catch (e) {
-        showError(error, e.code, e.arg);
-      }
-    });
+    button.addEventListener(
+      "click",
+      /* Handle the click event. */
+      async () => {
+        content.replaceChildren();
+        const panel = section(label);
+        content.append(panel);
+        if (!canWrite)
+          panel.append(el("p", "Read-only administrator access.", "mut"));
+        const error = el("div");
+        panel.append(error);
+        try {
+          await renderPanel(panel, error, canWrite, isOwner);
+        } catch (e) {
+          showError(error, e.code, e.arg);
+        }
+      },
+    );
     nav.append(button);
   }
 
+  // Render announcements.
   async function renderAnnouncements(panel, error, canWrite) {
     const form = document.createElement("form");
     const titleLabel = el("label", "Title (up to 120 characters)");
@@ -101,14 +116,18 @@ export async function render(app) {
     preview.append(el("h3", "Preview"));
     const previewBody = el("div");
     preview.append(previewBody);
-    body.addEventListener("input", () => {
-      previewBody.replaceChildren();
-      try {
-        renderMarkdown(previewBody, body.value);
-      } catch {
-        showError(previewBody, "SERVER_ERROR");
-      }
-    });
+    body.addEventListener(
+      "input",
+      /* Handle the input event. */
+      () => {
+        previewBody.replaceChildren();
+        try {
+          renderMarkdown(previewBody, body.value);
+        } catch {
+          showError(previewBody, "SERVER_ERROR");
+        }
+      },
+    );
     const submit = el("button", "Publish announcement", "btn");
     submit.type = "submit";
     submit.disabled = !canWrite;
@@ -121,50 +140,56 @@ export async function render(app) {
       submit,
     );
     panel.append(form, preview);
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      if (title.value.trim().length < 1) {
-        showError(error, "TITLE_REQUIRED");
-        return;
-      }
-      if (
-        title.value.length > 120 ||
-        new TextEncoder().encode(body.value).length > 102400
-      ) {
-        showError(error, "ANNOUNCEMENT_TOO_BIG");
-        return;
-      }
-      const asIso = (value) => (value ? new Date(value).toISOString() : null);
-      const startTime = starts.value ? Date.parse(starts.value) : Date.now();
-      const endTime = ends.value ? Date.parse(ends.value) : null;
-      if (
-        !Number.isFinite(startTime) ||
-        (endTime !== null &&
-          (!Number.isFinite(endTime) || endTime <= startTime))
-      ) {
-        showError(error, "BAD_TIMES");
-        return;
-      }
-      submit.disabled = true;
-      try {
-        await call("admin_announce", {
-          p_title: title.value.trim(),
-          p_body: body.value,
-          p_pinned: pinned.checked,
-          p_starts: asIso(starts.value),
-          p_ends: asIso(ends.value),
-        });
-        toast("Announcement published.");
-        await load();
-      } catch (e) {
-        showError(error, e.code, e.arg);
-      } finally {
-        submit.disabled = !canWrite;
-      }
-    });
+    form.addEventListener(
+      "submit",
+      /* Handle the submit event. */
+      async (event) => {
+        event.preventDefault();
+        if (title.value.trim().length < 1) {
+          showError(error, "TITLE_REQUIRED");
+          return;
+        }
+        if (
+          title.value.length > 120 ||
+          new TextEncoder().encode(body.value).length > 102400
+        ) {
+          showError(error, "ANNOUNCEMENT_TOO_BIG");
+          return;
+        }
+        // Convert an optional local date input to an ISO timestamp.
+        const asIso = (value) => (value ? new Date(value).toISOString() : null);
+        const startTime = starts.value ? Date.parse(starts.value) : Date.now();
+        const endTime = ends.value ? Date.parse(ends.value) : null;
+        if (
+          !Number.isFinite(startTime) ||
+          (endTime !== null &&
+            (!Number.isFinite(endTime) || endTime <= startTime))
+        ) {
+          showError(error, "BAD_TIMES");
+          return;
+        }
+        submit.disabled = true;
+        try {
+          await call("admin_announce", {
+            p_title: title.value.trim(),
+            p_body: body.value,
+            p_pinned: pinned.checked,
+            p_starts: asIso(starts.value),
+            p_ends: asIso(ends.value),
+          });
+          toast("Announcement published.");
+          await load();
+        } catch (e) {
+          showError(error, e.code, e.arg);
+        } finally {
+          submit.disabled = !canWrite;
+        }
+      },
+    );
 
     const list = el("div", undefined, "admin-list");
     panel.append(el("h3", "Published and scheduled announcements"), list);
+    // Load and display scheduled and published announcements.
     async function load() {
       list.replaceChildren();
       let rows;
@@ -191,20 +216,26 @@ export async function render(app) {
         const remove = el("button", "Delete announcement", "btn danger");
         remove.type = "button";
         remove.disabled = !canWrite;
-        remove.addEventListener("click", async () => {
-          if (
-            !confirmDialog(`Delete the announcement "${announcement.title}"?`)
-          )
-            return;
-          remove.disabled = true;
-          try {
-            await call("admin_announcement_delete", { p_id: announcement.id });
-            await load();
-          } catch (e) {
-            showError(error, e.code, e.arg);
-            remove.disabled = !canWrite;
-          }
-        });
+        remove.addEventListener(
+          "click",
+          /* Handle the click event. */
+          async () => {
+            if (
+              !confirmDialog(`Delete the announcement "${announcement.title}"?`)
+            )
+              return;
+            remove.disabled = true;
+            try {
+              await call("admin_announcement_delete", {
+                p_id: announcement.id,
+              });
+              await load();
+            } catch (e) {
+              showError(error, e.code, e.arg);
+              remove.disabled = !canWrite;
+            }
+          },
+        );
         card.append(remove);
         list.append(card);
       }
@@ -212,6 +243,7 @@ export async function render(app) {
     await load();
   }
 
+  // Render badge revocation.
   async function renderBadgeRevocation(panel, error, canWrite) {
     const form = document.createElement("form");
     const searchLabel = el("label", "Find a developer by username or name");
@@ -233,53 +265,62 @@ export async function render(app) {
     const results = el("div", undefined, "admin-list");
     form.append(searchLabel, keyLabel, reasonLabel, submit);
     panel.append(form, results);
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      if (reason.value.trim().length < 3) {
-        showError(error, "REASON_REQUIRED");
-        return;
-      }
-      results.replaceChildren();
-      submit.disabled = true;
-      try {
-        const users = await call("admin_users_search", {
-          p_q: query.value.trim(),
-        });
-        if (!users.length) {
-          results.append(el("p", "No matching developers."));
+    form.addEventListener(
+      "submit",
+      /* Handle the submit event. */
+      async (event) => {
+        event.preventDefault();
+        if (reason.value.trim().length < 3) {
+          showError(error, "REASON_REQUIRED");
           return;
         }
-        for (const user of users) {
-          const row = el("article", undefined, "card");
-          row.append(el("h3", `@${user.username} — ${user.name}`));
-          const revoke = el("button", "Revoke badge", "btn danger");
-          revoke.type = "button";
-          revoke.disabled = !canWrite;
-          revoke.addEventListener("click", async () => {
-            revoke.disabled = true;
-            try {
-              await call("admin_revoke_badge", {
-                p_user: user.id,
-                p_key: key.value.trim(),
-                p_reason: reason.value.trim(),
-              });
-              toast("Badge revocation recorded.");
-            } catch (e) {
-              showError(row, e.code, e.arg);
-              revoke.disabled = !canWrite;
-            }
+        results.replaceChildren();
+        submit.disabled = true;
+        try {
+          const users = await call("admin_users_search", {
+            p_q: query.value.trim(),
           });
-          row.append(revoke);
-          results.append(row);
+          if (!users.length) {
+            results.append(el("p", "No matching developers."));
+            return;
+          }
+          for (const user of users) {
+            const row = el("article", undefined, "card");
+            row.append(el("h3", `@${user.username} — ${user.name}`));
+            const revoke = el("button", "Revoke badge", "btn danger");
+            revoke.type = "button";
+            revoke.disabled = !canWrite;
+            revoke.addEventListener(
+              "click",
+              /* Handle the click event. */
+              async () => {
+                revoke.disabled = true;
+                try {
+                  await call("admin_revoke_badge", {
+                    p_user: user.id,
+                    p_key: key.value.trim(),
+                    p_reason: reason.value.trim(),
+                  });
+                  toast("Badge revocation recorded.");
+                } catch (e) {
+                  showError(row, e.code, e.arg);
+                  revoke.disabled = !canWrite;
+                }
+              },
+            );
+            row.append(revoke);
+            results.append(row);
+          }
+        } catch (e) {
+          showError(error, e.code, e.arg);
+        } finally {
+          submit.disabled = !canWrite;
         }
-      } catch (e) {
-        showError(error, e.code, e.arg);
-      } finally {
-        submit.disabled = !canWrite;
-      }
-    });
+      },
+    );
   }
 
+  // Render audit log.
   async function renderAuditLog(panel, error) {
     let rows;
     try {
@@ -309,6 +350,7 @@ export async function render(app) {
     panel.append(list);
   }
 
+  // Render admin team.
   async function renderAdminTeam(panel, error, canWrite, isOwner) {
     if (!isOwner) {
       panel.append(
@@ -337,24 +379,29 @@ export async function render(app) {
     add.disabled = !isOwner || !canWrite;
     form.append(usernameLabel, roleLabel, add);
     panel.append(form);
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      add.disabled = true;
-      try {
-        await call("admin_add", {
-          p_username: username.value.trim(),
-          p_role: role.value,
-        });
-        toast("Administrator role updated.");
-        await load();
-      } catch (e) {
-        showError(error, e.code, e.arg);
-      } finally {
-        add.disabled = !isOwner || !canWrite;
-      }
-    });
+    form.addEventListener(
+      "submit",
+      /* Handle the submit event. */
+      async (event) => {
+        event.preventDefault();
+        add.disabled = true;
+        try {
+          await call("admin_add", {
+            p_username: username.value.trim(),
+            p_role: role.value,
+          });
+          toast("Administrator role updated.");
+          await load();
+        } catch (e) {
+          showError(error, e.code, e.arg);
+        } finally {
+          add.disabled = !isOwner || !canWrite;
+        }
+      },
+    );
     const list = el("div", undefined, "admin-list");
     panel.append(list);
+    // Load the current administrator list.
     async function load() {
       list.replaceChildren();
       let rows;
@@ -373,16 +420,20 @@ export async function render(app) {
           const remove = el("button", "Remove access", "btn danger");
           remove.type = "button";
           remove.disabled = !isOwner || !canWrite;
-          remove.addEventListener("click", async () => {
-            remove.disabled = true;
-            try {
-              await call("admin_remove", { p_user: admin.user_id });
-              await load();
-            } catch (e) {
-              showError(card, e.code, e.arg);
-              remove.disabled = !isOwner || !canWrite;
-            }
-          });
+          remove.addEventListener(
+            "click",
+            /* Handle the click event. */
+            async () => {
+              remove.disabled = true;
+              try {
+                await call("admin_remove", { p_user: admin.user_id });
+                await load();
+              } catch (e) {
+                showError(card, e.code, e.arg);
+                remove.disabled = !isOwner || !canWrite;
+              }
+            },
+          );
           card.append(remove);
         }
         list.append(card);
@@ -393,6 +444,7 @@ export async function render(app) {
   nav.querySelector("button")?.click();
 }
 
+// Render overview.
 async function renderOverview(panel, error) {
   const data = await call("admin_overview");
   if (data.error) {
@@ -431,6 +483,7 @@ async function renderOverview(panel, error) {
   }
 }
 
+// Render reports.
 async function renderReports(panel, error, canWrite) {
   const filterLabel = el("label", "Report queue");
   const filter = document.createElement("select");
@@ -444,6 +497,7 @@ async function renderReports(panel, error, canWrite) {
   const list = el("div", undefined, "admin-list");
   panel.append(list);
 
+  // Load reports that match the selected queue filter.
   async function load() {
     list.replaceChildren();
     let rows;
@@ -463,6 +517,7 @@ async function renderReports(panel, error, canWrite) {
   await load();
 }
 
+// Render a report with its available moderation actions.
 function reportCard(report, reload, canWrite) {
   const card = el("article", undefined, "card admin-report");
   const actionError = el("div");
@@ -519,26 +574,30 @@ function reportCard(report, reload, canWrite) {
         decision === "dismiss" ? "btn secondary" : "btn danger",
       );
       button.type = "button";
-      button.addEventListener("click", async () => {
-        if (Array.from(reason.value.trim()).length < 3) {
-          showError(actionError, "REASON_REQUIRED");
-          return;
-        }
-        button.disabled = true;
-        try {
-          await call("admin_decide_report", {
-            p_report: report.id,
-            p_decision: decision,
-            p_note: reason.value.trim(),
-          });
-          toast("Report decision saved.");
-          await reload();
-        } catch (e) {
-          showError(actionError, e.code, e.arg);
-        } finally {
-          button.disabled = false;
-        }
-      });
+      button.addEventListener(
+        "click",
+        /* Handle the click event. */
+        async () => {
+          if (Array.from(reason.value.trim()).length < 3) {
+            showError(actionError, "REASON_REQUIRED");
+            return;
+          }
+          button.disabled = true;
+          try {
+            await call("admin_decide_report", {
+              p_report: report.id,
+              p_decision: decision,
+              p_note: reason.value.trim(),
+            });
+            toast("Report decision saved.");
+            await reload();
+          } catch (e) {
+            showError(actionError, e.code, e.arg);
+          } finally {
+            button.disabled = false;
+          }
+        },
+      );
       actions.append(button);
     }
     card.append(actions);
@@ -547,6 +606,7 @@ function reportCard(report, reload, canWrite) {
   return card;
 }
 
+// Render users.
 async function renderUsers(panel, error, canWrite) {
   const form = document.createElement("form");
   const label = el("label", "Search users (username or display name)");
@@ -563,61 +623,70 @@ async function renderUsers(panel, error, canWrite) {
   reasonLabel.append(reason);
   const results = el("div", undefined, "admin-list");
   panel.append(form, reasonLabel, results);
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    results.replaceChildren();
-    submit.disabled = true;
-    try {
-      const users = await call("admin_users_search", {
-        p_q: input.value.trim(),
-      });
-      if (!users.length) {
-        results.append(el("p", "No matching users."));
-        return;
-      }
-      for (const user of users) {
-        const card = el("article", undefined, "card");
-        card.append(el("h3", `@${user.username} — ${user.name}`));
-        card.append(
-          el(
-            "p",
-            `Followers ${user.followers} · Listings ${user.skills} · Removals ${user.removed_count} · ${user.blocked ? "Blocked" : "Active"}`,
-          ),
-        );
-        const start = el("button", "Start moderation notice", "btn danger");
-        start.type = "button";
-        start.disabled = user.blocked || !canWrite;
-        const actionError = el("div");
-        start.addEventListener("click", async () => {
-          if (Array.from(reason.value.trim()).length < 3) {
-            showError(actionError, "REASON_REQUIRED");
-            return;
-          }
-          start.disabled = true;
-          try {
-            await call("admin_start_action", {
-              p_skill: null,
-              p_channel: user.id,
-              p_reason: reason.value.trim(),
-            });
-            toast("Moderation notice added to the report queue.");
-          } catch (e) {
-            showError(actionError, e.code, e.arg);
-          } finally {
-            start.disabled = user.blocked || !canWrite;
-          }
+  form.addEventListener(
+    "submit",
+    /* Handle the submit event. */
+    async (event) => {
+      event.preventDefault();
+      results.replaceChildren();
+      submit.disabled = true;
+      try {
+        const users = await call("admin_users_search", {
+          p_q: input.value.trim(),
         });
-        card.append(start, actionError);
-        results.append(card);
+        if (!users.length) {
+          results.append(el("p", "No matching users."));
+          return;
+        }
+        for (const user of users) {
+          const card = el("article", undefined, "card");
+          card.append(el("h3", `@${user.username} — ${user.name}`));
+          card.append(
+            el(
+              "p",
+              `Followers ${user.followers} · Listings ${user.skills} · Removals ${user.removed_count} · ${user.blocked ? "Blocked" : "Active"}`,
+            ),
+          );
+          const start = el("button", "Start moderation notice", "btn danger");
+          start.type = "button";
+          start.disabled = user.blocked || !canWrite;
+          const actionError = el("div");
+          start.addEventListener(
+            "click",
+            /* Handle the click event. */
+            async () => {
+              if (Array.from(reason.value.trim()).length < 3) {
+                showError(actionError, "REASON_REQUIRED");
+                return;
+              }
+              start.disabled = true;
+              try {
+                await call("admin_start_action", {
+                  p_skill: null,
+                  p_channel: user.id,
+                  p_reason: reason.value.trim(),
+                });
+                toast("Moderation notice added to the report queue.");
+              } catch (e) {
+                showError(actionError, e.code, e.arg);
+              } finally {
+                start.disabled = user.blocked || !canWrite;
+              }
+            },
+          );
+          card.append(start, actionError);
+          results.append(card);
+        }
+      } catch (e) {
+        showError(error, e.code, e.arg);
+      } finally {
+        submit.disabled = false;
       }
-    } catch (e) {
-      showError(error, e.code, e.arg);
-    } finally {
-      submit.disabled = false;
-    }
-  });
+    },
+  );
 }
 
+// Render settings.
 async function renderSettings(panel, error, canWrite) {
   const settings = await call("admin_settings_get");
   if (!settings.length) {
@@ -634,32 +703,37 @@ async function renderSettings(panel, error, canWrite) {
     save.type = "button";
     save.disabled = !canWrite;
     const rowError = el("div");
-    save.addEventListener("click", async () => {
-      let value;
-      try {
-        value = JSON.parse(input.value);
-      } catch {
-        showError(rowError, "BAD_SETTING_VALUE");
-        return;
-      }
-      save.disabled = true;
-      try {
-        await call("admin_settings_set", {
-          p_key: setting.key,
-          p_value: value,
-        });
-        toast("Setting saved.");
-      } catch (e) {
-        showError(rowError, e.code, e.arg);
-      } finally {
-        save.disabled = false;
-      }
-    });
+    save.addEventListener(
+      "click",
+      /* Handle the click event. */
+      async () => {
+        let value;
+        try {
+          value = JSON.parse(input.value);
+        } catch {
+          showError(rowError, "BAD_SETTING_VALUE");
+          return;
+        }
+        save.disabled = true;
+        try {
+          await call("admin_settings_set", {
+            p_key: setting.key,
+            p_value: value,
+          });
+          toast("Setting saved.");
+        } catch (e) {
+          showError(rowError, e.code, e.arg);
+        } finally {
+          save.disabled = false;
+        }
+      },
+    );
     row.append(input, save, rowError);
     panel.append(row);
   }
 }
 
+// Render blocked.
 async function renderBlocked(panel, error, canWrite) {
   const rows = await call("admin_blocked_list");
   if (!rows.length) {
@@ -678,18 +752,22 @@ async function renderBlocked(panel, error, canWrite) {
     button.type = "button";
     button.disabled = !canWrite;
     const rowError = el("div");
-    button.addEventListener("click", async () => {
-      button.disabled = true;
-      try {
-        await call("admin_unblock", { p_github_id: account.github_id });
-        toast("Account unblocked.");
-        row.remove();
-      } catch (e) {
-        showError(rowError, e.code, e.arg);
-      } finally {
-        button.disabled = !canWrite;
-      }
-    });
+    button.addEventListener(
+      "click",
+      /* Handle the click event. */
+      async () => {
+        button.disabled = true;
+        try {
+          await call("admin_unblock", { p_github_id: account.github_id });
+          toast("Account unblocked.");
+          row.remove();
+        } catch (e) {
+          showError(rowError, e.code, e.arg);
+        } finally {
+          button.disabled = !canWrite;
+        }
+      },
+    );
     row.append(button, rowError);
     panel.append(row);
   }

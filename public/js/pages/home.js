@@ -1,8 +1,14 @@
+/*
+ * Purpose: Render the home page and coordinate its UI actions.
+ * Called by: public/js/app.js for the home route.
+ * Security: Treat route parameters and backend values as untrusted; backend authorization remains authoritative.
+ */
 import { call, markDeveloperSeenByUsername } from "../api.js";
 import { showError } from "../errors.js";
 import { refreshNotificationDots } from "../components/notification-dots.js";
 import { listingCard } from "../components/cards.js";
 import { renderAnnouncementBanner } from "../components/announcements.js";
+// Render the home route into its container.
 export async function render(app) {
   try {
     await renderAnnouncementBanner(app);
@@ -38,19 +44,26 @@ export async function render(app) {
   if (Array.isArray(feed) && feed.length) {
     for (const skill of feed) {
       const card = listingCard(skill);
-      card.addEventListener("click", (event) => {
-        if (
-          event.target
-            .closest("a")
-            ?.getAttribute("href")
-            ?.startsWith("#/skill/") &&
-          skill.developer?.username
-        ) {
-          markDeveloperSeenByUsername(skill.developer.username)
-            .then(refreshNotificationDots)
-            .catch((error) => showError(card, error.code, error.arg));
-        }
-      });
+      card.addEventListener(
+        "click",
+        /* Handle the click event. */
+        (event) => {
+          if (
+            event.target
+              .closest("a")
+              ?.getAttribute("href")
+              ?.startsWith("#/skill/") &&
+            skill.developer?.username
+          ) {
+            markDeveloperSeenByUsername(skill.developer.username)
+              .then(refreshNotificationDots)
+              .catch(
+                /* Handle a rejected asynchronous operation. */
+                (error) => showError(card, error.code, error.arg),
+              );
+          }
+        },
+      );
       status.append(card);
     }
   } else {
@@ -63,6 +76,7 @@ export async function render(app) {
   refreshNotificationDots();
 }
 
+// Load dashboard.
 async function loadDashboard() {
   const dashboard = await call("dashboard", {});
   if (dashboard?.me) {

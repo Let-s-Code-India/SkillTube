@@ -1,3 +1,8 @@
+/*
+ * Purpose: Provide reusable country picker UI for the browser app.
+ * Called by: App route modules and shared page components.
+ * Security: Treat API data as untrusted. Use safe DOM APIs and validate user-controlled URLs.
+ */
 import { edge } from "../api.js";
 import { showError } from "../errors.js";
 
@@ -32,9 +37,16 @@ const displayNames = new Intl.DisplayNames(["en"], { type: "region" });
 const countries = countryCodes
   .trim()
   .split(/\s+/)
-  .map((code) => ({ code, name: displayNames.of(code) }))
-  .filter((country) => country.name);
+  .map(
+    /* Build a display value for each code. */
+    (code) => ({ code, name: displayNames.of(code) }),
+  )
+  .filter(
+    /* Keep country values that match the current view. */
+    (country) => country.name,
+  );
 
+// Render country picker.
 export function renderCountryPicker(app, onComplete) {
   app.replaceChildren();
   const section = document.createElement("section");
@@ -65,6 +77,7 @@ export function renderCountryPicker(app, onComplete) {
   submit.textContent = "Continue";
   submit.disabled = true;
 
+  // Populate country options and restore the current selection.
   function populate(query = "") {
     const term = query.trim().toLowerCase();
     const selected = select.value;
@@ -89,21 +102,33 @@ export function renderCountryPicker(app, onComplete) {
     submit.disabled = !select.value;
   }
   populate();
-  search.addEventListener("input", () => populate(search.value));
-  select.addEventListener("change", () => {
-    submit.disabled = !select.value;
-  });
-  submit.addEventListener("click", async () => {
-    if (!select.value) return;
-    submit.disabled = true;
-    try {
-      await edge("set-country", { country: select.value });
-      onComplete();
-    } catch (e) {
-      showError(error, e.code, e.arg);
-      submit.disabled = false;
-    }
-  });
+  search.addEventListener(
+    "input",
+    /* Handle the input event. */
+    () => populate(search.value),
+  );
+  select.addEventListener(
+    "change",
+    /* Handle the change event. */
+    () => {
+      submit.disabled = !select.value;
+    },
+  );
+  submit.addEventListener(
+    "click",
+    /* Handle the click event. */
+    async () => {
+      if (!select.value) return;
+      submit.disabled = true;
+      try {
+        await edge("set-country", { country: select.value });
+        onComplete();
+      } catch (e) {
+        showError(error, e.code, e.arg);
+        submit.disabled = false;
+      }
+    },
+  );
   section.append(heading, explanation, search, select, error, submit);
   app.append(section);
 }

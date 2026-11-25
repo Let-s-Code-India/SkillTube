@@ -1,6 +1,12 @@
+/*
+ * Purpose: Provide reusable comments UI for the browser app.
+ * Called by: App route modules and shared page components.
+ * Security: Treat API data as untrusted. Use safe DOM APIs and validate user-controlled URLs.
+ */
 import { call } from "../api.js";
 import { showError } from "../errors.js";
 
+// Render a comment and its available moderation actions.
 function commentNode(comment, skillId, mine, onChanged) {
   const article = document.createElement("article");
   article.className = `comment${comment.pinned ? " pinned" : ""}`;
@@ -25,8 +31,10 @@ function commentNode(comment, skillId, mine, onChanged) {
     reply.type = "button";
     reply.className = "btn secondary";
     reply.textContent = "Reply";
-    reply.addEventListener("click", () =>
-      showReplyForm(article, comment, skillId, onChanged),
+    reply.addEventListener(
+      "click",
+      /* Handle the click event. */
+      () => showReplyForm(article, comment, skillId, onChanged),
     );
     actions.append(reply);
   }
@@ -35,20 +43,24 @@ function commentNode(comment, skillId, mine, onChanged) {
     pin.type = "button";
     pin.className = "btn secondary";
     pin.textContent = comment.pinned ? "Unpin" : "Pin";
-    pin.addEventListener("click", async () => {
-      pin.disabled = true;
-      try {
-        await call("comment_action", {
-          p_comment: comment.id,
-          p_action: comment.pinned ? "unpin" : "pin",
-        });
-        onChanged();
-      } catch (e) {
-        showError(error, e.code, e.arg);
-      } finally {
-        pin.disabled = false;
-      }
-    });
+    pin.addEventListener(
+      "click",
+      /* Handle the click event. */
+      async () => {
+        pin.disabled = true;
+        try {
+          await call("comment_action", {
+            p_comment: comment.id,
+            p_action: comment.pinned ? "unpin" : "pin",
+          });
+          onChanged();
+        } catch (e) {
+          showError(error, e.code, e.arg);
+        } finally {
+          pin.disabled = false;
+        }
+      },
+    );
     actions.append(pin);
   }
   if (comment.mine) {
@@ -56,26 +68,31 @@ function commentNode(comment, skillId, mine, onChanged) {
     remove.type = "button";
     remove.className = "btn secondary";
     remove.textContent = "Delete";
-    remove.addEventListener("click", async () => {
-      remove.disabled = true;
-      try {
-        await call("comment_action", {
-          p_comment: comment.id,
-          p_action: "delete_mine",
-        });
-        onChanged();
-      } catch (e) {
-        showError(error, e.code, e.arg);
-      } finally {
-        remove.disabled = false;
-      }
-    });
+    remove.addEventListener(
+      "click",
+      /* Handle the click event. */
+      async () => {
+        remove.disabled = true;
+        try {
+          await call("comment_action", {
+            p_comment: comment.id,
+            p_action: "delete_mine",
+          });
+          onChanged();
+        } catch (e) {
+          showError(error, e.code, e.arg);
+        } finally {
+          remove.disabled = false;
+        }
+      },
+    );
     actions.append(remove);
   }
   article.append(actions, error);
   return article;
 }
 
+// Open a reply form with the backend character limit.
 function showReplyForm(article, parent, skillId, onChanged) {
   article.querySelector(".reply-form")?.remove();
   const form = document.createElement("form");
@@ -91,9 +108,13 @@ function showReplyForm(article, parent, skillId, onChanged) {
   counter.textContent = "0 / 100";
   counter.id = "reply-character-count";
   counter.setAttribute("aria-live", "polite");
-  input.addEventListener("input", () => {
-    counter.textContent = `${Array.from(input.value).length} / 100`;
-  });
+  input.addEventListener(
+    "input",
+    /* Handle the input event. */
+    () => {
+      counter.textContent = `${Array.from(input.value).length} / 100`;
+    },
+  );
   const error = document.createElement("div");
   const button = document.createElement("button");
   button.type = "submit";
@@ -102,28 +123,33 @@ function showReplyForm(article, parent, skillId, onChanged) {
   label.append(input, counter);
   form.append(label, button, error);
   article.append(form);
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (Array.from(input.value).length > 100) {
-      showError(error, "COMMENT_TOO_LONG", "100");
-      return;
-    }
-    button.disabled = true;
-    try {
-      await call("add_comment", {
-        p_skill: skillId,
-        p_body: input.value,
-        p_parent: parent.id,
-      });
-      onChanged();
-    } catch (e) {
-      showError(error, e.code, e.arg);
-    } finally {
-      button.disabled = false;
-    }
-  });
+  form.addEventListener(
+    "submit",
+    /* Handle the submit event. */
+    async (event) => {
+      event.preventDefault();
+      if (Array.from(input.value).length > 100) {
+        showError(error, "COMMENT_TOO_LONG", "100");
+        return;
+      }
+      button.disabled = true;
+      try {
+        await call("add_comment", {
+          p_skill: skillId,
+          p_body: input.value,
+          p_parent: parent.id,
+        });
+        onChanged();
+      } catch (e) {
+        showError(error, e.code, e.arg);
+      } finally {
+        button.disabled = false;
+      }
+    },
+  );
 }
 
+// Render comments.
 export async function renderComments(
   container,
   skillId,
@@ -146,9 +172,13 @@ export async function renderComments(
   counter.textContent = "0 / 200";
   counter.id = "comment-character-count";
   counter.setAttribute("aria-live", "polite");
-  input.addEventListener("input", () => {
-    counter.textContent = `${Array.from(input.value).length} / 200`;
-  });
+  input.addEventListener(
+    "input",
+    /* Handle the input event. */
+    () => {
+      counter.textContent = `${Array.from(input.value).length} / 200`;
+    },
+  );
   label.append(input, counter);
   const button = document.createElement("button");
   button.type = "submit";
@@ -161,6 +191,7 @@ export async function renderComments(
   list.className = "comment-list";
   container.append(list);
 
+  // Reload the comment thread after a successful action.
   async function refresh() {
     let rows;
     try {
@@ -170,15 +201,22 @@ export async function renderComments(
       return;
     }
     list.replaceChildren();
-    const roots = rows.filter((row) => row.parent_id === null);
+    const roots = rows.filter(
+      /* Keep row values that match the current view. */
+      (row) => row.parent_id === null,
+    );
     for (const root of roots) {
       const thread = document.createElement("section");
       thread.className = "comment-thread";
       thread.append(commentNode(root, skillId, mine, refresh));
       rows
-        .filter((reply) => reply.parent_id === root.id)
-        .forEach((reply) =>
-          thread.append(commentNode(reply, skillId, mine, refresh)),
+        .filter(
+          /* Keep reply values that match the current view. */
+          (reply) => reply.parent_id === root.id,
+        )
+        .forEach(
+          /* Process each reply in the collection. */
+          (reply) => thread.append(commentNode(reply, skillId, mine, refresh)),
         );
       list.append(thread);
     }
@@ -189,27 +227,31 @@ export async function renderComments(
       list.append(empty);
     }
   }
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (Array.from(input.value).length > 200) {
-      showError(error, "COMMENT_TOO_LONG", "200");
-      return;
-    }
-    button.disabled = true;
-    try {
-      await call("add_comment", {
-        p_skill: skillId,
-        p_body: input.value,
-        p_parent: null,
-      });
-      input.value = "";
-      counter.textContent = "0 / 200";
-      await refresh();
-    } catch (e) {
-      showError(error, e.code, e.arg);
-    } finally {
-      button.disabled = false;
-    }
-  });
+  form.addEventListener(
+    "submit",
+    /* Handle the submit event. */
+    async (event) => {
+      event.preventDefault();
+      if (Array.from(input.value).length > 200) {
+        showError(error, "COMMENT_TOO_LONG", "200");
+        return;
+      }
+      button.disabled = true;
+      try {
+        await call("add_comment", {
+          p_skill: skillId,
+          p_body: input.value,
+          p_parent: null,
+        });
+        input.value = "";
+        counter.textContent = "0 / 200";
+        await refresh();
+      } catch (e) {
+        showError(error, e.code, e.arg);
+      } finally {
+        button.disabled = false;
+      }
+    },
+  );
   await refresh();
 }

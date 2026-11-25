@@ -1,3 +1,8 @@
+/*
+ * Purpose: Provide shared static footer markup for generators and pages.
+ * Called by: the app entry point and related browser modules.
+ * Security: Treat route parameters and backend data as untrusted; server-side authorization remains authoritative.
+ */
 export function footerMarkup() {
   return `<footer class="footer"><div class="container">
   <nav class="footer-links" aria-label="Footer">

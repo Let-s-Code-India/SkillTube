@@ -1,3 +1,8 @@
+/*
+ * Purpose: Define fonts, colors, surfaces, and shared design variables.
+ * Loaded by: the public stylesheet entry points.
+ * Security: Presentation only; do not use CSS as an access-control boundary.
+ */
 @font-face {
   font-family: "Space Grotesk";
   src: url("/fonts/space-grotesk-latin.woff2") format("woff2");

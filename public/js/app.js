@@ -1,3 +1,8 @@
+/*
+ * Purpose: Start the single-page app, route navigation, and enforce account setup gates.
+ * Called by: the module script in public/app/index.html.
+ * Security: Treat route parameters and backend data as untrusted; server-side authorization remains authoritative.
+ */
 import { hashRoute, routeParts } from "./router.js";
 import { getSession, signIn, gateSession } from "./auth.js";
 import { showError } from "./errors.js";
@@ -12,24 +17,34 @@ const app = document.querySelector("#app");
 const drawer = document.querySelector("#drawer");
 const menu = document.querySelector("#menu");
 
+// Close drawer.
 function closeDrawer() {
   drawer.classList.remove("open");
   menu.setAttribute("aria-expanded", "false");
 }
-menu.addEventListener("click", () => {
-  drawer.classList.add("open");
-  menu.setAttribute("aria-expanded", "true");
-});
+menu.addEventListener(
+  "click",
+  /* Handle the click event. */
+  () => {
+    drawer.classList.add("open");
+    menu.setAttribute("aria-expanded", "true");
+  },
+);
 document.querySelector("#close-menu").addEventListener("click", closeDrawer);
-drawer
-  .querySelectorAll("a")
-  .forEach((a) => a.addEventListener("click", closeDrawer));
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && drawer.classList.contains("open")) {
-    closeDrawer();
-    menu.focus();
-  }
-});
+drawer.querySelectorAll("a").forEach(
+  /* Process each a in the collection. */
+  (a) => a.addEventListener("click", closeDrawer),
+);
+document.addEventListener(
+  "keydown",
+  /* Handle the keydown event. */
+  (event) => {
+    if (event.key === "Escape" && drawer.classList.contains("open")) {
+      closeDrawer();
+      menu.focus();
+    }
+  },
+);
 
 const pageModules = {
   home: "home",
@@ -60,6 +75,7 @@ const titles = {
   admin: "Admin",
 };
 
+// Load page.
 async function loadPage(route, app) {
   const [page, id] = routeParts(route);
   const moduleName = pageModules[page];
@@ -73,6 +89,7 @@ async function loadPage(route, app) {
   await mod.render(app, { id, route, state });
 }
 
+// Render the signed-out shell, account gates, or active route.
 async function render({ signedOut = false } = {}) {
   const route = hashRoute();
   const adminLink = document.querySelector("#admin-nav");
@@ -97,16 +114,20 @@ async function render({ signedOut = false } = {}) {
     button.type = "button";
     button.className = "btn";
     button.textContent = "Sign in with GitHub";
-    button.addEventListener("click", async () => {
-      button.disabled = true;
-      try {
-        await signIn();
-      } catch (error) {
-        showError(authError, error.code, error.arg);
-      } finally {
-        button.disabled = false;
-      }
-    });
+    button.addEventListener(
+      "click",
+      /* Handle the click event. */
+      async () => {
+        button.disabled = true;
+        try {
+          await signIn();
+        } catch (error) {
+          showError(authError, error.code, error.arg);
+        } finally {
+          button.disabled = false;
+        }
+      },
+    );
     app.append(h, p, authError, button);
     return;
   }
@@ -128,7 +149,11 @@ async function render({ signedOut = false } = {}) {
     return;
   }
   if (!account?.country) {
-    renderCountryPicker(app, () => render());
+    renderCountryPicker(
+      app,
+      /* Re-render after the user saves their country. */
+      () => render(),
+    );
     return;
   }
   app.replaceChildren();
@@ -143,19 +168,38 @@ async function render({ signedOut = false } = {}) {
   }
 }
 
-window.addEventListener("hashchange", () => render());
-onAuthChange((event, session) => {
-  if (event === "SIGNED_OUT") {
-    sessionStorage.removeItem("skilltube.github_token");
-    state.session = null;
-    setTimeout(() => render({ signedOut: true }), 0);
-    return;
-  }
-  if (event === "TOKEN_REFRESHED" && session) {
-    state.session = session;
-    if (session.provider_token)
-      sessionStorage.setItem("skilltube.github_token", session.provider_token);
-  }
-  if (event === "SIGNED_IN") setTimeout(() => render(), 0);
-});
+window.addEventListener(
+  "hashchange",
+  /* Handle the hashchange event. */
+  () => render(),
+);
+onAuthChange(
+  /* Respond to the authentication state change. */
+  (event, session) => {
+    if (event === "SIGNED_OUT") {
+      sessionStorage.removeItem("skilltube.github_token");
+      state.session = null;
+      setTimeout(
+        /* Run the follow-up action after the delay. */
+        () => render({ signedOut: true }),
+        0,
+      );
+      return;
+    }
+    if (event === "TOKEN_REFRESHED" && session) {
+      state.session = session;
+      if (session.provider_token)
+        sessionStorage.setItem(
+          "skilltube.github_token",
+          session.provider_token,
+        );
+    }
+    if (event === "SIGNED_IN")
+      setTimeout(
+        /* Run the follow-up action after the delay. */
+        () => render(),
+        0,
+      );
+  },
+);
 render();
