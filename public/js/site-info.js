@@ -11,9 +11,9 @@ export const siteInfo = Object.freeze({
     name:"Ayush Giri",
     title:"Founder",
     organisation:"Let's Code India",
-    location:"Mumbai, Maharashtra, India",
+    location:"India",
     acknowledgementHours:72,
     resolutionDays:30
   }),
-  jurisdiction:"Mumbai, Maharashtra, India"
+  jurisdiction:"India"
 });
