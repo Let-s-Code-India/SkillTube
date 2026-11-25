@@ -142,7 +142,7 @@ ${o.ld ? `<script nonce="__CSP_NONCE__" type="application/ld+json">${JSON.string
 </head><body>
 <header><a class="brand" href="/">SkillTube</a><nav><a href="/developers/">Developers</a><a href="/">Sign in</a></nav></header>
 <main>${o.body}</main>
-<footer>© 2026 Let's Code India. <a href="/legal/privacy/">Privacy</a> · <a href="/legal/terms/">Terms</a> · <a href="/legal/community-guidelines/">Community Guidelines</a> · <a href="/legal/cookies/">Cookies</a> · <a href="/legal/security/">Security</a> · <a href="/brand/">Licenses</a> · <a href="/contact/">Contact</a> · <a href="/faq/">FAQ</a> · <a href="/why-skilltube/">Why SkillTube</a><br>Source code under the MIT License.</footer>
+<footer>Created by Ayush Giri, Founder of Let's Code India. © 2026 Let's Code India. <a href="/legal/privacy/">Privacy</a> · <a href="/legal/terms/">Terms</a> · <a href="/legal/community-guidelines/">Community Guidelines</a> · <a href="/legal/cookies/">Cookies</a> · <a href="/legal/security/">Security</a> · <a href="/brand/">Licenses</a> · <a href="/contact/">Contact</a> · <a href="/faq/">FAQ</a> · <a href="/why-skilltube/">Why SkillTube</a><br>Source code under the MIT License.</footer>
 </body></html>`, o.status || 200);
 }
 
