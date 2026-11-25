@@ -20,6 +20,9 @@ datasets, databases, prompts, agents, guides and other AI tools. Developers
 keep their projects in public GitHub repositories; SkillTube adds structured
 discovery, useful tags, public developer channels and community signals.
 
+Created by Ayush Giri and maintained by
+[Let's Code India](https://let-s-code-india.github.io/).
+
 ## Features
 
 - Search AI resources by name, description and structured topics.
