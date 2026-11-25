@@ -1,7 +1,7 @@
 /* TEAM */
 Founder: Ayush Giri
 Organisation: Let's Code India
-Location: Mumbai, Maharashtra, India
+Location: India
 
 /* SITE */
 Project: SkillTube
@@ -15,3 +15,4 @@ Email: ayushgiri.ai.21@gmail.com
 Email: ayushgiri.25@icloud.com
 Email: ayushgiri.dev1@outlook.com
 Security: https://skilltube.ayushgiri-ai-21.workers.dev/.well-known/security.txt
+Credit: Created by Ayush Giri, Founder of Let's Code India.
