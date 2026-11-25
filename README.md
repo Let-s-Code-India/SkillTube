@@ -72,7 +72,7 @@ are served from `public/`.
 - Each listing remains in its developer's repository; read the repository's
   license before using its contents.
 
-Read the [security model](docs/SECURITY_MODEL.md), [database contract](docs/DATABASE.md),
+Read the [security model](docs/SECURITY_MODEL.md), [architecture](docs/ARCHITECTURE.md),
 [error-code guide](docs/ERROR_CODES.md) and
 [security reporting policy](https://github.com/Let-s-Code-India/.github/blob/main/SECURITY.md).
 
@@ -97,7 +97,6 @@ Cloudflare Workers Builds deployment for the live service. For local checks:
 ```sh
 npm ci
 npm run check:posts
-npm run check:schema
 npm run check:links
 node tools/stamp-footer.mjs --check
 ```
@@ -123,12 +122,10 @@ public/                  App, static pages, styles, images and vendored browser 
   legal/                 Public policy pages
   why-skilltube/         Generated blog index and static articles
 content/why/             Markdown sources for the blog
-worker/index.js          Public server-rendered routes and sitemap
-supabase/sql/            Database source of truth
-supabase/functions/      Authenticated backend operations
+worker/                  Public server-rendered routes and sitemap
 catalog/                 Scheduled repository verification
-schema/                  Public payload schemas and fixtures
-docs/                    Architecture, database, security and operations docs
+schema/                  Public content schemas and fixtures
+docs/                    Architecture, security and operations docs
 licenses/                Project and third-party license notices
 tools/                   Static-content and acceptance-check scripts
 ```

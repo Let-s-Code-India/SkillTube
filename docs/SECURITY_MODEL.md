@@ -1,10 +1,11 @@
 # Security model
 
-SkillTube uses a strict CSP, GitHub OAuth, closed Supabase tables, server-side
-RPC validation and Edge Functions for GitHub ownership and image processing.
-The public browser key is publishable only. Secrets remain outside the browser.
-User- and repository-supplied descriptions are escaped as text on public
-Worker pages; authored blog Markdown is rendered at commit time with the
-vendored `marked` parser and sanitized with vendored DOMPurify. The blog
-sanitizer allows only text formatting and safe links, without images or frames.
-The site stores no IP address and uses no analytics or tracking cookies.
+SkillTube follows least-privilege principles. Data access is restricted, and
+controlled server-side operations validate requests before changing data.
+Administrative access is checked on the server; hiding controls in the
+interface is not treated as authorization.
+
+The site uses a strict Content Security Policy and does not store IP addresses.
+Public pages avoid exposing private account information. User-submitted text is
+handled as untrusted input and sanitized before it is rendered as formatted
+content. Secrets are kept out of browser code and public source files.
