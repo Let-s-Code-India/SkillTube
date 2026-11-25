@@ -3,8 +3,10 @@ import { getSession, signIn, gateSession } from "./auth.js";
 import { showError } from "./errors.js";
 import { state } from "./state.js";
 import { ageGate } from "./components/dialogs.js";
+import { renderCountryPicker } from "./components/country-picker.js";
 import { refreshNotificationDots } from "./components/notification-dots.js";
 import { call } from "./api.js";
+import { onAuthChange } from "./auth.js";
 
 const app = document.querySelector("#app");
 const drawer = document.querySelector("#drawer");
@@ -29,6 +31,7 @@ document.addEventListener("keydown",(event) => {
 
 const pageModules = {
   home:"home",
+  announcements:"announcements",
   search:"search",
   skill:"skill",
   dev:"dev",
@@ -42,7 +45,7 @@ const pageModules = {
   admin:"admin"
 };
 const titles = {
-  home:"Home", search:"Search", publish:"Publish a listing",
+  home:"Home", announcements:"Announcements", search:"Search", publish:"Publish a listing",
   "my-skills":"My listings", dashboard:"Dashboard", updates:"Updates",
   settings:"Settings", badges:"Badges", invite:"Invite", admin:"Admin"
 };
@@ -57,33 +60,52 @@ async function loadPage(route, app) {
   await mod.render(app,{id,route,state});
 }
 
-async function render() {
+async function render({signedOut=false}={}) {
   const route = hashRoute();
   const adminLink=document.querySelector("#admin-nav");
   if(adminLink)adminLink.hidden=true;
-  state.session = await getSession();
+  try {
+    state.session = await getSession();
+  } catch(error) {
+    app.replaceChildren();
+    showError(app,error.code,error.arg);
+    return;
+  }
   if (!state.session) {
     app.replaceChildren();
-    const h=document.createElement("h1"); h.textContent="Sign in to SkillTube";
-    const p=document.createElement("p"); p.textContent="Browse public listings and developers without an account.";
+    const h=document.createElement("h2"); h.textContent=signedOut?"You are signed out":"Sign in to SkillTube";
+    const p=document.createElement("p"); p.textContent=signedOut?"Your session ended. Sign in with GitHub to continue.":"Browse public listings and developers without an account.";
+    const authError=document.createElement("div");
     const button=document.createElement("button"); button.type="button"; button.className="btn"; button.textContent="Sign in with GitHub";
-    button.addEventListener("click", () => signIn());
-    app.append(h,p,button);
+    button.addEventListener("click", async () => {
+      button.disabled=true;
+      try { await signIn(); }
+      catch(error) { showError(authError,error.code,error.arg); }
+      finally { button.disabled=false; }
+    });
+    app.append(h,p,authError,button);
     return;
   }
   const gate=await gateSession(state.session);
   if (!gate.ok) {
     app.replaceChildren();
-    showError(app,"ACCOUNT_NOT_READY");
+    showError(app,gate.code||"ACCOUNT_NOT_READY");
     return;
   }
   const accepted=await ageGate(app,render);
   if (!accepted) return;
+  let account;
   try {
-    const account=await call("me_state");
+    account=await call("me_state");
     if(adminLink)adminLink.hidden=account?.is_admin!==true;
   } catch(error) {
-    showError("#auth-error",error.code,error.arg);
+    app.replaceChildren();
+    showError(app,error.code,error.arg);
+    return;
+  }
+  if(!account?.country) {
+    renderCountryPicker(app,()=>render());
+    return;
   }
   app.replaceChildren();
   const h=document.createElement("h1"); h.textContent=titles[routeParts(route)[0]] || "SkillTube";
@@ -93,5 +115,18 @@ async function render() {
   catch(error) { showError(app,error.code || "SERVER_ERROR",error.arg); }
 }
 
-window.addEventListener("hashchange",render);
+window.addEventListener("hashchange",()=>render());
+onAuthChange((event,session)=>{
+  if(event==="SIGNED_OUT") {
+    sessionStorage.removeItem("skilltube.github_token");
+    state.session=null;
+    setTimeout(()=>render({signedOut:true}),0);
+    return;
+  }
+  if(event==="TOKEN_REFRESHED"&&session) {
+    state.session=session;
+    if(session.provider_token)sessionStorage.setItem("skilltube.github_token",session.provider_token);
+  }
+  if(event==="SIGNED_IN")setTimeout(()=>render(),0);
+});
 render();

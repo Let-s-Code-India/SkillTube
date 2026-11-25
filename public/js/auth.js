@@ -1,19 +1,19 @@
-import { config } from "./config.js";
 import { edge } from "./api.js";
+import { getAuthSession, authStateChanged, signInWithGithub, signOutFromAuth } from "./api.js";
 import { showError } from "./errors.js";
 
 export async function getSession() {
-  const { data } = await window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey).auth.getSession();
-  return data.session;
+  return getAuthSession();
 }
 export function signIn() {
-  const client = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
-  return client.auth.signInWithOAuth({ provider:"github", options:{ redirectTo:`${config.siteUrl}/app/` } });
+  return signInWithGithub();
 }
 export function signOut() {
-  const client = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
   sessionStorage.removeItem("skilltube.github_token");
-  return client.auth.signOut();
+  return signOutFromAuth();
+}
+export function onAuthChange(callback) {
+  return authStateChanged(callback);
 }
 export function getGithubToken() {
   return sessionStorage.getItem("skilltube.github_token");

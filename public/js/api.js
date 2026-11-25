@@ -5,9 +5,34 @@ function supabase() {
   if (!client) client = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
   return client;
 }
+export function getAuthSession() {
+  return supabase().auth.getSession().then(({data,error})=>{
+    if(error)throw {code:"SERVER_ERROR",raw:error};
+    return data.session;
+  });
+}
 async function session() {
-  const { data } = await supabase().auth.getSession();
-  return data.session;
+  return getAuthSession();
+}
+export function authStateChanged(callback) {
+  return supabase().auth.onAuthStateChange(callback);
+}
+export async function signInWithGithub() {
+  const {error}=await supabase().auth.signInWithOAuth({provider:"github",options:{redirectTo:`${config.siteUrl}/app/`}});
+  if(error)throw {code:"SERVER_ERROR",raw:error};
+}
+export function signOutFromAuth() {
+  return supabase().auth.signOut().then(({error})=>{
+    if(error)throw {code:"SERVER_ERROR",raw:error};
+  });
+}
+export async function fetchAssetJson(path) {
+  if(typeof path!=="string"||!path.startsWith("/")||path.startsWith("//")) {
+    throw new TypeError("Asset paths must be same-origin paths.");
+  }
+  const response=await fetch(path,{credentials:"same-origin"});
+  if(!response.ok)throw new Error(`Asset request failed with status ${response.status}.`);
+  return response.json();
 }
 export async function call(name, args = {}) {
   const { data, error } = await supabase().rpc(name, args);

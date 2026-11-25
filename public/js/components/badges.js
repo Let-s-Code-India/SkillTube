@@ -1,11 +1,10 @@
+import { fetchAssetJson } from "../api.js";
+
 let imagePathsPromise;
 
 export async function getBadgeImagePaths() {
   if (!imagePathsPromise) {
-    imagePathsPromise=fetch("/image/catalog.json").then((response)=>{
-      if(!response.ok)throw new Error(`Badge image catalog returned ${response.status}`);
-      return response.json();
-    }).then((catalog)=>{
+    imagePathsPromise=fetchAssetJson("/image/catalog.json").then((catalog)=>{
       const entries=[...(catalog.badges||[]),...(catalog.weekly||[]),...(catalog.ticks||[])];
       return new Map(entries.map(({key,file})=>[key,`/image/${file}`]));
     });
