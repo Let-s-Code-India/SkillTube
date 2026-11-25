@@ -11,7 +11,7 @@
 [![Supabase](https://img.shields.io/badge/backend-Supabase-3ecf8e)](https://supabase.com/)
 [![Free](https://img.shields.io/badge/price-100%25%20free-brightgreen)](https://skilltube.ayushgiri-ai-21.workers.dev/)
 
-<img src="public/og-image.png" alt="SkillTube — the open discovery layer for AI resources" width="100%">
+<img src="public/og-image.jpg" alt="SkillTube — the open discovery layer for AI resources" width="100%">
 
 </div>
 

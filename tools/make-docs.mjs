@@ -133,8 +133,8 @@ function articleShell(document, body, headings, navigation) {
   <link rel="canonical" href="${canonical}">
   <link rel="alternate" type="text/markdown" href="${baseUrl}/docs/${document.slug}.md">
   <meta property="og:type" content="article"><meta property="og:title" content="${title} | SkillTube">
-  <meta property="og:description" content="${summary}"><meta property="og:image" content="${baseUrl}/og-image.png">
-  <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${baseUrl}/og-image.png">
+  <meta property="og:description" content="${summary}"><meta property="og:image" content="${baseUrl}/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${baseUrl}/og-image.jpg">
   <meta name="theme-color" content="#17151d">
   <link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/layout.css"><link rel="stylesheet" href="/css/components.css"><link rel="stylesheet" href="/css/pages.css">
@@ -179,8 +179,8 @@ function buildIndex(documents) {
   <meta name="description" content="Practical guides to accounts, publishing, limits, reports, privacy and AI-tool access on SkillTube.">
   <link rel="canonical" href="${baseUrl}/docs/">
   <meta property="og:type" content="website"><meta property="og:title" content="Documentation | SkillTube">
-  <meta property="og:description" content="Practical guides to using SkillTube."><meta property="og:image" content="${baseUrl}/og-image.png">
-  <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${baseUrl}/og-image.png">
+  <meta property="og:description" content="Practical guides to using SkillTube."><meta property="og:image" content="${baseUrl}/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${baseUrl}/og-image.jpg">
   <meta name="theme-color" content="#17151d">
   <link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/layout.css"><link rel="stylesheet" href="/css/components.css"><link rel="stylesheet" href="/css/pages.css">

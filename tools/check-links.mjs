@@ -54,8 +54,26 @@ for(const file of await htmlFiles(publicRoot)) {
   if(!/<html\b[^>]*\blang="en"/i.test(source))problems.push(`${relative}: missing lang="en"`);
   if(!/<title>[^<]+<\/title>/i.test(source))problems.push(`${relative}: missing title`);
   if(!/<meta\b[^>]*name="description"[^>]*content="[^"]+"/i.test(source))problems.push(`${relative}: missing meta description`);
+  if(!/<meta\b[^>]*name="twitter:card"[^>]*content="summary_large_image"/i.test(source))problems.push(`${relative}: missing large-image social card`);
   if(!/<meta\b[^>]*name="viewport"[^>]*content=/i.test(source))problems.push(`${relative}: missing viewport`);
   if(!/<link\b[^>]*rel="canonical"[^>]*href=/i.test(source))problems.push(`${relative}: missing canonical URL`);
+  const ogImageTag=source.match(/<meta\b[^>]*property="og:image"[^>]*>/i)?.[0];
+  const ogImage=ogImageTag?.match(/\bcontent="([^"]+)"/i)?.[1];
+  if(!ogImage)problems.push(`${relative}: missing Open Graph image`);
+  else {
+    const imagePath=path.resolve(publicRoot,decodeURIComponent(new URL(ogImage).pathname).replace(/^\/+/,""));
+    if(imagePath===publicRoot||!imagePath.startsWith(`${publicRoot}${path.sep}`))problems.push(`${relative}: Open Graph image is outside public assets`);
+    else {
+      try {
+        const bytes=await readFile(imagePath);
+        const ext=path.extname(imagePath).toLowerCase();
+        if((ext===".jpg"||ext===".jpeg")&&!(bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff))problems.push(`${relative}: Open Graph JPEG has an invalid file signature`);
+        if(ext===".png"&&bytes.subarray(0,8).toString("hex")!=="89504e470d0a1a0a")problems.push(`${relative}: Open Graph PNG has an invalid file signature`);
+      } catch(error) {
+        problems.push(`${relative}: Open Graph image is unavailable (${error.message})`);
+      }
+    }
+  }
   if(!/<a\b[^>]*class="skip-link"[^>]*href="#main"/i.test(source))problems.push(`${relative}: missing skip link`);
   const headings=source.match(/<h1\b/gi)||[];
   if(headings.length!==1)problems.push(`${relative}: expected one h1, found ${headings.length}`);
