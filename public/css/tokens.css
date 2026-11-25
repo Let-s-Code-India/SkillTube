@@ -1,19 +1,56 @@
-@font-face { font-family:"Space Grotesk"; src:url("/fonts/space-grotesk-latin.woff2") format("woff2"); font-weight:400 700; font-display:swap; }
-@font-face { font-family:"DM Mono"; src:url("/fonts/dm-mono-400.woff2") format("woff2"); font-weight:400; font-display:swap; }
-@font-face { font-family:"DM Mono"; src:url("/fonts/dm-mono-500.woff2") format("woff2"); font-weight:500; font-display:swap; }
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/fonts/space-grotesk-latin.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DM Mono";
+  src: url("/fonts/dm-mono-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DM Mono";
+  src: url("/fonts/dm-mono-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
 :root {
-  --ink:#17151d; --muted:#5e6070; --paper:#fffdf7; --red:#e61c24; --violet:#6a2dff;
-  --blue:#0b84ff; --cyan:#00c9ff; --green:#2dbf45; --gold:#ffc700; --pink:#ff3c99;
-  --line:#dedce5; --surface:#fffdf8; --surface-raised:#ffffff; --section-surface:#f1f0f5;
-  --band-surface:#d8f0eb; --small-red:#c8141c; --shadow:0 18px 50px rgba(23,21,29,.12);
-  --font-sans:"Space Grotesk",system-ui,sans-serif; --font-mono:"DM Mono",ui-monospace,monospace;
-  --content:1080px; --reading:900px;
+  --ink: #17151d;
+  --muted: #5e6070;
+  --paper: #fffdf7;
+  --red: #e61c24;
+  --violet: #6a2dff;
+  --blue: #0b84ff;
+  --cyan: #00c9ff;
+  --green: #2dbf45;
+  --gold: #ffc700;
+  --pink: #ff3c99;
+  --line: #dedce5;
+  --surface: #fffdf8;
+  --surface-raised: #ffffff;
+  --section-surface: #f1f0f5;
+  --band-surface: #d8f0eb;
+  --small-red: #c8141c;
+  --shadow: 0 18px 50px rgba(23, 21, 29, 0.12);
+  --font-sans: "Space Grotesk", system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, monospace;
+  --content: 1080px;
+  --reading: 900px;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --ink:#f4f1f7; --muted:#c2bdca; --paper:#17151d; --red:#ff6269; --line:#494552;
-    --surface:#201e27; --surface-raised:#292631; --section-surface:#211f29;
-    --band-surface:#1c3433; --small-red:#ff6269; --shadow:0 18px 50px rgba(0,0,0,.32);
+    --ink: #f4f1f7;
+    --muted: #c2bdca;
+    --paper: #17151d;
+    --red: #ff6269;
+    --line: #494552;
+    --surface: #201e27;
+    --surface-raised: #292631;
+    --section-surface: #211f29;
+    --band-surface: #1c3433;
+    --small-red: #ff6269;
+    --shadow: 0 18px 50px rgba(0, 0, 0, 0.32);
   }
 }
-:root {

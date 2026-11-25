@@ -28,70 +28,82 @@ WF WS
 YE YT
 ZA ZM ZW
 `;
-const displayNames=new Intl.DisplayNames(["en"],{type:"region"});
-const countries=countryCodes.trim().split(/\s+/).map((code)=>({code,name:displayNames.of(code)})).filter((country)=>country.name);
+const displayNames = new Intl.DisplayNames(["en"], { type: "region" });
+const countries = countryCodes
+  .trim()
+  .split(/\s+/)
+  .map((code) => ({ code, name: displayNames.of(code) }))
+  .filter((country) => country.name);
 
-export function renderCountryPicker(app,onComplete) {
+export function renderCountryPicker(app, onComplete) {
   app.replaceChildren();
-  const section=document.createElement("section");
-  section.className="country-gate";
-  section.setAttribute("aria-labelledby","country-gate-title");
-  const heading=document.createElement("h2");
-  heading.id="country-gate-title";
-  heading.textContent="Choose your country";
-  const explanation=document.createElement("p");
-  explanation.textContent="This private account setting is used for account setup. It is not shown on your public channel.";
-  const search=document.createElement("input");
-  search.type="search";
-  search.setAttribute("aria-label","Search countries");
-  search.placeholder="Search by country name or code";
-  const select=document.createElement("select");
-  select.size=9;
-  select.setAttribute("aria-label","Countries");
-  const option=document.createElement("option");
-  option.value="";
-  option.textContent="Select a country";
-  option.selected=true;
+  const section = document.createElement("section");
+  section.className = "country-gate";
+  section.setAttribute("aria-labelledby", "country-gate-title");
+  const heading = document.createElement("h2");
+  heading.id = "country-gate-title";
+  heading.textContent = "Choose your country";
+  const explanation = document.createElement("p");
+  explanation.textContent =
+    "This private account setting is used for account setup. It is not shown on your public channel.";
+  const search = document.createElement("input");
+  search.type = "search";
+  search.setAttribute("aria-label", "Search countries");
+  search.placeholder = "Search by country name or code";
+  const select = document.createElement("select");
+  select.size = 9;
+  select.setAttribute("aria-label", "Countries");
+  const option = document.createElement("option");
+  option.value = "";
+  option.textContent = "Select a country";
+  option.selected = true;
   select.append(option);
-  const error=document.createElement("div");
-  const submit=document.createElement("button");
-  submit.type="button";
-  submit.className="btn";
-  submit.textContent="Continue";
-  submit.disabled=true;
+  const error = document.createElement("div");
+  const submit = document.createElement("button");
+  submit.type = "button";
+  submit.className = "btn";
+  submit.textContent = "Continue";
+  submit.disabled = true;
 
-  function populate(query="") {
-    const term=query.trim().toLowerCase();
-    const selected=select.value;
+  function populate(query = "") {
+    const term = query.trim().toLowerCase();
+    const selected = select.value;
     select.replaceChildren();
-    const placeholder=document.createElement("option");
-    placeholder.value="";
-    placeholder.textContent="Select a country";
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Select a country";
     select.append(placeholder);
-    for(const country of countries) {
-      if(term&&!country.name.toLowerCase().includes(term)&&!country.code.toLowerCase().includes(term))continue;
-      const item=document.createElement("option");
-      item.value=country.code;
-      item.textContent=`${country.name} (${country.code})`;
+    for (const country of countries) {
+      if (
+        term &&
+        !country.name.toLowerCase().includes(term) &&
+        !country.code.toLowerCase().includes(term)
+      )
+        continue;
+      const item = document.createElement("option");
+      item.value = country.code;
+      item.textContent = `${country.name} (${country.code})`;
       select.append(item);
     }
-    select.value=selected;
-    submit.disabled=!select.value;
+    select.value = selected;
+    submit.disabled = !select.value;
   }
   populate();
-  search.addEventListener("input",()=>populate(search.value));
-  select.addEventListener("change",()=>{submit.disabled=!select.value;});
-  submit.addEventListener("click",async()=>{
-    if(!select.value)return;
-    submit.disabled=true;
+  search.addEventListener("input", () => populate(search.value));
+  select.addEventListener("change", () => {
+    submit.disabled = !select.value;
+  });
+  submit.addEventListener("click", async () => {
+    if (!select.value) return;
+    submit.disabled = true;
     try {
-      await edge("set-country",{country:select.value});
+      await edge("set-country", { country: select.value });
       onComplete();
-    } catch(e) {
-      showError(error,e.code,e.arg);
-      submit.disabled=false;
+    } catch (e) {
+      showError(error, e.code, e.arg);
+      submit.disabled = false;
     }
   });
-  section.append(heading,explanation,search,select,error,submit);
+  section.append(heading, explanation, search, select, error, submit);
   app.append(section);
 }

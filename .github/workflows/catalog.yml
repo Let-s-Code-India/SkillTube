@@ -5,7 +5,7 @@ name: catalog
 on:
   schedule:
     - cron: "0 */6 * * *"
-  workflow_dispatch: {}          # also a "Run workflow" button
+  workflow_dispatch: {} # also a "Run workflow" button
 
 permissions:
   contents: read

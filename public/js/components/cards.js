@@ -3,12 +3,20 @@ import { safeUrl } from "../safe-url.js";
 
 function imageSource(image) {
   const path = image?.path;
-  if (typeof path !== "string" || !path || path.split("/").some((part) => part === "." || part === "..")) return null;
+  if (
+    typeof path !== "string" ||
+    !path ||
+    path.split("/").some((part) => part === "." || part === "..")
+  )
+    return null;
   const encoded = path.split("/").map(encodeURIComponent).join("/");
-  return safeUrl(`${config.supabaseUrl}/storage/v1/object/public/skilltube-images/${encoded}`, {
-    allowHash: false,
-    allowPath: false
-  });
+  return safeUrl(
+    `${config.supabaseUrl}/storage/v1/object/public/skilltube-images/${encoded}`,
+    {
+      allowHash: false,
+      allowPath: false,
+    },
+  );
 }
 
 export function imageFrame(image, alt, className = "listing-image-frame") {
@@ -16,10 +24,10 @@ export function imageFrame(image, alt, className = "listing-image-frame") {
   frame.className = className;
   const src = imageSource(image);
   if (!src) {
-    const placeholder=document.createElement("span");
-    placeholder.className="listing-image-placeholder";
-    placeholder.textContent=Array.from(alt||"?")[0]||"?";
-    placeholder.setAttribute("aria-hidden","true");
+    const placeholder = document.createElement("span");
+    placeholder.className = "listing-image-placeholder";
+    placeholder.textContent = Array.from(alt || "?")[0] || "?";
+    placeholder.setAttribute("aria-hidden", "true");
     frame.append(placeholder);
     return frame;
   }
@@ -28,21 +36,34 @@ export function imageFrame(image, alt, className = "listing-image-frame") {
   img.alt = alt || "";
   img.loading = "lazy";
   img.decoding = "async";
-  const isLogo=className.includes("logo");
+  const isLogo = className.includes("logo");
   img.width = isLogo ? 40 : 800;
   img.height = isLogo ? 40 : 600;
   const zoom = Number(image.zoom);
   const x = Number(image.x);
   const y = Number(image.y);
-  img.style.setProperty("--image-zoom", String(Number.isFinite(zoom) ? Math.min(4, Math.max(1, zoom)) : 1));
-  img.style.setProperty("--image-x", `${Number.isFinite(x) ? Math.min(100, Math.max(0, x)) : 50}%`);
-  img.style.setProperty("--image-y", `${Number.isFinite(y) ? Math.min(100, Math.max(0, y)) : 50}%`);
+  img.style.setProperty(
+    "--image-zoom",
+    String(Number.isFinite(zoom) ? Math.min(4, Math.max(1, zoom)) : 1),
+  );
+  img.style.setProperty(
+    "--image-x",
+    `${Number.isFinite(x) ? Math.min(100, Math.max(0, x)) : 50}%`,
+  );
+  img.style.setProperty(
+    "--image-y",
+    `${Number.isFinite(y) ? Math.min(100, Math.max(0, y)) : 50}%`,
+  );
   frame.append(img);
   return frame;
 }
 
 function tagSlug(value) {
-  return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 export function listingCard(skill) {
@@ -58,7 +79,7 @@ export function listingCard(skill) {
   title.textContent = skill.name || "Untitled listing";
   heading.append(title);
   content.append(heading);
-  if(skill.short_desc) {
+  if (skill.short_desc) {
     const description = document.createElement("p");
     description.textContent = skill.short_desc;
     content.append(description);
@@ -68,7 +89,11 @@ export function listingCard(skill) {
   const byline = document.createElement("p");
   byline.className = "listing-byline";
   const username = String(developer.username || "");
-  const logo = imageFrame(developer.logo, developer.name || username, "listing-developer-logo");
+  const logo = imageFrame(
+    developer.logo,
+    developer.name || username,
+    "listing-developer-logo",
+  );
   if (logo.firstChild) byline.append(logo);
   const by = document.createTextNode("by ");
   const developerLink = document.createElement("a");
