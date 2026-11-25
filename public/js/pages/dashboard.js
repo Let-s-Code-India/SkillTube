@@ -69,11 +69,15 @@ function rankingList(container,data,images) {
 }
 
 export async function render(app) {
+  const loading=el("div",undefined,"skeleton");
+  loading.setAttribute("aria-label","Loading dashboard");
+  app.append(loading);
   const error=el("div");
-  app.append(error);
   let data;
   try{data=await getDashboard();}
-  catch(e){showError(error,e.code,e.arg);return;}
+  catch(e){loading.remove();showError(error,e.code,e.arg);app.append(error);return;}
+  loading.remove();
+  app.append(error);
 
   let account=null;
   try{account=await getMyState();}

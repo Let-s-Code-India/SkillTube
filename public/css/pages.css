@@ -1,6 +1,23 @@
 .stat-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
 .stat-grid strong { display:block; font-size:32px; }
 .post-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+.listing-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)); gap:16px; margin:18px 0; }
+.skill-big-card { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:24px; }
+.skill-big-image { grid-row:span 2; aspect-ratio:4/3; overflow:hidden; background:var(--section-surface); }
+.skill-big-image img { width:100%; height:100%; object-fit:cover; object-position:var(--image-x,50%) var(--image-y,50%); transform:scale(var(--image-zoom,1)); }
+.skill-big-summary { min-width:0; }
+.skill-big-summary h2 { margin-top:0; }
+.skill-developer-details,.skill-long-description,.skill-topics,.skill-actions { grid-column:1/-1; }
+.skill-developer-identity { display:flex; align-items:center; gap:10px; }
+.skill-developer-logo { width:42px; height:42px; flex:none; overflow:hidden; border-radius:50%; background:var(--section-surface); }
+.skill-developer-logo img { width:100%; height:100%; object-fit:cover; object-position:var(--image-x,50%) var(--image-y,50%); transform:scale(var(--image-zoom,1)); }
+.skill-developer-badges { margin-top:12px; }
+.skill-actions { display:flex; flex-wrap:wrap; gap:10px; }
+.skill-long-description { max-width:76ch; overflow-wrap:anywhere; }
+.skill-long-description pre { max-width:100%; overflow:auto; padding:14px; background:var(--section-surface); }
+.announcement-banner { margin-bottom:18px; border-inline-start:4px solid var(--blue,#0b84ff); }
+.announcement-item { margin:12px 0; }
+.announcement-preview { margin:12px 0; }
 .legal h1 { font-size:clamp(30px,4vw,49px); }
 .legal h2 { margin-top:2em; }
 .table-wrap { max-width:100%; overflow-x:auto; }
@@ -17,3 +34,4 @@
 .post-navigation { display:flex; flex-wrap:wrap; justify-content:space-between; gap:16px; margin-top:32px; }
 #share-post { margin:12px 12px 12px 0; }
 @media(max-width:900px) { .stat-grid,.post-grid { grid-template-columns:1fr; } }
+@media(max-width:700px) { .skill-big-card { grid-template-columns:1fr; } .skill-big-image { grid-row:auto; } .skill-big-summary,.skill-developer-details,.skill-long-description,.skill-topics,.skill-actions { grid-column:1; } }

@@ -1,6 +1,7 @@
 import { getUpdatesFeed, markAllUpdatesSeen, getAlertCounts, getMyAchievements, markAlertsSeen, call } from "../api.js";
 import { showError } from "../errors.js";
 import { refreshNotificationDots } from "../components/notification-dots.js";
+import { listingCard } from "../components/cards.js";
 export async function render(app) {
   const controls=document.createElement("div");
   const mark=document.createElement("button");mark.type="button";mark.className="btn secondary";mark.textContent="Mark all seen";
@@ -10,15 +11,22 @@ export async function render(app) {
   app.append(error,list);
   let items;
   try{items=await getUpdatesFeed(50,null);}catch(e){showError(error,e.code,e.arg);return;}
-  if(!items.length){const empty=document.createElement("p");empty.textContent="No updates from developers you follow yet.";list.append(empty);}
+  if(!items.length){const empty=document.createElement("p");empty.className="mut";empty.textContent="No updates from developers you follow yet.";list.append(empty);}
+  const groups=new Map();
   for(const item of items){
+    const key=`${item.skill_id}:${item.kind}`;
+    const group=groups.get(key);
+    if(group){group.count+=1;group.item.unseen=group.item.unseen||item.unseen;continue;}
+    groups.set(key,{item:{...item},count:1});
+  }
+  for(const {item,count} of groups.values()){
     const card=document.createElement("article");card.className="card update-card";
-    const title=document.createElement("h2");title.textContent=item.skill_name||"AI resource update";
-    const link=document.createElement("a");link.href=`#/skill/${encodeURIComponent(item.skill_id)}`;link.textContent=`by @${item.username}`;
-    const detail=document.createElement("p");detail.textContent=item.note|| (item.kind==="post"?"Published a new listing.":"Shared an update.");
+    if(item.unseen){const dot=document.createElement("span");dot.className="notification-dot blue";dot.textContent="New";dot.setAttribute("aria-label","Unread update from a followed developer");card.append(dot);}
+    const kindText={post:"New listing",edit:"Listing edited",update:"Skill update · new version"}[item.kind]||"Developer update";
+    const detail=document.createElement("p");detail.textContent=`${kindText}${item.note?`: ${item.note}`:"."}${count>1?` and ${count-1} more`:""}`;
     const when=document.createElement("time");when.dateTime=item.created_at;when.textContent=new Date(item.created_at).toLocaleString();
-    if(item.unseen){const dot=document.createElement("span");dot.className="notification-dot blue";dot.textContent="New";dot.setAttribute("aria-label","Unread update");card.append(dot);}
-    card.append(title,detail,link,when);list.append(card);
+    const listing=listingCard({id:item.skill_id,name:item.skill_name,short_desc:"",developer:{username:item.username},views:item.views,stars:item.stars,image:item.image,tags:item.tags});
+    card.append(detail,listing,when);list.append(card);
   }
   mark.addEventListener("click",async()=>{mark.disabled=true;try{await markAllUpdatesSeen();await refreshNotificationDots();list.querySelectorAll(".notification-dot.blue").forEach((dot)=>dot.remove());}catch(e){showError(error,e.code,e.arg);}finally{mark.disabled=false;}});
   try{

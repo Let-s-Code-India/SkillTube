@@ -4,7 +4,7 @@
 // Draws the public pages that Google, AI tools and visitors without login
 // can read. The pages are made on request from the database "window"
 // functions (public_skill, public_developer, public_search, public_sitemap).
-// They never contain the download link, the repository link, a country or
+// They never contain the Source link, the repository URL, a country or
 // any private data. People and robots get exactly the same page.
 //
 //   /skill/<id>          one skill          (/skill/<id>.md = plain text version)
@@ -149,12 +149,20 @@ ${o.ld ? `<script nonce="__CSP_NONCE__" type="application/ld+json">${JSON.string
 function frame(env, im, name) {
   const u = imgUrl(env, im && im.path);
   if (!u) return `<div class="frame"><div class="ph">${esc(Array.from(name || "?")[0] || "?")}</div></div>`;
-  return `<div class="frame"><img src="${esc(u)}" alt="${esc(name)}" loading="lazy"></div>`;
+  return `<div class="frame"><img src="${esc(u)}" alt="${esc(name)}" width="800" height="600" loading="lazy"></div>`;
 }
 
 function skillCard(env, s) {
-  return `<a class="card" href="/skill/${esc(s.id)}">${frame(env, s.image, s.name)}<div class="body"><b>${esc(s.name)}</b>
-<span class="mut">${esc(clip(s.short_desc, 110))}</span><br><small class="mut">by @${esc(s.developer.username)} · ${num(s.views)} views</small></div></a>`;
+  const developer = s.developer || {};
+  const developerUrl = `/dev/${encodeURIComponent(developer.username || "")}`;
+  const logo = imgUrl(env, developer.logo && developer.logo.path);
+  const developerImage = logo ? `<img class="byline-logo" src="${esc(logo)}" alt="" width="40" height="40" loading="lazy">` : "";
+  const verified = developer.tick ? `<span class="verified" aria-label="Verified developer">✓</span>` : "";
+  return `<article class="card">${frame(env, s.image, s.name)}<div class="body">
+<h2><a href="/skill/${esc(s.id)}">${esc(s.name)}</a></h2>
+<p class="mut">${esc(clip(s.short_desc, 110))}</p>
+<p class="developer-line">${developerImage}by <a href="${esc(developerUrl)}">${esc(developer.name || developer.username || "developer")} (@${esc(developer.username || "developer")})</a>${verified}</p>
+<small class="mut">◉ ${num(s.views)} views · ☆ ${num(s.stars)} stars</small></div></article>`;
 }
 
 const paras = (t) => String(t ?? "").split(/\n{2,}/).map((p) => `<p>${esc(p.trim()).replace(/\n/g, "<br>")}</p>`).join("");
@@ -189,7 +197,7 @@ async function skillPage(env, url, id, md) {
 <p class="mut">${num(s.views)} views · ${num(s.stars)} stars · ${num(s.comments)} comments${s.verified ? " · owner verified" : ""}</p></div></div>
 <h2>About this skill</h2>${paras(s.long_desc)}
 ${["t1", "t2", "t3"].map((k, i) => (s.tags?.[k]?.length ? `<h2>${["Topics", "Subtopics", "Details"][i]}</h2><div class="chips">${s.tags[k].map(chip).join("")}</div>` : "")).join("")}
-<div class="cta"><b>Want to use it?</b><p class="mut">Sign in with GitHub to open this skill's download link. It is free.</p><a class="btn" href="/app/#/skill/${esc(s.id)}">Sign in with GitHub</a></div>
+<div class="cta"><b>Want to use it?</b><p class="mut">Sign in with GitHub to open this skill's source repository.</p><a class="btn" href="/app/#/skill/${esc(s.id)}">Sign in with GitHub</a></div>
 </article>`;
   return layout(env, url, { title: `${s.name} - skill by @${dev.username} | SkillTube`, desc: clip(s.short_desc, 155), canonical: canon, md: canon + ".md", image: im, ld, body, ogType: "article" });
 }
@@ -341,7 +349,7 @@ function llms(env, url) {
   const base = site(env, url);
   return plain(`# SkillTube
 
-> SkillTube is a free, open discovery layer for AI skills, MCP servers, datasets, databases, prompts, agents and AI tools. Every listing lives in its own public GitHub repository. Pages here show the name, description, topics, views and the developer. Download links are shown only after signing in with GitHub.
+> SkillTube is a free, open discovery layer for AI skills, MCP servers, datasets, databases, prompts, agents and AI tools. Every listing lives in its own public GitHub repository. Pages here show the name, description, topics, views and the developer. Source links are available only after signing in with GitHub.
 
 ## Where to read
 - [All skills and search](${base}/developers/): search by skill name or topic; type @username to find a developer
@@ -350,6 +358,6 @@ function llms(env, url) {
 
 ## Rules for readers and robots
 - The public pages contain the same content for people and for robots.
-- Please do not try to sign in or scrape download links; they are intentionally not public.
+- Please do not try to sign in or scrape source links; they are intentionally not public.
 `, "text/plain");
 }
