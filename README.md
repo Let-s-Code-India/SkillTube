@@ -148,4 +148,4 @@ under their own authors' licenses. SkillTube name and artwork use the
 - ayushgiri.25@icloud.com
 - ayushgiri.dev1@outlook.com
 
-**Made in Mumbai, India by Let's Code India.**
+Created by Ayush Giri, Founder of Let's Code India.
