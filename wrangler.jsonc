@@ -3,6 +3,9 @@
   "name": "skilltube",
   "main": "worker/index.js",
   "compatibility_date": "2025-11-01",
+  "build": {
+    "command": "npm run generate:llms-source",
+  },
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
@@ -16,17 +19,18 @@
       "/sitemap-*",
       "/robots.txt",
       "/llms.txt",
+      "/llms-full.txt",
       "/topic/*",
       "/leaderboard",
       "/leaderboard/",
       "/badges",
       "/badges/",
-      "/licenses/*"
-    ]
+      "/licenses/*",
+    ],
   },
   "vars": {
     "SUPABASE_URL": "https://tdxzcpigazlzzbyoccwo.supabase.co",
     "SUPABASE_ANON_KEY": "sb_publishable_19_NEAah3imqX5-NnWde2w_NoNz_6bK",
-    "SITE_URL": "https://skilltube.ayushgiri-ai-21.workers.dev"
-  }
+    "SITE_URL": "https://skilltube.ayushgiri-ai-21.workers.dev",
+  },
 }

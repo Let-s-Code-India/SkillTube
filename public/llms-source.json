@@ -1,0 +1,386 @@
+{
+  "faq": [
+    {
+      "group": "Basics",
+      "question": "Is SkillTube only for AI skills?",
+      "answer": "Skills are our main focus, but you can also list MCP servers, AI-related datasets and databases, prompts, agents and AI tools."
+    },
+    {
+      "group": "Basics",
+      "question": "GitHub already lets me publish and search. Why SkillTube?",
+      "answer": "SkillTube adds structured cards, 39 tags, a developer channel, fair ranking, owner verification, and clean pages that people and AI crawlers can read fully."
+    },
+    {
+      "group": "Basics",
+      "question": "Can AI assistants and crawlers read SkillTube?",
+      "answer": "Yes. Public pages need no JavaScript, have Markdown twins, structured data, a sitemap and llms.txt. Source links are never placed on public pages."
+    },
+    {
+      "group": "Basics",
+      "question": "Do I have to move my repository?",
+      "answer": "No. Your repository stays on GitHub; SkillTube only lists it."
+    },
+    {
+      "group": "Basics",
+      "question": "What is SkillTube?",
+      "answer": "A free directory where developers list AI skills, MCP servers, datasets, databases, prompts, agents and other AI tools. Each listing links to a public GitHub repository."
+    },
+    {
+      "group": "Basics",
+      "question": "Is it really free?",
+      "answer": "Yes. No payment, no subscription, no ads."
+    },
+    {
+      "group": "Basics",
+      "question": "Who runs it?",
+      "answer": "Let's Code India, an open-source organisation in India."
+    },
+    {
+      "group": "Basics",
+      "question": "Do you host my files?",
+      "answer": "No. Files stay in your GitHub repository."
+    },
+    {
+      "group": "Basics",
+      "question": "Which languages is the site in?",
+      "answer": "English for now."
+    },
+    {
+      "group": "Accounts and age",
+      "question": "Who can sign up?",
+      "answer": "Anyone aged 18 or over with a GitHub account at least 3 months old."
+    },
+    {
+      "group": "Accounts and age",
+      "question": "Why GitHub only?",
+      "answer": "It lets us verify that you own the repository you list."
+    },
+    {
+      "group": "Accounts and age",
+      "question": "Can I use it without an account?",
+      "answer": "You can browse public pages and developer profiles. Opening Source, starring, following and publishing need a login."
+    },
+    {
+      "group": "Accounts and age",
+      "question": "How do I delete my account?",
+      "answer": "Settings → Delete account. Your profile, skills, follows, stars and comments are removed immediately."
+    },
+    {
+      "group": "Accounts and age",
+      "question": "Why was my account blocked or removed?",
+      "answer": "Under-age, repeated serious violations (3 badge-removal removals), or a legal order. Contact us on any of the three emails."
+    },
+    {
+      "group": "Publishing",
+      "question": "How many skills can I publish?",
+      "answer": "You start with 25. More slots unlock with views, followers and invites."
+    },
+    {
+      "group": "Publishing",
+      "question": "How long can names and descriptions be?",
+      "answer": "Name 15 characters, short description 150, long description 1500."
+    },
+    {
+      "group": "Publishing",
+      "question": "What are the 39 tags?",
+      "answer": "You pick 3 topics from 15, then 9 and 27 more tags under them. All are required."
+    },
+    {
+      "group": "Publishing",
+      "question": "Why can't I edit right now?",
+      "answer": "Edits are rate-limited (lock shown with days left)."
+    },
+    {
+      "group": "Publishing",
+      "question": "What image sizes are allowed?",
+      "answer": "3 KB normally, 10 KB for Blue/Master Tick holders; SVG, and PNG where the rules allow."
+    },
+    {
+      "group": "Publishing",
+      "question": "What happens if I delete my GitHub repo?",
+      "answer": "The listing is removed after two consecutive failed checks (about 12 hours)."
+    },
+    {
+      "group": "Publishing",
+      "question": "Can I list someone else's repo?",
+      "answer": "No. The repo owner must be the logged-in account."
+    },
+    {
+      "group": "Safety and reports",
+      "question": "How do I report a listing?",
+      "answer": "Use Report on the skill or channel; pick a reason and add a note up to 150 characters."
+    },
+    {
+      "group": "Safety and reports",
+      "question": "Does the developer see who reported?",
+      "answer": "No."
+    },
+    {
+      "group": "Safety and reports",
+      "question": "How long does the developer have to reply?",
+      "answer": "A set window; one reminder is sent three days before it ends."
+    },
+    {
+      "group": "Safety and reports",
+      "question": "What is hidden immediately?",
+      "answer": "Reports marked serious (malware, illegal, violence/terror) hide the listing at once."
+    },
+    {
+      "group": "Safety and reports",
+      "question": "Copyright complaint?",
+      "answer": "Use the `takedown_request` issue template or email us."
+    },
+    {
+      "group": "Badges and ticks",
+      "question": "How do I earn a badge?",
+      "answer": "Each badge page shows \"how to earn\"."
+    },
+    {
+      "group": "Badges and ticks",
+      "question": "What is the Blue Tick?",
+      "answer": "1,000,000 followers. It means fame, not identity verification."
+    },
+    {
+      "group": "Badges and ticks",
+      "question": "What is the Master Tick?",
+      "answer": "100 Blue-Tick followers from at least 10 countries."
+    },
+    {
+      "group": "Badges and ticks",
+      "question": "What are the weekly ranks?",
+      "answer": "The top 50 developers by weekly score in bands of ten; only the best band shows on your profile."
+    },
+    {
+      "group": "Badges and ticks",
+      "question": "Are badges removed?",
+      "answer": "Yes, if a skill that earned a badge is removed after a report."
+    },
+    {
+      "group": "Privacy",
+      "question": "What do you store?",
+      "answer": "GitHub id, username, avatar URL, the country you choose, follows, stars, comments, reports, counters and badges."
+    },
+    {
+      "group": "Privacy",
+      "question": "Do you store my IP?",
+      "answer": "Never."
+    },
+    {
+      "group": "Privacy",
+      "question": "Do you use analytics or tracking cookies?",
+      "answer": "No."
+    },
+    {
+      "group": "Privacy",
+      "question": "Is my country public?",
+      "answer": "Never."
+    },
+    {
+      "group": "Privacy",
+      "question": "How long do you keep removal records?",
+      "answer": "180 days."
+    },
+    {
+      "group": "Privacy",
+      "question": "Who handles complaints?",
+      "answer": "Our Grievance Officer — see the Grievance page."
+    },
+    {
+      "group": "Technical",
+      "question": "Is the code open?",
+      "answer": "Yes, MIT."
+    },
+    {
+      "group": "Technical",
+      "question": "How do I report a security bug?",
+      "answer": "See the Security page and `.well-known/security.txt`."
+    },
+    {
+      "group": "Technical",
+      "question": "Does it work offline?",
+      "answer": "Only a basic offline page."
+    },
+    {
+      "group": "Technical",
+      "question": "Is there an API?",
+      "answer": "Not public yet."
+    },
+    {
+      "group": "Technical",
+      "question": "Where can I see service status?",
+      "answer": "The Status page."
+    },
+    {
+      "group": "Technical",
+      "question": "Where is the documentation?",
+      "answer": "Read the SkillTube documentation for guides to publishing, limits, reports, privacy and AI-tool access."
+    }
+  ],
+  "posts": [
+    {
+      "slug": "why-we-built-this",
+      "title": "Why we built SkillTube",
+      "summary": "Useful AI resources are scattered across repositories; SkillTube adds one free, structured place to discover them."
+    },
+    {
+      "slug": "finding-is-harder-than-building",
+      "title": "Finding a good AI skill is harder than writing one",
+      "summary": "Names, descriptions, tags and activity signals help people compare projects beyond repository names."
+    },
+    {
+      "slug": "every-listing-is-a-github-repo",
+      "title": "Every listing lives in its own public GitHub repository",
+      "summary": "Ownership, history, licence and issues stay with the developer; SkillTube provides a discovery card and link."
+    },
+    {
+      "slug": "free-forever-no-credit-card",
+      "title": "Free for developers and users, with no credit card",
+      "summary": "SkillTube is designed around open-source software and free service plans, with no paid APIs or subscriptions."
+    },
+    {
+      "slug": "verified-owners-not-anonymous-uploads",
+      "title": "Owners are checked against GitHub",
+      "summary": "GitHub sign-in and recurring repository checks help keep listings tied to their owners."
+    },
+    {
+      "slug": "dead-links-removed-automatically",
+      "title": "Dead listings clean themselves up",
+      "summary": "The catalog job checks repositories repeatedly and removes listings after consecutive failed checks."
+    },
+    {
+      "slug": "datasets-and-databases-for-ai",
+      "title": "AI needs data, not only skills",
+      "summary": "Datasets, vector stores and databases deserve the same clear discovery as prompts and agents."
+    },
+    {
+      "slug": "small-developers-get-seen",
+      "title": "Small developers get a fair chance",
+      "summary": "A mixed-strength search approach is intended to give useful new listings a path to discovery."
+    },
+    {
+      "slug": "badges-that-mean-something",
+      "title": "Badges and ticks you cannot buy",
+      "summary": "SkillTube awards badges through published activity rules; audience ticks are not paid verification."
+    },
+    {
+      "slug": "safety-and-reports",
+      "title": "Reporting that is fair to both sides",
+      "summary": "Reports allow a developer response, preserve reporter privacy and hide serious listings while reviewed."
+    },
+    {
+      "slug": "privacy-by-design",
+      "title": "We store as little as possible",
+      "summary": "SkillTube does not store IP addresses or run analytics; country stays private and minimal records expire."
+    },
+    {
+      "slug": "built-for-18-plus",
+      "title": "Why SkillTube is 18+",
+      "summary": "The service requires adult users and GitHub accounts that meet the age requirement."
+    },
+    {
+      "slug": "open-to-the-world",
+      "title": "Open to the world",
+      "summary": "SkillTube is a free, open-source community layer from Let's Code India for developers everywhere."
+    },
+    {
+      "slug": "open-source-and-transparent",
+      "title": "Open source, with the rules in public",
+      "summary": "MIT-licensed code, public docs and an error-code table make the project easier to inspect."
+    },
+    {
+      "slug": "light-fast-works-on-a-phone",
+      "title": "Light, fast and works on a phone",
+      "summary": "Native web technologies and server-rendered public pages keep the experience straightforward on small devices."
+    },
+    {
+      "slug": "how-to-start-in-5-minutes",
+      "title": "Start in five minutes",
+      "summary": "A short path from GitHub sign-in to a tagged listing and a shareable developer channel."
+    },
+    {
+      "slug": "why-not-just-github",
+      "title": "GitHub already exists. Why SkillTube?",
+      "summary": "GitHub keeps the code; SkillTube adds structured discovery, comparison and developer channels."
+    },
+    {
+      "slug": "readable-by-ai-assistants",
+      "title": "Be found by people and by AI assistants",
+      "summary": "Server-rendered pages, Markdown twins, structured data and sitemaps give crawlers complete descriptions."
+    },
+    {
+      "slug": "mcp-servers-datasets-and-tools",
+      "title": "Not only skills: MCP servers, datasets, databases and AI tools",
+      "summary": "Any AI-related resource in a public repository can use the same structured listing fields and tags."
+    }
+  ],
+  "docs": [
+    {
+      "slug": "getting-started",
+      "title": "Getting started",
+      "summary": "Sign in with GitHub to publish and manage AI resources on SkillTube. AI skills are the main focus; MCP servers, datasets, databases, prompts, agents, AI tools and guides are welcome too."
+    },
+    {
+      "slug": "limits-and-rules",
+      "title": "Limits and rules",
+      "summary": "SkillTube uses activity limits and cooldowns to keep publishing and community actions manageable. The app shows an error when an action is unavailable."
+    },
+    {
+      "slug": "reporting-content",
+      "title": "Reporting content",
+      "summary": "Report a listing or developer channel when you believe it breaks the community rules. Reports are reviewed, and a report is not by itself proof that a claim is true."
+    },
+    {
+      "slug": "responding-to-reports",
+      "title": "Responding to reports",
+      "summary": "If someone reports your listing or channel, SkillTube gives you a private notice and a response window. You can see what was reported, but never who submitted the report."
+    },
+    {
+      "slug": "removals-and-appeals",
+      "title": "Removals and appeals",
+      "summary": "This guide explains what happens when a listing or account is removed and how to ask the team to review a decision."
+    },
+    {
+      "slug": "contacting-us",
+      "title": "Contacting us",
+      "summary": "Contact Let's Code India for account support, grievances, copyright notices or other questions about SkillTube."
+    },
+    {
+      "slug": "announcements-and-updates",
+      "title": "Announcements and updates",
+      "summary": "Announcements share news from the SkillTube team. Updates help you follow new activity from developers you follow."
+    },
+    {
+      "slug": "badges-and-ranking",
+      "title": "Badges and ranking",
+      "summary": "Badges and ticks are automatic activity signals displayed on SkillTube. They are not identity verification, and they appear only on SkillTube."
+    },
+    {
+      "slug": "privacy-and-data",
+      "title": "Privacy and data",
+      "summary": "SkillTube stores account and activity information needed to run the service. Some profile and listing information is public; private account details are not."
+    },
+    {
+      "slug": "for-ai-tools",
+      "title": "For AI tools",
+      "summary": "SkillTube publishes readable public pages for people, assistants and crawlers. AI skills are the main focus; the directory also covers MCP servers, datasets, databases, prompts, agents, AI tools and guides."
+    }
+  ],
+  "topics": [
+    "programming",
+    "web-frontend",
+    "backend-api",
+    "mobile-desktop",
+    "ai-agents",
+    "data-db",
+    "devops-cloud",
+    "security",
+    "automation",
+    "writing",
+    "documents",
+    "design",
+    "research",
+    "business",
+    "education"
+  ],
+  "lastUpdated": "2026-11-25"
+}

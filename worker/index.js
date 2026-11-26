@@ -51,6 +51,15 @@ export default {
         });
       }
       if (path === "/robots.txt") return robots(env, url);
+      if (path === "/llms-full.txt")
+        return new Response(null, {
+          status: 301,
+          headers: {
+            ...SEC,
+            Location: `${site(env, url)}/llms.txt`,
+            "Cache-Control": "public, max-age=3600",
+          },
+        });
       if (path === "/llms.txt") return await llms(env, url);
       if (path === "/sitemap-pages.xml") {
         const response = await sitemap(env, url, path);
@@ -803,69 +812,185 @@ async function sitemap(env, url, path) {
 // Return crawler directives for public and utility routes.
 function robots(env, url) {
   const base = site(env, url);
+  const agents = [
+    "GPTBot",
+    "OAI-SearchBot",
+    "ChatGPT-User",
+    "ClaudeBot",
+    "Claude-SearchBot",
+    "Claude-User",
+    "PerplexityBot",
+    "Google-Extended",
+    "Applebot-Extended",
+    "CCBot",
+    "Bytespider",
+    "Amazonbot",
+    "cohere-ai",
+  ];
   return plain(
-    `User-agent: *\nAllow: /\nDisallow: /app/\nDisallow: /404.html\nDisallow: /offline.html\nDisallow: /developers/?q=\nDisallow: /developers/?page=\n\nSitemap: ${base}/sitemap.xml\n`,
+    `User-agent: *
+Crawl-delay: 1
+Allow: /
+Disallow: /app/
+Disallow: /404.html
+Disallow: /offline.html
+Disallow: /developers/?q=
+Disallow: /developers/?page=
+
+# Crawling welcome: public SkillTube pages are available to AI crawlers.
+${agents
+  .map(
+    /* Give named AI crawlers the same public routes and privacy boundaries. */
+    (agent) =>
+      `User-agent: ${agent}
+Allow: /
+Crawl-delay: 1
+Disallow: /app/
+Disallow: /404.html
+Disallow: /offline.html
+Disallow: /developers/?q=
+Disallow: /developers/?page=`,
+  )
+  .join("\n\n")}
+
+Sitemap: ${base}/sitemap.xml
+`,
     "text/plain",
   );
 }
 
-// Return machine-readable public site and guide references.
+// Generate the complete standalone llms.txt from static repository content metadata.
 async function llms(env, url) {
   const base = site(env, url);
   const response = await env.ASSETS.fetch(
-    new Request(new URL("/docs/docs.json", url)),
+    new Request(new URL("/llms-source.json", url)),
   );
   if (!response.ok)
-    throw new Error(
-      `Could not load documentation guide source: ${response.status}`,
-    );
-  const docs = await response.json();
-  if (!Array.isArray(docs))
-    throw new Error("Documentation guide source must be an array.");
-  const guideLinks = docs
+    throw new Error(`Could not load llms content source: ${response.status}`);
+  const source = await response.json();
+  if (
+    !Array.isArray(source.faq) ||
+    !Array.isArray(source.posts) ||
+    !Array.isArray(source.docs) ||
+    !Array.isArray(source.topics) ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(source.lastUpdated || "")
+  ) {
+    throw new Error("llms content source has an invalid shape.");
+  }
+  const markdownText = (value) =>
+    String(value ?? "")
+      .replace(/\\/g, "\\\\")
+      .replace(/([`*_{}\[\]()#+.!|>])/g, "\\$1")
+      .replace(/\s+/g, " ")
+      .trim();
+  const validEntries = (items, label) =>
+    items.map((item) => {
+      if (
+        !/^[a-z0-9-]+$/.test(item.slug || "") ||
+        !item.title ||
+        !item.summary
+      ) {
+        throw new Error(`Invalid ${label} metadata in llms content source.`);
+      }
+      return item;
+    });
+  const posts = validEntries(source.posts, "post");
+  const docs = validEntries(source.docs, "documentation");
+  const faq = source.faq
+    .map((item) => {
+      if (!item.question || !item.answer)
+        throw new Error("Invalid FAQ item in llms content source.");
+      return `- **Q:** ${markdownText(item.question)}\n  **A:** ${markdownText(item.answer)}`;
+    })
+    .join("\n");
+  const postLinks = posts
     .map(
       /* Build a display value for each doc. */
-      (doc) => {
-        if (!/^[a-z0-9-]+$/.test(doc.slug || "") || !doc.title || !doc.summary)
-          throw new Error("Invalid documentation metadata in LLM guide.");
-        return `- [${doc.title}](${base}/docs/${doc.slug}/): ${doc.summary} Markdown: ${base}/docs/${doc.slug}.md`;
-      },
+      (post) =>
+        `- [${markdownText(post.title)}](${base}/why-skilltube/${post.slug}/): ${markdownText(post.summary)}`,
+    )
+    .join("\n");
+  const guideLinks = docs
+    .map(
+      /* Link each generated guide using repository-sourced metadata. */
+      (doc) =>
+        `- [${markdownText(doc.title)}](${base}/docs/${doc.slug}/): ${markdownText(doc.summary)} Markdown: ${base}/docs/${doc.slug}.md`,
     )
     .join("\n");
   return plain(
     `# SkillTube
 
-> SkillTube is a free, open discovery layer for AI skills, MCP servers, datasets, databases, prompts, agents, AI tools and guides. Every listing lives in its own public GitHub repository. Pages here show the name, description, topics, views and developer. Source links are available only after signing in with GitHub.
+> A free, open discovery directory for AI skills first, plus MCP servers, datasets, databases, prompts, agents, AI tools and guides.
 
-## Discovery
-- [Search public listings](${base}/developers/): search by listing name or topic; type @username to find a developer
-- [Sitemap index](${base}/sitemap.xml): static pages and paginated public listing sitemaps
-- [Static page sitemap](${base}/sitemap-pages.xml): legal, help, about, and article pages
-- [Documentation hub](${base}/docs/): product and developer documentation
-- [Weekly leaderboard](${base}/leaderboard/): public developer rankings
-- [Badge catalog](${base}/badges/): public badge information
-- [Documentation hub](${base}/docs/): guides for using the service
+## About
+SkillTube helps people discover and compare AI skills and related AI resources. Each listing is tied to a developer-owned public GitHub repository. Created by Ayush Giri and maintained by [Let's Code India](https://let-s-code-india.github.io/).
 
-## Listing formats
-- HTML listing: ${base}/skill/<id>
-- Plain-text listing: ${base}/skill/<id>.md
-- HTML developer profile: ${base}/dev/<username>
-- Plain-text developer profile: ${base}/dev/<username>.md
-- Public pages expose listing metadata, not private account data or source repository URLs.
+## How to search
+- Search listings: ${base}/developers/?q=<words>
+- Search an exact developer username: use @username to open ${base}/dev/<username>
+- Browse a topic: ${base}/topic/<tag>/
+- Top-level topic slugs: ${source.topics
+      .map((topic) => {
+        if (!/^[a-z0-9-]+$/.test(topic))
+          throw new Error("Invalid topic slug in llms content source.");
+        return `[${topic}](${base}/topic/${topic}/)`;
+      })
+      .join(", ")}
+- [Sitemap index](${base}/sitemap.xml): public pages and paginated listing sitemaps
+- [Documentation hub](${base}/docs/): product guides and service information
+
+## What each page contains
+- /skill/<id>: listing name, description, tags, developer and public activity.
+- /skill/<id>.md: the plain-text version of a public listing.
+- /dev/<username>: public developer profile, listings, badges and channel details.
+- /dev/<username>.md: the plain-text version of a developer profile.
+- /developers/: public listing search; @username opens an exact developer page.
+- /topic/<tag>/: public listings tagged with that topic.
+- /leaderboard/: weekly public developer rankings.
+- /badges/: public badge catalog and earning information.
+- /faq/: product questions and answers.
+- /why-skilltube/<slug>/: product rationale and design articles.
+- /docs/<slug>/: service guides, also available as Markdown at /docs/<slug>.md.
+- /app/: interactive account features; not a public crawler destination.
+
+## Not available on purpose
+- Source repository links are not shown on public pages.
+- User country selections, reporter identities and private account details are not public.
+- The signed-in app is not a public data endpoint; never crawl or attempt to access private app data.
+
+## Crawling etiquette
+- Make at most one request per second and identify your bot.
+- Honour robots.txt, including its crawl delay and disallowed routes.
+- Never sign in, never crawl /app/, and do not infer hidden data or source links.
+- Prefer the sitemap and Markdown twins over repeated page discovery.
+
+## Content licence summary
+- Listings remain the property of their developers and are governed by the licence in each developer's repository.
+- SkillTube source code is licensed under MIT; that licence does not apply to listed resources.
+- Attribute "SkillTube" when quoting this file or other SkillTube content.
+
+## FAQ
+${faq}
+
+## Why SkillTube
+${postLinks}
 
 ## Documentation guides
 ${guideLinks}
 
-## Policies and contact
-- [Privacy](${base}/legal/privacy/)
-- [Terms](${base}/legal/terms/)
-- [Community Guidelines](${base}/legal/community-guidelines/)
+- [Privacy policy](${base}/legal/privacy/)
+- [Terms of service](${base}/legal/terms/)
+- [Community guidelines](${base}/legal/community-guidelines/)
 - [Security policy](${base}/legal/security/)
+- [Contact page](${base}/contact/)
+
+## Contact
+- ayushgiri.ai.21@gmail.com
+- ayushgiri.25@icloud.com
+- ayushgiri.dev1@outlook.com
 - [Security contact](${base}/.well-known/security.txt)
 
-## Guidance
-- Public HTML and plain-text pages represent the same public listing information.
-- Do not attempt to sign in, access private data, or infer repository source URLs.
+Last updated: ${source.lastUpdated}
 `,
     "text/plain",
   );

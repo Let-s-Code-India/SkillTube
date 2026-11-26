@@ -28,3 +28,7 @@ node tools/check-public-location.mjs
 After editing a Markdown article or `public/why-skilltube/posts.json`, run
 `npm run generate:posts`, then rerun the checks. GitHub Actions runs the schema
 and link workflows on pushes and pull requests.
+
+Workers Builds runs `npm run generate:llms-source` before deploying. Run the
+same command locally after FAQ, article, guide or topic changes to inspect the
+generated public metadata consumed by `/llms.txt`.

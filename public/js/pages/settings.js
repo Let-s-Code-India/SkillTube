@@ -7,24 +7,7 @@ import { call, edge, edgeForm } from "../api.js";
 import { signOut } from "../auth.js";
 import { showError } from "../errors.js";
 import { toast } from "../components/toasts.js";
-
-const topics = [
-  "programming",
-  "web-frontend",
-  "backend-api",
-  "mobile-desktop",
-  "ai-agents",
-  "data-db",
-  "devops-cloud",
-  "security",
-  "automation",
-  "writing",
-  "documents",
-  "design",
-  "research",
-  "business",
-  "education",
-];
+import { topicSlugs } from "../topics.js";
 
 // Create an element with optional text and a CSS class.
 function node(tag, text, className = "") {
@@ -123,7 +106,7 @@ export async function render(app) {
   const legend = node("legend", "Choose exactly three");
   interests.append(legend);
   const selected = new Set();
-  for (const topic of topics) {
+  for (const topic of topicSlugs) {
     const label = node("label", undefined, "chip");
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";

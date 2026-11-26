@@ -7,6 +7,7 @@ import { call, edge } from "../api.js";
 import { getGithubToken } from "../auth.js";
 import { showError } from "../errors.js";
 import { toast } from "../components/toasts.js";
+import { topicSlugs } from "../topics.js";
 
 // Listing categories and description templates shown in the first wizard step.
 const listingTypes = {
@@ -36,24 +37,6 @@ const templates = {
     "What it is:\nHow to install/use:\nRequirements:\nLicence:\nExample:\nLimits:",
   Guide: "What it teaches:\nRequirements:\nSteps:\nLicence:\nExample:\nLimits:",
 };
-const topics = [
-  "programming",
-  "web-frontend",
-  "backend-api",
-  "mobile-desktop",
-  "ai-agents",
-  "data-db",
-  "devops-cloud",
-  "security",
-  "automation",
-  "writing",
-  "documents",
-  "design",
-  "research",
-  "business",
-  "education",
-];
-
 // Create a labeled text input or textarea.
 function field(labelText, type = "text") {
   const wrap = document.createElement("label");
@@ -230,7 +213,7 @@ export async function render(app) {
     topicChoices = await call("tag_picker", { p_level: 1, p_q: "" });
     const group = checkboxGroup(
       "Choose main topics",
-      topicChoices.length ? topicChoices : topics,
+      topicChoices.length ? topicChoices : topicSlugs,
       3,
       values.t1,
       "choose 3",
