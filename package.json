@@ -6,13 +6,16 @@
   "scripts": {
     "generate:posts": "node tools/make-post.mjs",
     "check:posts": "node tools/make-post.mjs --check",
+    "generate:llms-source": "node tools/make-llms-source.mjs",
+    "check:llms-source": "node tools/make-llms-source.mjs --check",
     "generate:docs": "node tools/make-docs.mjs",
     "check:docs": "node tools/make-docs.mjs --check",
     "check:schema": "node tools/check-schema.mjs",
     "check:links": "node tools/check-links.mjs",
     "check:responsive": "node tools/check-responsive.mjs",
     "check:worker": "node tools/check-worker.mjs",
-    "check:security": "node tools/check-security.mjs"
+    "check:security": "node tools/check-security.mjs",
+    "check:comments": "node tools/check-comments.mjs"
   },
   "devDependencies": {
     "ajv": "^8.17.1",

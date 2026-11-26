@@ -19,6 +19,8 @@ jobs:
       - run: npm ci
       - run: npm run check:posts
       - run: npm run check:docs
+      - run: npm run check:llms-source
+      - run: npm run check:comments
       - run: npm run check:links
       - run: npm run check:responsive
       - run: npm run check:worker

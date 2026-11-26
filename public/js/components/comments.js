@@ -5,6 +5,23 @@
  */
 import { call } from "../api.js";
 import { showError } from "../errors.js";
+import { confirmDialog } from "./dialogs.js";
+
+// Call a moderation RPC and refresh the thread after it succeeds.
+async function performCommentAction(button, error, comment, action, onChanged) {
+  button.disabled = true;
+  try {
+    await call("comment_action", {
+      p_comment: comment.id,
+      p_action: action,
+    });
+    await onChanged();
+  } catch (e) {
+    showError(error, e.code, e.arg);
+  } finally {
+    button.disabled = false;
+  }
+}
 
 // Render a comment and its available moderation actions.
 function commentNode(comment, skillId, mine, onChanged) {
@@ -15,7 +32,12 @@ function commentNode(comment, skillId, mine, onChanged) {
   heading.className = "comment-meta";
   heading.textContent = `@${comment.author?.username || "developer"}${comment.pinned ? " · Pinned" : ""}`;
   const body = document.createElement("p");
-  body.textContent = comment.body;
+  if (mine && comment.hidden) {
+    body.className = "mut";
+    body.textContent = "Hidden";
+  } else {
+    body.textContent = comment.body;
+  }
   article.append(heading, body);
   if (comment.expires_at && !comment.pinned) {
     const expires = document.createElement("small");
@@ -26,7 +48,7 @@ function commentNode(comment, skillId, mine, onChanged) {
   const error = document.createElement("div");
   const actions = document.createElement("div");
   actions.className = "comment-actions";
-  if (comment.parent_id === null) {
+  if (!comment.hidden && comment.parent_id === null) {
     const reply = document.createElement("button");
     reply.type = "button";
     reply.className = "btn secondary";
@@ -38,28 +60,19 @@ function commentNode(comment, skillId, mine, onChanged) {
     );
     actions.append(reply);
   }
-  if (mine && comment.parent_id === null) {
+  if (mine && !comment.hidden && comment.parent_id === null) {
     const pin = document.createElement("button");
     pin.type = "button";
     pin.className = "btn secondary";
     pin.textContent = comment.pinned ? "Unpin" : "Pin";
-    pin.addEventListener(
-      "click",
-      /* Handle the click event. */
-      async () => {
-        pin.disabled = true;
-        try {
-          await call("comment_action", {
-            p_comment: comment.id,
-            p_action: comment.pinned ? "unpin" : "pin",
-          });
-          onChanged();
-        } catch (e) {
-          showError(error, e.code, e.arg);
-        } finally {
-          pin.disabled = false;
-        }
-      },
+    pin.addEventListener("click", () =>
+      performCommentAction(
+        pin,
+        error,
+        comment,
+        comment.pinned ? "unpin" : "pin",
+        onChanged,
+      ),
     );
     actions.append(pin);
   }
@@ -68,24 +81,42 @@ function commentNode(comment, skillId, mine, onChanged) {
     remove.type = "button";
     remove.className = "btn secondary";
     remove.textContent = "Delete";
-    remove.addEventListener(
-      "click",
-      /* Handle the click event. */
-      async () => {
-        remove.disabled = true;
-        try {
-          await call("comment_action", {
-            p_comment: comment.id,
-            p_action: "delete_mine",
-          });
-          onChanged();
-        } catch (e) {
-          showError(error, e.code, e.arg);
-        } finally {
-          remove.disabled = false;
-        }
-      },
+    remove.addEventListener("click", () =>
+      performCommentAction(remove, error, comment, "delete_mine", onChanged),
     );
+    actions.append(remove);
+  }
+  if (mine && !comment.mine) {
+    const visibility = document.createElement("button");
+    visibility.type = "button";
+    visibility.className = "btn secondary";
+    visibility.textContent = comment.hidden ? "Unhide" : "Hide";
+    visibility.addEventListener("click", () =>
+      performCommentAction(
+        visibility,
+        error,
+        comment,
+        comment.hidden ? "unhide" : "hide",
+        onChanged,
+      ),
+    );
+    actions.append(visibility);
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "btn danger";
+    remove.textContent = "Delete";
+    remove.addEventListener("click", () => {
+      if (confirmDialog("Delete this comment?")) {
+        return performCommentAction(
+          remove,
+          error,
+          comment,
+          "delete",
+          onChanged,
+        );
+      }
+    });
     actions.append(remove);
   }
   article.append(actions, error);
@@ -201,7 +232,8 @@ export async function renderComments(
       return;
     }
     list.replaceChildren();
-    const roots = rows.filter(
+    const visibleRows = rows.filter((row) => mine || row.hidden !== true);
+    const roots = visibleRows.filter(
       /* Keep row values that match the current view. */
       (row) => row.parent_id === null,
     );
@@ -209,7 +241,7 @@ export async function renderComments(
       const thread = document.createElement("section");
       thread.className = "comment-thread";
       thread.append(commentNode(root, skillId, mine, refresh));
-      rows
+      visibleRows
         .filter(
           /* Keep reply values that match the current view. */
           (reply) => reply.parent_id === root.id,
