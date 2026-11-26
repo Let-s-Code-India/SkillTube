@@ -25,6 +25,7 @@ const workerRoutePatterns = [
   /^\/(?:skill|dev)\/[^/]+(?:\.md)?$/,
   /^\/topic\/[A-Za-z0-9-]+\/?$/,
 ];
+const noindexPages = new Set(["app/index.html", "404.html", "offline.html"]);
 
 // Collect generated public HTML files for link validation.
 async function htmlFiles(directory) {
@@ -73,6 +74,28 @@ const problems = [];
 for (const file of await htmlFiles(publicRoot)) {
   const source = await readFile(file, "utf8");
   const relative = path.relative(publicRoot, file);
+  if (
+    noindexPages.has(relative) &&
+    !/<meta\b[^>]*name="robots"[^>]*content="noindex"/i.test(source)
+  )
+    problems.push(`${relative}: missing robots noindex metadata`);
+  if (noindexPages.has(relative)) {
+    if (
+      !/<meta\b[^>]*property="og:image:width"[^>]*content="2658"/i.test(
+        source,
+      ) ||
+      !/<meta\b[^>]*property="og:image:height"[^>]*content="1634"/i.test(source)
+    )
+      problems.push(
+        `${relative}: expected social image dimensions 2658 x 1634`,
+      );
+  }
+  if (relative === "offline.html") {
+    if (!/<meta\b[^>]*property="og:image"[^>]*content=/i.test(source))
+      problems.push(`${relative}: missing Open Graph image`);
+    if (!/<meta\b[^>]*name="twitter:image"[^>]*content=/i.test(source))
+      problems.push(`${relative}: missing Twitter image`);
+  }
   if (!/<html\b[^>]*\blang="en"/i.test(source))
     problems.push(`${relative}: missing lang="en"`);
   if (!/<title>[^<]+<\/title>/i.test(source))
@@ -149,6 +172,22 @@ for (const file of await htmlFiles(publicRoot)) {
       problems.push(`${relative}: missing internal target ${value}`);
   }
 }
+const socialImage = await readFile(path.join(publicRoot, "og-image.png"));
+if (
+  socialImage.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a" ||
+  socialImage.readUInt32BE(16) !== 2658 ||
+  socialImage.readUInt32BE(20) !== 1634
+) {
+  problems.push("og-image.png: expected PNG dimensions 2658 x 1634");
+}
+const humanCredits = await readFile(
+  path.join(publicRoot, "humans.txt"),
+  "utf8",
+);
+if (
+  !humanCredits.includes("Organisation URL: https://let-s-code-india.github.io")
+)
+  problems.push("humans.txt: missing Let's Code India organisation URL");
 if (problems.length) {
   console.error(problems.join("\n"));
   process.exitCode = 1;
