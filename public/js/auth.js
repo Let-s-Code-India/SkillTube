@@ -10,7 +10,6 @@ import {
   signInWithGithub,
   signOutFromAuth,
 } from "./api.js";
-import { showError } from "./errors.js";
 
 // Return session.
 export async function getSession() {
@@ -34,6 +33,7 @@ export function getGithubToken() {
   return sessionStorage.getItem("skilltube.github_token");
 }
 // Check whether the signed-in user completed required profile setup.
+// Returns { ok: true } or { ok: false, code, arg } so the caller shows ONE friendly message.
 export async function gateSession(session) {
   if (!session) return { ok: false, code: "LOGIN_REQUIRED" };
   const token = session.provider_token;
@@ -41,7 +41,17 @@ export async function gateSession(session) {
   try {
     return await edge("account-gate", token ? { github_token: token } : {});
   } catch (error) {
-    showError(document.querySelector("#auth-error"), error.code, error.arg);
-    return { ok: false, code: error.code };
+    const reason = error?.raw?.reason;
+    if (reason === "too_young") {
+      const left = Number(error.raw.needed) - Number(error.raw.days_old);
+      return {
+        ok: false,
+        code: "ACCOUNT_TOO_YOUNG",
+        arg: Number.isFinite(left) && left > 0 ? String(left) : null,
+      };
+    }
+    if (reason === "blocked") return { ok: false, code: "ACCOUNT_BLOCKED" };
+    // A network or browser-level failure has no backend code.
+    return { ok: false, code: error?.code || "NETWORK_ERROR", arg: error?.arg || null };
   }
 }

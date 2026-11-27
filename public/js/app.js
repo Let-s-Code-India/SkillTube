@@ -89,8 +89,52 @@ async function loadPage(route, app) {
   await mod.render(app, { id, route, state });
 }
 
+let rendering = false;
+let renderAgain = false;
+// Run one render at a time. Sign-in fires several events at once; extra requests are merged
+// into one more run afterwards. A step that hangs is stopped after 25 seconds with a retry button.
+async function render(options = {}) {
+  if (rendering) {
+    renderAgain = true;
+    return;
+  }
+  rendering = true;
+  let timer;
+  try {
+    await Promise.race([
+      renderOnce(options),
+      new Promise(
+        /* Reject when the render takes too long. */
+        (_, reject) => {
+          timer = setTimeout(() => reject({ code: "SETUP_TIMEOUT" }), 25000);
+        },
+      ),
+    ]);
+  } catch (error) {
+    app.replaceChildren();
+    showError(app, error?.code || "SETUP_TIMEOUT", error?.arg);
+    const retry = document.createElement("button");
+    retry.type = "button";
+    retry.className = "btn";
+    retry.textContent = "Try again";
+    retry.addEventListener(
+      "click",
+      /* Handle the click event. */
+      () => render(),
+    );
+    app.append(retry);
+  } finally {
+    clearTimeout(timer);
+    rendering = false;
+    if (renderAgain) {
+      renderAgain = false;
+      render();
+    }
+  }
+}
+
 // Render the signed-out shell, account gates, or active route.
-async function render({ signedOut = false } = {}) {
+async function renderOnce({ signedOut = false } = {}) {
   const route = hashRoute();
   const adminLink = document.querySelector("#admin-nav");
   if (adminLink) adminLink.hidden = true;
@@ -134,7 +178,7 @@ async function render({ signedOut = false } = {}) {
   const gate = await gateSession(state.session);
   if (!gate.ok) {
     app.replaceChildren();
-    showError(app, gate.code || "ACCOUNT_NOT_READY");
+    showError(app, gate.code || "ACCOUNT_NOT_READY", gate.arg);
     return;
   }
   const accepted = await ageGate(app, render);

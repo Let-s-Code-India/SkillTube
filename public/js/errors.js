@@ -9,6 +9,12 @@ const table = {
     "Your account is not ready. Finish sign-in setup and try again.",
   ACCOUNT_BLOCKED: "This account is blocked. Contact the SkillTube team.",
   UNDER_AGE: "SkillTube is only for people aged 18 or older.",
+  ACCOUNT_TOO_YOUNG:
+    "Your GitHub account must be at least 3 months old to use SkillTube.",
+  NETWORK_ERROR:
+    "SkillTube could not reach its server. Check your connection and try again.",
+  SETUP_TIMEOUT:
+    "Setting up your account is taking longer than usual. Please try again.",
   COUNTRY_MISMATCH: "Choose the country where you currently live.",
   COUNTRY_UNVERIFIED: "Your country could not be verified.",
   COUNTRY_LOCKED: "Country changes are locked for now.",
@@ -107,6 +113,8 @@ export function errorMessage(code, arg) {
   ) {
     message += ` ${arg}`;
   }
+  if (arg && key === "ACCOUNT_TOO_YOUNG")
+    message += ` Please come back in ${arg} day${Number(arg) === 1 ? "" : "s"}.`;
   if (arg && key === "COMMENT_TOO_LONG")
     message = `This comment must be no more than ${arg} characters.`;
   return message;
