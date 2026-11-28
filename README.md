@@ -105,6 +105,10 @@ npm run check:worker
 npm run check:security
 node tools/stamp-footer.mjs --check
 node tools/check-public-location.mjs
+npm run check:contrast
+npm run check:seo
+npm run check:budgets
+npm test
 ```
 
 The post generator runs at commit time and writes static HTML; visitors do not

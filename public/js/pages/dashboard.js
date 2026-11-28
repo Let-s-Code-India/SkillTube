@@ -10,6 +10,7 @@ import {
   getBadgeImagePaths,
   tickImage,
 } from "../components/badges.js";
+import { horizontalBarChart, donutChart } from "../components/charts.js";
 
 // Create a DOM element and assign supplied text without parsing HTML.
 function el(tag, text, className = "") {
@@ -170,6 +171,19 @@ export async function render(app) {
 
   rankingState(app, data || {});
   rankingList(app, data || {}, images);
+  const chartGrid = el("div", undefined, "dashboard-grid");
+  if (Array.isArray(data?.top) && data.top.length) {
+    horizontalBarChart(
+      chartGrid,
+      "Weekly top 10 score",
+      data.top.slice(0,10).map((row)=>({label:`${row.name || row.username}`,value:Number(row.score||0)})),
+      "Score",
+    );
+  }
+  if (Number(account?.publish_limit) > 0) {
+    donutChart(chartGrid, Number(account.listings_used||0), Number(account.publish_limit));
+  }
+  if (chartGrid.childElementCount) app.append(chartGrid);
 
   const recent = el("section", undefined, "badge-section");
   recent.append(el("h2", "Recent badges"));

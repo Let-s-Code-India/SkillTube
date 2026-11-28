@@ -15,7 +15,11 @@
     "check:responsive": "node tools/check-responsive.mjs",
     "check:worker": "node tools/check-worker.mjs",
     "check:security": "node tools/check-security.mjs",
-    "check:comments": "node tools/check-comments.mjs"
+    "check:comments": "node tools/check-comments.mjs",
+    "check:contrast": "node tools/check-contrast.mjs",
+    "check:seo": "node tools/check-seo.mjs",
+    "check:budgets": "node tools/check-budgets.mjs",
+    "test": "node --test test/*.test.js"
   },
   "devDependencies": {
     "ajv": "^8.17.1",

@@ -11,12 +11,12 @@ html {
 }
 body {
   margin: 0;
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--bg);
+  color: var(--text);
   font: 16px/1.6 var(--font-sans);
 }
 a {
-  color: var(--blue);
+  color: var(--link);
 }
 button,
 input,
@@ -36,8 +36,8 @@ img {
   position: absolute;
   left: -999px;
   top: 8px;
-  background: var(--surface-raised);
-  color: var(--ink);
+  background: var(--surface);
+  color: var(--text);
   padding: 8px 12px;
   z-index: 1000;
 }
@@ -45,13 +45,8 @@ img {
   left: 8px;
 }
 :focus-visible {
-  outline: 3px solid #005fcc;
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
-}
-@media (prefers-color-scheme: dark) {
-  :focus-visible {
-    outline-color: #8cc8ff;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   html {

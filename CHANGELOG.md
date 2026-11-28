@@ -23,3 +23,8 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 - Added automated schema, static-link and generated-content checks.
+# 1.1.0
+
+- Unified the static, SPA, and Worker frontend around the SkillTube design system.
+- Added seven theme choices, system theme following, and the shared theme boot and picker.
+- Restyled listing cards, navigation, dashboard charts, and responsive layouts.

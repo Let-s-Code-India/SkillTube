@@ -9,10 +9,10 @@
   justify-content: center;
   min-height: 44px;
   border-radius: 7px;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--text);
   padding: 10px 16px;
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--brand);
+  color: var(--on-brand);
   text-decoration: none;
   font: 700 12px/1 var(--font-mono);
   text-transform: uppercase;
@@ -20,7 +20,7 @@
 }
 .btn.secondary {
   background: transparent;
-  color: var(--ink);
+  color: var(--text);
 }
 .btn.danger {
   border-color: var(--red);
@@ -45,7 +45,7 @@
   padding: 0;
 }
 .listing-image-frame {
-  aspect-ratio: 4/3;
+  aspect-ratio:16/9;
   overflow: hidden;
   background: var(--section-surface);
 }
@@ -57,6 +57,18 @@
   color: var(--muted);
   font: 700 2rem var(--font-mono);
 }
+.cover-hue-1{background:linear-gradient(135deg,#6a2dff,#ff3c99)}
+.cover-hue-2{background:linear-gradient(135deg,#0b84ff,#00c9ff)}
+.cover-hue-3{background:linear-gradient(135deg,#c8141c,#ffc700)}
+.cover-hue-4{background:linear-gradient(135deg,#2dbf45,#00c9ff)}
+.cover-hue-5{background:linear-gradient(135deg,#17151d,#6a2dff)}
+.cover-hue-6{background:linear-gradient(135deg,#ff3c99,#ffc700)}
+.cover-hue-7{background:linear-gradient(135deg,#075fa8,#197a2b)}
+.cover-hue-8{background:linear-gradient(135deg,#725500,#c8141c)}
+.cover-hue-9{background:linear-gradient(135deg,#b02c73,#6a2dff)}
+.cover-hue-10{background:linear-gradient(135deg,#00c9ff,#2dbf45)}
+.cover-hue-11{background:linear-gradient(135deg,#ffc700,#ff3c99)}
+.cover-hue-12{background:linear-gradient(135deg,#c8141c,#0b84ff)}
 .listing-image-frame img {
   width: 100%;
   height: 100%;
@@ -148,9 +160,12 @@
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 6px 10px;
-  background: var(--surface);
+  background: var(--chip-bg);
   text-decoration: none;
-  color: var(--ink);
+  color: var(--text);
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
 }
 .toast {
   position: fixed;

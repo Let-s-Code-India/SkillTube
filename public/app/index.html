@@ -12,16 +12,22 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://skilltube.ayushgiri-ai-21.workers.dev/og-image.png">
   <meta name="theme-color" content="#17151d"><link rel="manifest" href="/site.webmanifest">
-  <link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/base.css">
-  <link rel="stylesheet" href="/css/layout.css"><link rel="stylesheet" href="/css/components.css">
-  <link rel="stylesheet" href="/css/pages.css">
+  <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/dm-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/js/theme-boot.js"></script>
+  <link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/themes.css">
+  <link rel="stylesheet" href="/css/base.css"><link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css"><link rel="stylesheet" href="/css/pages.css">
+  <link rel="stylesheet" href="/css/charts.css"><link rel="stylesheet" href="/css/motion.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
-  <header class="site-header"><nav class="nav container" aria-label="Primary">
-    <a class="brand" href="/"><img src="/logo.svg" alt="" width="36" height="36"><span>SkillTube</span></a>
-    <div class="nav-actions"><button class="btn secondary" id="menu" type="button" aria-expanded="false">Menu</button></div>
-  </nav></header>
+  <header class="site-header"><nav class="nav topbar" aria-label="Primary">
+    <button class="icon-button" id="menu" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Toggle sidebar">☰</button>
+    <a class="brand" href="/" aria-label="SkillTube home"><img src="/logo.svg" alt="" width="36" height="36"><span>SkillTube</span></a>
+    <form class="top-search" action="/developers/" role="search"><label class="visually-hidden" for="top-search-input">Search SkillTube</label><input id="top-search-input" name="q" placeholder="Search SkillTube"><button type="submit" aria-label="Search">Search</button></form>
+    <div class="nav-actions"><a class="btn secondary" href="#/publish">Publish</a><button class="icon-button" id="theme-button" type="button" aria-label="Theme menu">◐</button></div>
+  </nav><nav class="topic-chips" aria-label="Topics"><a class="chip active" href="#/home" aria-current="page">All</a><a class="chip" href="#/search?q=web-frontend">Web &amp; frontend</a><a class="chip" href="#/search?q=ai-agents">AI &amp; agents</a><a class="chip" href="#/search?q=data-db">Data &amp; databases</a><a class="chip" href="#/search?q=devops-cloud">DevOps &amp; cloud</a></nav></header>
   <aside class="drawer" id="drawer" aria-label="App navigation">
     <button class="btn secondary" id="close-menu" type="button">Close</button>
     <nav><p><a href="#/home">Home</a></p><p><a href="#/announcements">Announcements <span id="announcement-dot" class="notification-dot blue" hidden aria-label="Unread announcements"></span></a></p><p><a href="#/search">Search</a></p><p><a href="#/publish">Publish</a></p><p><a href="#/my-skills">My listings</a></p><p><a href="#/dashboard">Dashboard</a></p><p><a href="#/updates">Updates <span id="blue-dot" class="notification-dot blue" hidden aria-label="Unread updates"></span></a></p><p><span>Alerts <span id="red-dot" class="notification-dot red" hidden aria-label="New alerts"></span></span></p><p><a href="#/badges">Badges</a></p><p><a href="#/settings">Settings</a></p><p id="admin-nav" hidden><a href="#/admin">Admin</a></p><p><a href="/docs/">Documentation</a></p></nav>
@@ -32,7 +38,7 @@
     <a href="/legal/privacy/">Privacy</a><a href="/legal/terms/">Terms</a>
     <a href="/legal/community-guidelines/">Community Guidelines</a><a href="/legal/cookies/">Cookies</a>
     <a href="/legal/security/">Security</a><a href="/brand/">Licenses</a><a href="/contact/">Contact</a>
-    <a href="/faq/">FAQ</a><a href="/why-skilltube/">Why SkillTube</a><a href="/docs/">Docs</a>
+    <a href="/faq/">FAQ</a><a href="/why-skilltube/">Why SkillTube</a><a href="/docs/">Docs</a><a href="/llms.txt">For AI tools</a>
   </nav>
   <p>Created by Ayush Giri, Founder of <a href="https://let-s-code-india.github.io/">Let's Code India</a>. © 2026 <a href="https://let-s-code-india.github.io/">Let's Code India</a>. Source code under the MIT License.</p></div></footer>
   <script src="/vendor/supabase.min.js"></script>

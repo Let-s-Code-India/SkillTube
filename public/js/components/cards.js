@@ -34,6 +34,8 @@ export function imageFrame(image, alt, className = "listing-image-frame") {
   frame.className = className;
   const src = imageSource(image);
   if (!src) {
+    const hash = Array.from(alt || "").reduce((sum,char)=>sum+char.charCodeAt(0),0);
+    frame.classList.add(`cover-hue-${(hash % 12)+1}`);
     const placeholder = document.createElement("span");
     placeholder.className = "listing-image-placeholder";
     placeholder.textContent = Array.from(alt || "?")[0] || "?";

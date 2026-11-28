@@ -16,6 +16,20 @@ import { onAuthChange } from "./auth.js";
 const app = document.querySelector("#app");
 const drawer = document.querySelector("#drawer");
 const menu = document.querySelector("#menu");
+import("./components/theme-picker.js").then(({ mountThemePicker, syncSystemTheme }) => {
+  const themeButton=document.querySelector("#theme-button");
+  if(themeButton){
+    themeButton.addEventListener("click",()=>{
+      const menu=document.createElement("div");
+      menu.className="theme-menu card";
+      mountThemePicker(menu);
+      themeButton.replaceWith(menu);
+    });
+  }
+  if(matchMedia("(prefers-color-scheme: dark)").addEventListener){
+    matchMedia("(prefers-color-scheme: dark)").addEventListener("change",syncSystemTheme);
+  }
+});
 
 // Close drawer.
 function closeDrawer() {

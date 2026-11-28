@@ -25,4 +25,8 @@ jobs:
       - run: npm run check:responsive
       - run: npm run check:worker
       - run: npm run check:security
+      - run: npm run check:contrast
+      - run: npm run check:seo
+      - run: npm run check:budgets
+      - run: npm test
       - run: node tools/stamp-footer.mjs --check

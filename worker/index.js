@@ -120,7 +120,22 @@ export default {
         );
       if (path === "/developers" || path === "/developers/")
         return developers(request, env, ctx, url);
-      return env.ASSETS.fetch(request);
+      const asset = await env.ASSETS.fetch(request);
+      if (
+        request.method === "GET" &&
+        asset.ok &&
+        asset.headers.get("content-type")?.includes("text/html")
+      ) {
+        let body = await asset.text();
+        if (!body.includes("/js/theme-boot.js")) {
+          body = body.replace(
+            "</head>",
+            '<link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-mono-400.woff2" as="font" type="font/woff2" crossorigin><script src="/js/theme-boot.js"></script></head>',
+          );
+        }
+        return new Response(body, asset);
+      }
+      return asset;
     } catch (e) {
       return new Response(
         "SkillTube is busy for a moment. Please try again in a minute.",
@@ -276,12 +291,15 @@ ${canon ? `<meta property="og:url" content="${esc(canon)}">` : ""}<meta property
 <meta property="og:image:width" content="2658"><meta property="og:image:height" content="1634">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${esc(o.image || base + "/og-image.png")}">
 <link rel="icon" href="/image/app/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/css/worker.css">
+<script nonce="__CSP_NONCE__" src="/js/theme-boot.js"></script>
+<link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/dm-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/themes.css"><link rel="stylesheet" href="/css/base.css"><link rel="stylesheet" href="/css/layout.css"><link rel="stylesheet" href="/css/components.css"><link rel="stylesheet" href="/css/pages.css"><link rel="stylesheet" href="/css/charts.css"><link rel="stylesheet" href="/css/motion.css"><link rel="stylesheet" href="/css/worker.css">
 ${o.ld ? `<script nonce="__CSP_NONCE__" type="application/ld+json">${JSON.stringify(o.ld).replace(/</g, "\\u003c")}</script>` : ""}
 </head><body>
 <header><a class="brand" href="/">SkillTube</a><nav><a href="/developers/">Developers</a><a href="/docs/">Docs</a><a href="/">Sign in</a></nav></header>
 <main>${o.body}</main>
-<footer>Created by Ayush Giri, Founder of <a href="https://let-s-code-india.github.io/">Let's Code India</a>. © 2026 <a href="https://let-s-code-india.github.io/">Let's Code India</a>. Source code under the MIT License.<br><a href="/legal/privacy/">Privacy</a> · <a href="/legal/terms/">Terms</a> · <a href="/legal/community-guidelines/">Community Guidelines</a> · <a href="/legal/cookies/">Cookies</a> · <a href="/legal/security/">Security</a> · <a href="/brand/">Licenses</a> · <a href="/contact/">Contact</a> · <a href="/faq/">FAQ</a> · <a href="/why-skilltube/">Why SkillTube</a> · <a href="/docs/">Docs</a></footer>
+<footer>Created by Ayush Giri, Founder of <a href="https://let-s-code-india.github.io/">Let's Code India</a>. © 2026 <a href="https://let-s-code-india.github.io/">Let's Code India</a>. Source code under the MIT License.<br><a href="/legal/privacy/">Privacy</a> · <a href="/legal/terms/">Terms</a> · <a href="/legal/community-guidelines/">Community Guidelines</a> · <a href="/legal/cookies/">Cookies</a> · <a href="/legal/security/">Security</a> · <a href="/brand/">Licenses</a> · <a href="/contact/">Contact</a> · <a href="/faq/">FAQ</a> · <a href="/why-skilltube/">Why SkillTube</a> · <a href="/docs/">Docs</a> · <a href="/llms.txt">For AI tools</a></footer>
 </body></html>`,
     o.status || 200,
   );
