@@ -15,6 +15,7 @@
   <link rel="manifest" href="/site.webmanifest"><link rel="icon" href="/favicon.ico">
   <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/dm-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/vendor/supabase.min.js"></script>
   <script src="/js/theme-boot.js"></script>
   <link rel="stylesheet" href="/css/app.css">
 </head>
@@ -32,7 +33,11 @@
       <p>Discover AI skills, MCP servers, datasets, databases, prompts, agents and AI tools — free and open source.</p>
       <div class="chips"><a class="btn" href="/app/#/home">Sign in with GitHub</a><a class="btn secondary" href="/developers/">Browse developers</a><a class="btn secondary" href="/docs/">Documentation</a><a class="btn secondary" href="/why-skilltube/">Why SkillTube</a></div>
     </div></section>
-    <div class="container"><div class="stat-grid landing-stats" id="stats" hidden><div class="card"><strong id="skill-count">—</strong><span>Listings</span></div><div class="card"><strong id="developer-count">—</strong><span>Developers</span></div><div class="card"><strong id="member-count">—</strong><span>Members</span></div></div></div>
+    <div class="container"><div class="stat-grid landing-stats" id="stats" hidden>
+      <div class="card stat-item"><svg aria-hidden="true"><use href="/icons.svg#grid"/></svg><div><strong id="skill-count">—</strong><span>Listings</span></div></div>
+      <div class="card stat-item"><svg aria-hidden="true"><use href="/icons.svg#users"/></svg><div><strong id="developer-count">—</strong><span>Developers</span></div></div>
+      <div class="card stat-item"><svg aria-hidden="true"><use href="/icons.svg#users"/></svg><div><strong id="member-count">—</strong><span>Members</span></div></div>
+    </div></div>
     <section class="section band"><div class="container">
       <p class="eyebrow">What you get</p><h2>One clear card for every AI resource</h2>
       <div class="grid-3">

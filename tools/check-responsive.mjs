@@ -25,7 +25,7 @@ const requirements = [
   ["375px breakpoint", /@media\(max-width:375px\)/],
   ["900px breakpoint", /@media\(max-width:900px\)/],
   ["44px button targets", /min-height:44px/],
-  ["drawer touch targets", /\.drawernava\{[^}]*min-height:44px/],
+  ["drawer touch targets", /\.drawernava(?:,\.drawer-row)?\{[^}]*min-height:44px/],
   [
     "single-column listing grid",
     /\.listing-grid,\.badge-grid\{grid-template-columns:minmax\(0,1fr\)/,

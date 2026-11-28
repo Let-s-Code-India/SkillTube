@@ -9,8 +9,9 @@ export function hashRoute() {
 }
 // Extract and normalize a route name and its optional identifier.
 export function routeParts(route) {
-  const slash = route.indexOf("/");
+  const path = route.split("?", 1)[0];
+  const slash = path.indexOf("/");
   return slash === -1
-    ? [route, ""]
-    : [route.slice(0, slash), route.slice(slash + 1)];
+    ? [path, ""]
+    : [path.slice(0, slash), path.slice(slash + 1)];
 }

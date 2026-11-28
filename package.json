@@ -21,11 +21,13 @@
     "check:contrast": "node tools/check-contrast.mjs",
     "check:seo": "node tools/check-seo.mjs",
     "check:budgets": "node tools/check-budgets.mjs",
+    "check:ui": "npm run build && node tools/ui-smoke.mjs",
     "test": "node --test test/*.test.js"
   },
   "devDependencies": {
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
-    "jsdom": "^26.1.0"
+    "jsdom": "^26.1.0",
+    "playwright": "^1.65.1"
   }
 }

@@ -54,6 +54,11 @@ export async function render(app) {
         results.replaceChildren();
         const items = result?.items || (result?.developer?.skills || []);
         count.textContent = `${items.length} ${items.length === 1 ? "result" : "results"}`;
+        const resultHeading = document.createElement("h2");
+        resultHeading.textContent = input.value.trim()
+          ? `Results for “${input.value.trim()}”`
+          : "Newest listings";
+        results.append(resultHeading);
         if (result?.kind === "developer") {
           const developer = result.developer;
           if (!developer) {

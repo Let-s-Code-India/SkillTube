@@ -20,3 +20,21 @@ export const topicSlugs = [
   "business",
   "education",
 ];
+
+export const topicLabels = {
+  programming: "Programming",
+  "web-frontend": "Web & frontend",
+  "backend-api": "Backend & APIs",
+  "mobile-desktop": "Mobile & desktop",
+  "ai-agents": "AI & agents",
+  "data-db": "Data & databases",
+  "devops-cloud": "DevOps & cloud",
+  security: "Security",
+  automation: "Automation",
+  writing: "Writing",
+  documents: "Documents",
+  design: "Design",
+  research: "Research",
+  business: "Business",
+  education: "Education",
+};

@@ -227,8 +227,9 @@ function articleShell(document, body, headings, navigation) {
   <meta property="og:description" content="${summary}"><meta property="og:image" content="${baseUrl}/og-image.png">
   <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${baseUrl}/og-image.png">
   <meta name="theme-color" content="#17151d">
-  <link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/base.css">
-  <link rel="stylesheet" href="/css/layout.css"><link rel="stylesheet" href="/css/components.css"><link rel="stylesheet" href="/css/pages.css">
+  <link rel="stylesheet" href="/css/app.css">
+  <script src="/vendor/supabase.min.js"></script>
+  <script type="module" src="/js/rules.js"></script>
   <script type="application/ld+json">${jsonLd}</script>
 </head>
 <body>

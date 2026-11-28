@@ -2,7 +2,7 @@ Badges can be useful when their rules are visible and they cannot be bought. Ski
 
 The awards have no cash value and are not a guarantee that a resource is secure, accurate or suitable for a task. They describe a particular milestone, not an independent audit. A badge can also be revoked when its underlying conditions no longer apply or when an associated listing is removed after a report.
 
-Ticks have a different meaning. The Blue Tick corresponds to an audience milestone of one million followers; it is not paid verification and does not prove a developer's identity. The Master Tick reflects a threshold involving Blue-Tick followers from multiple countries. Those signals describe reach, not code quality or endorsement by SkillTube.
+Ticks have a different meaning. The Blue Tick corresponds to an audience milestone of 1,000 followers; it is not paid verification and does not prove a developer's identity. The Master Tick reflects a threshold of 100 Blue-Tick followers from 10 countries. Those signals describe reach, not code quality or endorsement by SkillTube.
 
 Keeping the criteria public helps developers understand what the product measures and helps visitors interpret what they see. The rules are implemented in backend functions and can change as the product evolves. If the criteria change, the catalog should continue to explain the current requirement rather than relying on a badge name alone.
 

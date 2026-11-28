@@ -13,7 +13,7 @@ import { refreshNotificationDots } from "./components/notification-dots.js";
 import { call } from "./api.js";
 import { onAuthChange } from "./auth.js";
 import { signOut } from "./auth.js";
-import { topicSlugs } from "./topics.js";
+import { topicSlugs, topicLabels } from "./topics.js";
 import { mountThemePicker, syncSystemTheme } from "./components/theme-picker.js";
 import "./rules.js";
 
@@ -75,7 +75,10 @@ document.addEventListener("keydown", (event) => {
     }
   }
 });
-if (isDesktop()) drawer.classList.add("open");
+if (isDesktop()) {
+  drawer.classList.add("open");
+  menu.setAttribute("aria-expanded", String(!document.body.classList.contains("sidebar-collapsed")));
+}
 matchMedia("(min-width: 1024px)").addEventListener("change", (event) => {
   if (event.matches) drawer.classList.add("open");
   else closeDrawer({ restore: false });
@@ -88,14 +91,14 @@ function renderTopicChips() {
   const hash = location.hash;
   const active = new URLSearchParams(hash.includes("?") ? hash.split("?")[1] : "").get("topic")
     || new URLSearchParams(hash.includes("?") ? hash.split("?")[1] : "").get("q");
-  const entries = [["All", ""] , ...topicSlugs.map((topic) => [topic.replaceAll("-", " "), topic])];
+  const entries = [["All", ""], ...topicSlugs.map((topic) => [topicLabels[topic] || topic, topic])];
   topicChips.replaceChildren();
   for (const [label, topic] of entries) {
     const link = document.createElement("a");
     link.className = "chip";
     link.href = topic ? `#/search?q=${encodeURIComponent(topic)}&topic=${encodeURIComponent(topic)}` : "#/search";
     link.textContent = label;
-    if ((topic ? active === topic : route === "search" && !active)) {
+    if ((topic ? active === topic : (route === "home" || route === "search") && !active)) {
       link.classList.add("active");
       link.setAttribute("aria-current", "page");
     }
@@ -125,6 +128,13 @@ if (matchMedia("(prefers-color-scheme: dark)").addEventListener) {
 }
 
 const topSearch = document.querySelector("#top-search");
+const searchToggle = document.querySelector("#search-toggle");
+searchToggle?.addEventListener("click", () => {
+  const expanded = document.querySelector(".app-header")?.classList.toggle("search-open");
+  searchToggle.setAttribute("aria-expanded", String(Boolean(expanded)));
+  searchToggle.setAttribute("aria-label", expanded ? "Close search" : "Open search");
+  if (expanded) document.querySelector("#top-search-input")?.focus();
+});
 topSearch?.addEventListener("submit", (event) => {
   event.preventDefault();
   const input = document.querySelector("#top-search-input");
@@ -161,12 +171,12 @@ const titles = {
   admin: "Admin",
 };
 
-function renderBreadcrumb(route) {
+function renderBreadcrumb(route, currentTitle = null) {
   const slot = document.querySelector("#breadcrumb-slot");
   if (!slot) return;
   slot.replaceChildren();
   const [page, id] = routeParts(route);
-  let title = titles[page] || "SkillTube";
+  let title = currentTitle || titles[page] || "SkillTube";
   if (page === "skill" && id) title = "Listing";
   if (page === "dev" && id) title = "Developer";
   const nav = document.createElement("nav");
@@ -200,6 +210,77 @@ async function loadPage(route, app) {
   }
   const mod = await import(`./pages/${moduleName}.js`);
   await mod.render(app, { id, route, state });
+}
+
+async function renderSignedOutHome({ h, p, authError, button }) {
+  const welcome = document.createElement("section");
+  welcome.className = "welcome-layout";
+  const message = document.createElement("div");
+  message.className = "welcome-message";
+  h.textContent = "Find and share useful AI resources.";
+  p.textContent = "Browse a developer-built directory of skills, agents, MCP servers, datasets and tools.";
+  button.textContent = "Sign in with GitHub";
+  message.append(h, p, authError, button);
+
+  const features = document.createElement("div");
+  features.className = "welcome-features";
+  for (const [icon, title, description] of [
+    ["search","Discover clearly","Compare public AI resources with structured topics and listing details."],
+    ["users","Meet developers","Explore public developer channels and the work behind each listing."],
+    ["code","Keep ownership","Every listing points back to its public GitHub repository."],
+  ]) {
+    const card = document.createElement("article");
+    card.className = "card welcome-feature";
+    const symbol = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    symbol.setAttribute("aria-hidden","true");
+    const use = document.createElementNS("http://www.w3.org/2000/svg","use");
+    use.setAttribute("href",`/icons.svg#${icon}`);
+    symbol.append(use);
+    const heading = document.createElement("h3");
+    heading.textContent = title;
+    const detail = document.createElement("p");
+    detail.textContent = description;
+    card.append(symbol,heading,detail);
+    features.append(card);
+  }
+  welcome.append(message,features);
+  app.append(welcome);
+
+  const [tagsResult, searchResult] = await Promise.allSettled([
+    call("trending_tags"),
+    call("public_search",{p_q:"",p_page:0}),
+  ]);
+  if (tagsResult.status === "fulfilled" && Array.isArray(tagsResult.value) && tagsResult.value.length) {
+    const section = document.createElement("section");
+    section.className = "welcome-public-section";
+    const heading = document.createElement("h2");
+    heading.textContent = "Trending";
+    const chips = document.createElement("div");
+    chips.className = "chips";
+    for (const item of tagsResult.value.slice(0,12)) {
+      const tag = item.slug || item;
+      const link = document.createElement("a");
+      link.className = "chip";
+      link.href = `#/search?q=${encodeURIComponent(tag)}`;
+      link.textContent = tag;
+      chips.append(link);
+    }
+    section.append(heading,chips);
+    app.append(section);
+  }
+  const items = searchResult.status === "fulfilled" ? searchResult.value?.items : null;
+  if (Array.isArray(items) && items.length) {
+    const section = document.createElement("section");
+    section.className = "welcome-public-section";
+    const heading = document.createElement("h2");
+    heading.textContent = "Newest listings";
+    const grid = document.createElement("div");
+    grid.className = "listing-grid";
+    const { listingCard } = await import("./components/cards.js");
+    for (const item of items.slice(0,6)) grid.append(listingCard(item));
+    section.append(heading,grid);
+    app.append(section);
+  }
 }
 
 let rendering = false;
@@ -249,6 +330,8 @@ async function render(options = {}) {
 // Render the signed-out shell, account gates, or active route.
 async function renderOnce({ signedOut = false } = {}) {
   const route = hashRoute();
+  renderBreadcrumb(route);
+  renderTopicChips();
   const adminLink = document.querySelector("#admin-nav");
   if (adminLink) adminLink.hidden = true;
   try {
@@ -260,6 +343,7 @@ async function renderOnce({ signedOut = false } = {}) {
   }
   if (!state.session) {
     app.replaceChildren();
+    renderBreadcrumb(route, "Sign in");
     const h = document.createElement("h2");
     h.textContent = signedOut ? "You are signed out" : "Sign in to SkillTube";
     const p = document.createElement("p");
@@ -285,7 +369,9 @@ async function renderOnce({ signedOut = false } = {}) {
         }
       },
     );
-    app.append(h, p, authError, button);
+    if (routeParts(route)[0] === "home" && !signedOut) {
+      await renderSignedOutHome({ h, p, authError, button });
+    } else app.append(h, p, authError, button);
     return;
   }
   const gate = await gateSession(state.session);
@@ -320,6 +406,23 @@ async function renderOnce({ signedOut = false } = {}) {
     } else {
     const name = account?.name || account?.username || "SkillTube";
     avatar.textContent = name.trim().split(/\s+/).map((part) => part[0]).join("").slice(0,2).toUpperCase();
+    }
+  }
+  const drawerAvatar = document.querySelector("#drawer-avatar");
+  const drawerName = document.querySelector("#drawer-profile-name");
+  const displayName = account?.name || account?.username || "Your profile";
+  if (drawerName) drawerName.textContent = displayName;
+  if (drawerAvatar) {
+    if (typeof avatarUrl === "string" && avatarUrl) {
+      drawerAvatar.replaceChildren();
+      const image = document.createElement("img");
+      image.src = avatarUrl;
+      image.alt = "";
+      image.width = 36;
+      image.height = 36;
+      drawerAvatar.append(image);
+    } else {
+      drawerAvatar.textContent = displayName.trim().split(/\s+/).map((part) => part[0]).join("").slice(0,2).toUpperCase();
     }
   }
   const profileButton = document.querySelector("#profile-button");
@@ -367,7 +470,12 @@ async function renderOnce({ signedOut = false } = {}) {
 window.addEventListener(
   "hashchange",
   /* Handle the hashchange event. */
-  () => render(),
+  () => {
+    const route = hashRoute();
+    renderBreadcrumb(route);
+    renderTopicChips();
+    render();
+  },
 );
 onAuthChange(
   /* Respond to the authentication state change. */
@@ -398,4 +506,6 @@ onAuthChange(
       );
   },
 );
+renderBreadcrumb(hashRoute());
+renderTopicChips();
 render();
