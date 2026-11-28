@@ -69,6 +69,16 @@ export function badgeCard(
   card.className = `card badge-card${badge.revoked ? " badge-revoked" : ""}`;
   const image = badgeImage(paths, badge.key);
   if (image) card.append(image);
+  else {
+    const placeholder = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    placeholder.classList.add("badge-image-placeholder");
+    placeholder.setAttribute("viewBox", "0 0 24 24");
+    placeholder.setAttribute("aria-hidden", "true");
+    const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+    use.setAttribute("href", "/icons.svg#badge");
+    placeholder.append(use);
+    card.append(placeholder);
+  }
   const details = document.createElement("div");
   const name = document.createElement("h3");
   name.textContent = badge.name || "SkillTube badge";

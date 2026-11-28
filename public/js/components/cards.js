@@ -84,11 +84,10 @@ export function listingCard(skill) {
   title.textContent = skill.name || "Untitled listing";
   heading.append(title);
   content.append(heading);
-  if (skill.short_desc) {
-    const description = document.createElement("p");
-    description.textContent = skill.short_desc;
-    content.append(description);
-  }
+  const description = document.createElement("p");
+  description.className = "listing-description";
+  description.textContent = skill.short_desc || " ";
+  content.append(description);
 
   const developer = skill.developer || {};
   const byline = document.createElement("p");
@@ -118,20 +117,19 @@ export function listingCard(skill) {
     /* Handle the callback for flatMap. */
     (level) => skill.tags?.[level] || [],
   );
-  if (tags.length) {
-    const chips = document.createElement("div");
-    chips.className = "chips listing-tags";
-    for (const tag of tags) {
-      const slug = tagSlug(tag);
-      if (!slug) continue;
-      const link = document.createElement("a");
-      link.className = "chip";
-      link.href = safeUrl(`/topic/${encodeURIComponent(slug)}/`) || "#";
-      link.textContent = tag;
-      chips.append(link);
-    }
-    content.append(chips);
+  const chips = document.createElement("div");
+  chips.className = "chips listing-tags";
+  if (!tags.length) chips.setAttribute("aria-hidden", "true");
+  for (const tag of tags) {
+    const slug = tagSlug(tag);
+    if (!slug) continue;
+    const link = document.createElement("a");
+    link.className = "chip";
+    link.href = safeUrl(`/topic/${encodeURIComponent(slug)}/`) || "#";
+    link.textContent = tag;
+    chips.append(link);
   }
+  content.append(chips);
 
   const stats = document.createElement("p");
   stats.className = "listing-stats";

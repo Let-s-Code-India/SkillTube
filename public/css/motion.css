@@ -1,17 +1,16 @@
-@keyframes route-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+@keyframes route-in { from { opacity:0; } to { opacity:1; } }
 @keyframes skeleton-shift { to { background-position:-200% 0; } }
 .route-enter { animation:route-in var(--duration) var(--ease) both; }
-.card, .btn, .chip { transition:transform var(--duration-fast) var(--ease), box-shadow var(--duration) var(--ease), border-color var(--duration-fast) var(--ease), background var(--duration-fast) var(--ease); }
-.card:hover { transform:translateY(-3px); box-shadow:var(--shadow-l); }
-.btn:active, .chip:active { transform:scale(.98); }
+.card, .btn, .chip { transition:box-shadow var(--duration) var(--ease), border-color var(--duration-fast) var(--ease), background var(--duration-fast) var(--ease); }
+.card:hover { box-shadow:var(--shadow-l); }
 .chip { position:relative; }
 .chip[aria-current="page"]::after { content:""; position:absolute; left:10px; right:10px; bottom:-1px; height:2px; background:var(--chip-active-text); animation:route-in var(--duration) var(--ease); }
-.listing-grid.reveal .listing-card { opacity:0; transform:translateY(10px); }
-.listing-grid.reveal.is-visible .listing-card { opacity:1; transform:none; transition:opacity var(--duration) var(--ease), transform var(--duration) var(--ease); }
+.listing-grid.reveal .listing-card { opacity:0; }
+.listing-grid.reveal.is-visible .listing-card { opacity:1; transition:opacity var(--duration) var(--ease); }
 .skeleton { background:linear-gradient(90deg,var(--surface-2),var(--surface),var(--surface-2)); background-size:200% 100%; animation:skeleton-shift 1.4s linear infinite; }
 .toast { animation:route-in var(--duration) var(--ease); }
 .dialog { animation:route-in var(--duration) var(--ease); }
-.chart-bar { fill:var(--chart-1); transform-origin:145px 0; animation:route-in var(--duration-slow) var(--ease) both; }
+.chart-bar { fill:var(--chart-1); }
 .chart-bar[data-color="2"]{fill:var(--chart-2)} .chart-bar[data-color="3"]{fill:var(--chart-3)}
 .chart-bar[data-color="4"]{fill:var(--chart-4)} .chart-bar[data-color="5"]{fill:var(--chart-5)} .chart-bar[data-color="6"]{fill:var(--chart-6)}
 .orbit { animation:orbit-spin 18s linear infinite; }

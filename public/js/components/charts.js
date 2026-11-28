@@ -20,45 +20,57 @@ export function horizontalBarChart(container, title, rows, metric) {
   card.append(Object.assign(document.createElement("h2"),{textContent:title}));
   const values=(rows||[]).filter((row)=>Number(row.value)>=0).slice(0,10);
   const max=Math.max(1,...values.map((row)=>Number(row.value)||0));
-  const chartHeight=Math.max(260,values.length*28+30);
-  const svg=svgEl("svg",{viewBox:`0 0 600 ${chartHeight}`,role:"img","aria-label":`${title}. ${values.map((r)=>`${r.label}: ${r.value}`).join(", ")}`});
-  for (let step=0;step<=100;step+=20) {
-    const x=145+Math.round(step/100*440);
-    svg.append(svgEl("line",{x1:x,y1:8,x2:x,y2:230,class:"chart-gridline"}));
-  }
+  const list=document.createElement("ol");
+  list.className="weekly-bar-list";
+  list.setAttribute("aria-label",title);
   values.forEach((row,index)=>{
-    const y=18+index*28; const width=Math.max(2,Math.round((Number(row.value)||0)/max*440));
-    const label=svgEl("text",{x:0,y:y+11,class:"chart-label",title:row.label}); label.textContent=row.label.slice(0,14); svg.append(label);
-    const bar=svgEl("rect",{x:145,y,width:Math.min(width,360),height:16,rx:8,class:"chart-bar","data-color":String(index%6+1),tabindex:"0","aria-label":`${row.label}: ${row.value}`,title:`${row.label}: ${row.value}`});
-    const tip=document.createElement("div");tip.className="chart-tooltip";tip.textContent=`${row.label}: ${row.value}`;
-    tip.hidden=true;
-    bar.addEventListener("mouseenter",()=>{tip.hidden=false});
-    bar.addEventListener("mouseleave",()=>{tip.hidden=true});
-    bar.addEventListener("focus",()=>{tip.hidden=false});
-    bar.addEventListener("blur",()=>{tip.hidden=true});
-    card.append(tip);
-    svg.append(bar);
-    const value=svgEl("text",{x:145+Math.min(width,360)+8,y:y+12,class:"chart-value"});value.textContent=String(row.value);svg.append(value);
+    const item=document.createElement("li");
+    item.className="weekly-bar-row";
+    const label=document.createElement("span");
+    label.className="weekly-bar-label";
+    label.textContent=String(row.label);
+    label.title=String(row.label);
+    const track=document.createElement("div");
+    track.className="weekly-bar-track";
+    const width=Math.max(0,Math.min(75,Math.round((Number(row.value)||0)/max*75)));
+    const endpoint=Math.round(width/5)*5;
+    const svg=svgEl("svg",{viewBox:"0 0 100 8","aria-hidden":"true","preserveAspectRatio":"none"});
+    svg.append(svgEl("rect",{x:0,y:0,width:Math.max(width,1),height:8,rx:4,class:"chart-bar","data-color":String(index%6+1)}));
+    const value=document.createElement("span");
+    value.className=`weekly-bar-value end-${endpoint}`;
+    value.textContent=String(row.value);
+    value.title=`${row.label}: ${row.value}`;
+    track.append(svg,value);
+    item.append(label,track);
+    list.append(item);
   });
-  card.append(svg);
+  card.append(list);
   hiddenTable(card,title,["Listing",metric],values.map((row)=>[row.label,String(row.value)]));
   container.append(card);
 }
 export function donutChart(container, used, limit) {
   const card=document.createElement("section"); card.className="card chart-card";
   card.append(Object.assign(document.createElement("h2"),{textContent:"Listing quota"}));
-  const pct=limit>0?Math.min(100,Math.round(used/limit*100)):0;
+  const safeUsed=Math.max(0,Number(used)||0);
+  const safeLimit=Math.max(0,Number(limit)||0);
+  const pct=safeLimit>0?Math.min(100,Math.round(safeUsed/safeLimit*100)):0;
   const svg=svgEl("svg",{viewBox:"0 0 160 160",role:"img","aria-label":`Publishing slots used: ${used} of ${limit}`});
   svg.append(svgEl("circle",{cx:80,cy:80,r:58,fill:"none",stroke:"var(--line)", "stroke-width":18}));
   const ring=svgEl("circle",{cx:80,cy:80,r:58,fill:"none",stroke:"var(--brand)", "stroke-width":18,"stroke-linecap":"round","stroke-dasharray":`${Math.PI*116*pct/100} ${Math.PI*116}`,"transform":"rotate(-90 80 80)"});
   svg.append(ring);
-  const text=svgEl("text",{x:80,y:86,"text-anchor":"middle",class:"chart-number"}); text.textContent=`${used}/${limit}`; svg.append(text);
+  const number=svgEl("text",{x:80,y:72,"text-anchor":"middle","dominant-baseline":"central",class:"chart-number"});
+  number.textContent=safeLimit>0?`${safeUsed} / ${safeLimit}`:"—";
+  const caption=svgEl("text",{x:80,y:94,"text-anchor":"middle","dominant-baseline":"central",class:"chart-caption"});
+  caption.textContent="listings used";
+  const center=svgEl("g",{class:"donut-center"});
+  center.append(number,caption);
+  svg.append(center);
   card.append(svg);
   const legend=document.createElement("div");legend.className="chart-legend";
-  for(const [label,value,kind] of [["Used",used,"used"],["Available",Math.max(0,limit-used),"available"]]){
+  for(const [label,value,kind] of [["Used",safeUsed,"used"],["Available",Math.max(0,safeLimit-safeUsed),"available"]]){
     const item=document.createElement("span");item.className=`chart-legend-item ${kind}`;
     item.append(document.createTextNode(`${label}: ${value}`));legend.append(item);
   }
   card.append(legend);
-  hiddenTable(card,"Publishing slots used",["Used","Limit"],[[String(used),String(limit)]]); container.append(card);
+  hiddenTable(card,"Publishing slots used",["Used","Limit"],[[String(safeUsed),String(safeLimit)]]); container.append(card);
 }

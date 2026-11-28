@@ -12,7 +12,12 @@ function setDot(id, count) {
   if (!dot) return;
   const n = Number(count) || 0;
   dot.hidden = n === 0;
-  dot.textContent = n > 0 ? String(Math.min(n, 99)) : "";
+  dot.replaceChildren();
+  if (n > 0) {
+    const countLabel = document.createElement("span");
+    countLabel.textContent = String(Math.min(n, 99));
+    dot.append(countLabel);
+  }
   dot.setAttribute(
     "aria-label",
     n ? `${n} unread notifications` : "No unread notifications",

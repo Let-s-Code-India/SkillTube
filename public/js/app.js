@@ -15,6 +15,7 @@ import { onAuthChange } from "./auth.js";
 import { signOut } from "./auth.js";
 import { topicSlugs, topicLabels } from "./topics.js";
 import { mountThemePicker, syncSystemTheme } from "./components/theme-picker.js";
+import { renderAvatar } from "./components/avatar.js";
 import "./rules.js";
 
 const app = document.querySelector("#app");
@@ -22,46 +23,55 @@ const drawer = document.querySelector("#drawer");
 const menu = document.querySelector("#menu");
 const backdrop = document.querySelector("#drawer-backdrop");
 const isDesktop = () => matchMedia("(min-width: 1024px)").matches;
-let lastDrawerFocus = null;
+const sidebarStorageKey = "skilltube.sidebarCollapsed";
+let hasStoredSidebarChoice = false;
 try {
-  if (localStorage.getItem("skilltube.sidebarCollapsed") === "1") document.body.classList.add("sidebar-collapsed");
-} catch {}
-function closeDrawer({ restore = true } = {}) {
-  drawer.classList.remove("open");
-  document.body.classList.remove("drawer-lock");
-  if (backdrop) backdrop.hidden = true;
-  menu.setAttribute("aria-expanded", "false");
-  if (restore && lastDrawerFocus) lastDrawerFocus.focus();
-}
-function openDrawer() {
-  lastDrawerFocus = document.activeElement;
-  drawer.classList.add("open");
-  document.body.classList.add("drawer-lock");
-  if (backdrop) backdrop.hidden = false;
-  menu.setAttribute("aria-expanded", "true");
-  document.querySelector("#close-menu")?.focus();
-}
-menu.addEventListener("click", () => {
-  if (isDesktop()) {
-    document.body.classList.toggle("sidebar-collapsed");
-    try {
-      localStorage.setItem("skilltube.sidebarCollapsed", document.body.classList.contains("sidebar-collapsed") ? "1" : "0");
-    } catch {}
-    menu.setAttribute("aria-expanded", String(!document.body.classList.contains("sidebar-collapsed")));
-    return;
+  const stored = localStorage.getItem(sidebarStorageKey);
+  if (stored === "1" || stored === "0") {
+    hasStoredSidebarChoice = true;
+    document.body.classList.toggle("sidebar-collapsed", stored === "1");
   }
-  if (drawer.classList.contains("open")) closeDrawer();
-  else openDrawer();
+} catch {}
+if (!hasStoredSidebarChoice && !isDesktop()) {
+  document.body.classList.add("sidebar-collapsed");
+}
+function applySidebarState({ persist = false, focusClose = false } = {}) {
+  const collapsed = document.body.classList.contains("sidebar-collapsed");
+  const desktop = isDesktop();
+  document.body.classList.toggle("drawer-lock", !desktop && !collapsed);
+  if (backdrop) backdrop.hidden = desktop || collapsed;
+  menu.setAttribute("aria-expanded", String(!collapsed));
+  menu.setAttribute("aria-label", collapsed ? "Open sidebar" : "Collapse sidebar");
+  drawer.setAttribute("aria-hidden", String(!desktop && collapsed));
+  drawer.inert = !desktop && collapsed;
+  if (persist) {
+    try { localStorage.setItem(sidebarStorageKey, collapsed ? "1" : "0"); } catch {}
+  }
+  if (focusClose && !collapsed) document.querySelector("#close-menu")?.focus();
+}
+function setSidebarCollapsed(collapsed, options = {}) {
+  const wasCollapsed = document.body.classList.contains("sidebar-collapsed");
+  document.body.classList.toggle("sidebar-collapsed", collapsed);
+  applySidebarState(options);
+  if (collapsed && !wasCollapsed) menu.focus();
+}
+applySidebarState();
+menu.addEventListener("click", () => {
+  setSidebarCollapsed(!document.body.classList.contains("sidebar-collapsed"), {
+    persist: true,
+    focusClose: document.body.classList.contains("sidebar-collapsed"),
+  });
 });
-document.querySelector("#close-menu")?.addEventListener("click", () => closeDrawer());
-backdrop?.addEventListener("click", () => closeDrawer());
-drawer.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => {
-  if (!isDesktop()) closeDrawer({ restore: false });
-}));
+document.querySelector("#close-menu")?.addEventListener("click", () => setSidebarCollapsed(true, { persist: true }));
+backdrop?.addEventListener("click", () => setSidebarCollapsed(true, { persist: true }));
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && drawer.classList.contains("open")) {
-    closeDrawer();
-  } else if (event.key === "Tab" && !isDesktop() && drawer.classList.contains("open")) {
+  if (event.key === "Escape" && !document.body.classList.contains("sidebar-collapsed")) {
+    setSidebarCollapsed(true, { persist: true });
+  } else if (
+    event.key === "Tab" &&
+    !isDesktop() &&
+    !document.body.classList.contains("sidebar-collapsed")
+  ) {
     const focusable = [...drawer.querySelectorAll("a,button")].filter((node) => !node.hidden);
     if (!focusable.length) return;
     const first = focusable[0];
@@ -75,13 +85,8 @@ document.addEventListener("keydown", (event) => {
     }
   }
 });
-if (isDesktop()) {
-  drawer.classList.add("open");
-  menu.setAttribute("aria-expanded", String(!document.body.classList.contains("sidebar-collapsed")));
-}
 matchMedia("(min-width: 1024px)").addEventListener("change", (event) => {
-  if (event.matches) drawer.classList.add("open");
-  else closeDrawer({ restore: false });
+  applySidebarState();
 });
 
 const topicChips = document.querySelector("#topic-chips");
@@ -112,7 +117,7 @@ themeMenu.className = "theme-menu card";
 themeMenu.setAttribute("role","menu");
 themeMenu.hidden = true;
 themeButton?.parentElement.append(themeMenu);
-mountThemePicker(themeMenu);
+mountThemePicker(themeMenu, themeButton);
 themeButton?.addEventListener("click", () => {
   themeMenu.hidden = !themeMenu.hidden;
   themeButton.setAttribute("aria-expanded", String(!themeMenu.hidden));
@@ -394,38 +399,14 @@ async function renderOnce({ signedOut = false } = {}) {
   state.profile = account;
   const avatar = document.querySelector("#profile-avatar");
   const avatarUrl = account?.avatar_url || account?.github_avatar_url;
-  if (avatar) {
-    if (typeof avatarUrl === "string" && avatarUrl) {
-    avatar.replaceChildren();
-    const image = document.createElement("img");
-    image.src = avatarUrl;
-    image.alt = "";
-    image.width = 36;
-    image.height = 36;
-    avatar.append(image);
-    } else {
-    const name = account?.name || account?.username || "SkillTube";
-    avatar.textContent = name.trim().split(/\s+/).map((part) => part[0]).join("").slice(0,2).toUpperCase();
-    }
-  }
+  const displayName = account?.name || account?.username || "Your profile";
+  if (avatar) renderAvatar(avatar, displayName, avatarUrl, 44);
   const drawerAvatar = document.querySelector("#drawer-avatar");
   const drawerName = document.querySelector("#drawer-profile-name");
-  const displayName = account?.name || account?.username || "Your profile";
   if (drawerName) drawerName.textContent = displayName;
-  if (drawerAvatar) {
-    if (typeof avatarUrl === "string" && avatarUrl) {
-      drawerAvatar.replaceChildren();
-      const image = document.createElement("img");
-      image.src = avatarUrl;
-      image.alt = "";
-      image.width = 36;
-      image.height = 36;
-      drawerAvatar.append(image);
-    } else {
-      drawerAvatar.textContent = displayName.trim().split(/\s+/).map((part) => part[0]).join("").slice(0,2).toUpperCase();
-    }
-  }
+  if (drawerAvatar) renderAvatar(drawerAvatar, displayName, avatarUrl);
   const profileButton = document.querySelector("#profile-button");
+  profileButton?.setAttribute("aria-label", `Profile menu for ${displayName}`);
   const profileMenu = document.querySelector("#profile-menu");
   if (profileMenu) {
     profileMenu.replaceChildren();

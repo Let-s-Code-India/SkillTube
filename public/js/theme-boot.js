@@ -16,4 +16,12 @@
   var meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute("content", color);
   document.documentElement.style.colorScheme = effective === "dark" || effective === "hacker" || effective === "midnight" || effective === "contrast" ? "dark" : "light";
+  var names = { system:"System", light:"Light", dark:"Dark", hacker:"Hacker", midnight:"Midnight", sunrise:"Sunrise", contrast:"High contrast" };
+  document.addEventListener("DOMContentLoaded", function () {
+    var button = document.getElementById("theme-button");
+    var use = button && button.querySelector("use");
+    var selected = value || "system";
+    if (use) use.setAttribute("href", "/icons.svg#theme-" + selected);
+    if (button) button.setAttribute("aria-label", "Theme: " + names[selected]);
+  }, { once: true });
 })();

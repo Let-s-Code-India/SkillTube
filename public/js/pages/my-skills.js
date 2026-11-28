@@ -77,13 +77,14 @@ async function loadSkills(host) {
 function renderSkillCard(host, skill) {
   const card = listingCard(skill);
   const status = document.createElement("p");
-  status.className = "mut";
+  status.className = "listing-management-status";
   status.textContent = skill.deleted_at
     ? `Deleted · ${undoRemaining(skill.deleted_at) ? `undo available for ${formatRemaining(undoRemaining(skill.deleted_at))}` : "undo period ended"}`
     : `${skill.status} · edit lock: ${skill.edit_days_left || 0} days · ${Number(skill.downloads || 0).toLocaleString()} source opens`;
   const actions = document.createElement("div");
-  actions.className = "admin-actions";
-  card.append(status, actions);
+  actions.className = "admin-actions listing-management-actions";
+  const content = card.querySelector(".listing-card-content");
+  content.append(status, actions);
 
   if (skill.deleted_at) {
     if (undoRemaining(skill.deleted_at) > 0) {
@@ -109,7 +110,7 @@ function renderSkillCard(host, skill) {
         },
       );
       actions.append(restore);
-      card.append(error);
+      content.append(error);
     }
     return card;
   }

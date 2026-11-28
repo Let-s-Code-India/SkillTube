@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
-import { readFile, stat } from "node:fs/promises";
+import { mkdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -76,6 +76,11 @@ const demoDeveloper = {
   badges: [],
 };
 let dashboardState = "live";
+let demoName = "Demo Developer";
+let demoAvatarUrl = "";
+let demoListingsUsed = 1;
+let demoPublishLimit = 5;
+let demoAchievements = true;
 let lastSearchQuery = null;
 let callCount = 0;
 const pageErrors = [];
@@ -83,7 +88,7 @@ const rpcValue = (name, args) => {
   callCount += 1;
   switch (name) {
     case "me_state":
-      return { id: "demo-user", username: "demo", name: "Demo Developer", country: "IN", publish_limit: 5, listings_used: 1, followers: 22, is_admin: true, admin_can_write: true, image_rules: {} };
+      return { id: "demo-user", username: "demo", name: demoName, avatar_url: demoAvatarUrl, country: "IN", publish_limit: demoPublishLimit, listings_used: demoListingsUsed, followers: 22, is_admin: true, admin_can_write: true, image_rules: {} };
     case "dashboard":
       return {
         state: dashboardState === "live" ? "live" : "empty",
@@ -110,7 +115,7 @@ const rpcValue = (name, args) => {
     case "badge_catalog":
       return [{ key: "helpful", name: "Helpful", tier: "Bronze", how: "Contribute useful resources." }];
     case "my_achievements":
-      return [{ key: "helpful", name: "Helpful", tier: "Bronze", reason: "Shared a resource.", earned_at: "2026-11-20T12:00:00Z" }];
+      return demoAchievements ? [{ key: "helpful", name: "Helpful", tier: "Bronze", reason: "Shared a resource.", earned_at: "2026-11-20T12:00:00Z" }] : [];
     case "public_settings":
       return { blue_tick_followers: 1000, master_tick_blue_followers: 100, master_tick_countries: 10 };
     case "public_stats":
@@ -135,8 +140,9 @@ const rpcValue = (name, args) => {
     case "admin_announcements":
       return [];
     case "my_alert_count":
-      return { reports: 0, badges: 0 };
+      return { reports: 4, badges: 8 };
     case "unread_updates_count":
+      return 12;
     case "mark_all_seen":
     case "mark_alerts_seen":
     case "mark_announcements_seen":
@@ -168,8 +174,30 @@ try {
   }
   if (!browser) process.exitCode = 0;
   else {
-    const sizes = [390, 768, 1440];
-    const themes = ["light", "dark", "contrast"];
+    const sizes = [360, 390, 768, 1024, 1280, 1440, 1920];
+    const themes = ["system", "light", "dark", "hacker", "midnight", "sunrise", "contrast"];
+    const themeLabels = {
+      system: "System",
+      light: "Light",
+      dark: "Dark",
+      hacker: "Hacker",
+      midnight: "Midnight",
+      sunrise: "Sunrise",
+      contrast: "High contrast",
+    };
+    const pageTitles = {
+      home: "Home",
+      search: "Search",
+      publish: "Publish a listing",
+      "my-listings": "My listings",
+      dashboard: "Dashboard",
+      updates: "Updates",
+      badges: "Badges",
+      settings: "Settings",
+      admin: "Admin",
+      skill: "Listing",
+      developer: "Developer",
+    };
     const routes = [
       ["home", "#/home"],
       ["search", "#/search?q=web-frontend"],
@@ -184,7 +212,7 @@ try {
       ["developer", "#/dev/demo"],
     ];
 
-    async function configurePage(page, dashboardVariant = "live") {
+    async function configurePage(page, theme = "system", dashboardVariant = "live") {
       dashboardState = dashboardVariant;
       await page.route("**/functions/v1/**", (route) =>
         route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) }),
@@ -233,11 +261,11 @@ try {
         }));
         localStorage.setItem("skilltube.age_terms.accepted", "true");
         localStorage.setItem("skilltube.theme", theme);
-      }, "light");
+      }, theme);
     }
 
-    async function assertPage(page, routeName, width) {
-      await page.waitForSelector("#breadcrumb-slot h1");
+    async function assertPage(page, routeName, width, theme) {
+      await page.waitForFunction((title) => document.querySelector("#breadcrumb-slot h1")?.textContent === title, pageTitles[routeName]);
       await page.waitForFunction(() => !document.querySelector("#app .skeleton[aria-label='Loading dashboard']"));
       await page.waitForTimeout(100);
       const state = await page.evaluate(() => {
@@ -245,10 +273,13 @@ try {
         const main = document.querySelector(".app-main").getBoundingClientRect();
         const drawer = document.querySelector("#drawer").getBoundingClientRect();
         const breadcrumb = document.querySelector(".breadcrumb").getBoundingClientRect();
+        const collapsed = document.body.classList.contains("sidebar-collapsed");
+        const use = document.querySelector("#theme-button use");
         return {
           scrollWidth: document.documentElement.scrollWidth,
           width: window.innerWidth,
           h1Count: document.querySelectorAll("h1").length,
+          title: document.querySelector("#breadcrumb-slot h1")?.textContent,
           headerBottom: header.bottom,
           mainTop: main.top,
           mainLeft: main.left,
@@ -256,7 +287,19 @@ try {
           sidebarRight: drawer.right,
           sidebarTop: drawer.top,
           breadcrumbTop: breadcrumb.top,
-          drawerOpen: document.querySelector("#drawer").classList.contains("open"),
+          sidebarCollapsed: collapsed,
+          menuExpanded: document.querySelector("#menu").getAttribute("aria-expanded"),
+          drawerHidden: document.querySelector("#drawer").getAttribute("aria-hidden") === "true",
+          backdropHidden: document.querySelector("#drawer-backdrop").hidden,
+          theme: localStorage.getItem("skilltube.theme"),
+          rootTheme: document.documentElement.getAttribute("data-theme"),
+          themeIcon: use?.getAttribute("href"),
+          themeLabel: document.querySelector("#theme-button").getAttribute("aria-label"),
+          themeMenuHidden: document.querySelector(".theme-menu").hidden,
+          navIcons: [...document.querySelectorAll(".drawer nav a,.drawer nav .drawer-row")].map((link)=>[
+            link.querySelector("span:not(.notification-dot)")?.textContent?.trim(),
+            link.querySelector("use")?.getAttribute("href"),
+          ]),
           topicCount: document.querySelectorAll("#topic-chips .chip").length,
           topbarDisplay: getComputedStyle(document.querySelector(".topbar")).display,
           searchVisible: getComputedStyle(document.querySelector("#top-search")).display !== "none",
@@ -274,20 +317,55 @@ try {
             const node=document.querySelector(selector);const rect=node?.getBoundingClientRect();
             return `${selector}:${rect ? `${Math.round(rect.left)}..${Math.round(rect.right)} w${Math.round(rect.width)} scroll${node.scrollWidth}` : "missing"}`;
           }),
+          grids: [...document.querySelectorAll(".dashboard-grid,.listing-grid,.badge-grid,.docs-grid,.post-grid,.kpi-grid,.settings-content,.admin-list,.comment-list,.stat-grid,.welcome-features,.grid-3")]
+            .filter((node) => getComputedStyle(node).display === "grid")
+            .map((node) => ({
+              selector: node.className,
+              rowGap: parseFloat(getComputedStyle(node).rowGap),
+              columnGap: parseFloat(getComputedStyle(node).columnGap),
+              cards: [...node.children].filter((child) => child.classList.contains("card") || child.matches(".listing-card,.badge-card")).map((child) => {
+                const rect=child.getBoundingClientRect();
+                return {top:rect.top,height:rect.height};
+              }),
+            })),
         };
       });
       assert.equal(state.h1Count, 1, `${routeName} at ${width}px must have exactly one h1`);
+      assert.equal(state.title, pageTitles[routeName], `${routeName} breadcrumb is correct at ${width}px`);
       assert.ok(state.topicCount >= 16, `${routeName} at ${width}px must render every topic chip`);
       assert.equal(state.topbarDisplay,"grid",`Header controls use a single-line grid at ${width}px`);
+      assert.equal(state.theme,theme,`${theme} is stored before navigation at ${routeName}/${width}`);
+      assert.equal(state.themeIcon,`/icons.svg#theme-${theme}`,`${theme} top-bar icon is synchronized`);
+      assert.equal(state.themeLabel,`Theme: ${themeLabels[theme]}`,`${theme} trigger label is synchronized`);
+      assert.equal(state.themeMenuHidden,true,"Theme menu remains closed until requested");
+      if (theme === "system") assert.equal(state.rootTheme,null,"System theme defers to the operating system");
+      else assert.equal(state.rootTheme,theme,`${theme} is applied before the route renders`);
       assert.ok(state.scrollWidth <= state.width, `${routeName} at ${width}px has horizontal overflow (${state.scrollWidth}px): ${state.overflowing.join(", ")}; ${state.widths.join("; ")}`);
       assert.ok(state.breadcrumbTop >= state.headerBottom - 1, `${routeName} overlaps the header at ${width}px`);
+      assert.equal(state.menuExpanded,String(!state.sidebarCollapsed),`${routeName}/${width} menu aria-expanded matches body state`);
+      const navGlyphs=new Map(state.navIcons);
+      assert.equal(navGlyphs.get("Trending tags"),"/icons.svg#fire");
+      assert.equal(navGlyphs.get("Leaderboard"),"/icons.svg#trophy");
+      assert.equal(navGlyphs.get("Updates"),"/icons.svg#refresh");
+      assert.equal(navGlyphs.get("Announcements"),"/icons.svg#megaphone");
+      assert.equal(navGlyphs.get("Alerts"),"/icons.svg#bell-alert");
+      for (const grid of state.grids) {
+        assert.ok([4,8,12,16,24,32].includes(grid.rowGap),`${routeName}/${width} ${grid.selector} row gap ${grid.rowGap}px follows the spacing scale`);
+        assert.ok([4,8,12,16,24,32].includes(grid.columnGap),`${routeName}/${width} ${grid.selector} column gap ${grid.columnGap}px follows the spacing scale`);
+        const tops=[...new Set(grid.cards.map((card)=>Math.round(card.top)))];
+        for (const top of tops) {
+          const row=grid.cards.filter((card)=>Math.abs(card.top-top)<1.5);
+          if (row.length>1) assert.ok(row.every((card)=>Math.abs(card.top-row[0].top)<=1),`${routeName}/${width} ${grid.selector} cards in one row align at their top edges`);
+        }
+      }
       if (width >= 1024) {
-        assert.ok(state.drawerOpen, "Desktop sidebar should be persistent without a menu click");
+        assert.ok(!state.sidebarCollapsed, "Desktop sidebar starts expanded unless a saved choice says otherwise");
         assert.equal(Math.round(state.sidebarTop), 64, "Desktop sidebar starts below the 64px toolbar");
         assert.equal(Math.round(state.sidebarRight - state.sidebarLeft), 240, "Desktop sidebar width is 240px");
         assert.ok(state.mainLeft >= state.sidebarRight - 1, "Main content must start at the sidebar edge");
       } else {
-        assert.ok(!state.drawerOpen, "Mobile/tablet drawer starts closed");
+        assert.ok(state.sidebarCollapsed, "Mobile/tablet drawer starts closed");
+        assert.ok(state.backdropHidden && state.drawerHidden,"Closed mobile drawer hides its backdrop and accessibility subtree");
         assert.ok(state.breadcrumbTop >= state.headerBottom - 1, "Mobile content starts after the header and topic row");
       }
       if (width <= 700) {
@@ -297,44 +375,64 @@ try {
           assert.ok(visibleControls[index].left >= visibleControls[index-1].right-1, `Mobile header controls overlap: ${visibleControls[index-1].selector} and ${visibleControls[index].selector}`);
         }
       }
+      const circleIssues=await page.evaluate(() => {
+        const issues=[];
+        for(const node of document.querySelectorAll(".icon-button,.profile-button,.drawer-account-avatar,.listing-developer-logo,.skill-developer-logo,.notification-dot:not([hidden])")){
+          if(node.hidden||getComputedStyle(node).display==="none")continue;
+          const rect=node.getBoundingClientRect();
+          if(Math.abs(rect.width-rect.height)>1)issues.push(`${node.id||node.className}: not square (${rect.width}x${rect.height})`);
+          const child=node.firstElementChild;
+          if(!child)continue;
+          const inner=child.getBoundingClientRect();
+          const dx=Math.abs((inner.left+inner.right)/2-(rect.left+rect.right)/2);
+          const dy=Math.abs((inner.top+inner.bottom)/2-(rect.top+rect.bottom)/2);
+          if(dx>1||dy>1)issues.push(`${node.id||node.className}: child center offset ${dx.toFixed(2)},${dy.toFixed(2)}`);
+          if(inner.left<rect.left-1||inner.top<rect.top-1||inner.right>rect.right+1||inner.bottom>rect.bottom+1)issues.push(`${node.id||node.className}: child protrudes beyond circle`);
+        }
+        return issues;
+      });
+      assert.deepEqual(circleIssues,[],`${routeName}/${width}/${theme} circular control geometry`);
+      if(routeName==="dashboard"){
+        const center=await page.locator(".donut-center").evaluate((node)=>{
+          const svg=node.ownerSVGElement;
+          const box=node.getBBox();
+          const rect=svg.getBoundingClientRect();
+          const scaleX=rect.width/160;
+          const scaleY=rect.height/160;
+          return {
+            dx:Math.abs(rect.left+(box.x+box.width/2)*scaleX-(rect.left+80*scaleX)),
+            dy:Math.abs(rect.top+(box.y+box.height/2)*scaleY-(rect.top+80*scaleY)),
+            text:[...node.querySelectorAll("text")].map((item)=>item.textContent),
+          };
+        });
+        assert.ok(center.dx<=2&&center.dy<=2,`Donut centre is aligned within 2 CSS px (${center.dx.toFixed(2)},${center.dy.toFixed(2)})`);
+        assert.equal(center.text[0],"1 / 5", "Dashboard quota centre shows the current used/limit number");
+        assert.equal(center.text[1],"listings used", "Dashboard quota centre includes its caption");
+      }
       return state;
     }
 
+    await mkdir("/tmp/skilltube-ui-smoke", { recursive: true });
     for (const width of sizes) {
       for (const theme of themes) {
+        const page = await browser.newPage({ viewport: { width, height: 900 } });
+        await configurePage(page, theme);
+        page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+        page.on("pageerror", (error) => errors.push(error.message));
+        page.on("requestfailed", (request) => failures.push(`${request.method()} ${request.url()}: ${request.failure()?.errorText}`));
+        page.on("response", (response) => { if (response.status() >= 400) statusErrors.push(`${response.status()} ${response.url()}`); });
         for (const [routeName, hash] of routes) {
-          const page = await browser.newPage({ viewport: { width, height: 900 } });
           errors.length = 0;
           failures.length = 0;
           statusErrors.length = 0;
-          page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
-          page.on("pageerror", (error) => errors.push(error.message));
-          page.on("requestfailed", (request) => failures.push(`${request.method()} ${request.url()}: ${request.failure()?.errorText}`));
-          page.on("response", (response) => { if (response.status() >= 400) statusErrors.push(`${response.status()} ${response.url()}`); });
-          await configurePage(page);
-          await page.goto(`${baseUrl}/app/${hash}`, { waitUntil: "networkidle" });
+          if (routeName === "home") await page.goto(`${baseUrl}/app/${hash}`, { waitUntil: "networkidle" });
+          else await page.evaluate((nextHash) => { location.hash = nextHash; }, hash);
           if (routeName === "admin") {
             const tab = page.locator(".admin-tabs button").first();
             if (await tab.count()) await tab.click();
           }
-          const state = await assertPage(page, routeName, width);
-          await page.screenshot({ path: `/tmp/skilltube-ui-smoke/${routeName}-${width}-${theme}.png`, fullPage: true });
-          if (routeName === "home" && width === 390 && theme === "light") {
-            await page.locator("#menu").click();
-            assert.ok(await page.locator("#drawer").evaluate((node) => node.classList.contains("open")));
-            assert.equal(await page.locator("#drawer-profile-name").textContent(),"Demo Developer");
-            await page.locator("#menu").click();
-            await page.locator("#search-toggle").click();
-            const searchRect = await page.locator("#top-search").evaluate((node) => {
-              const rect=node.getBoundingClientRect();
-              return {display:getComputedStyle(node).display,width:rect.width,top:rect.top};
-            });
-            assert.equal(searchRect.display,"flex");
-            assert.ok(searchRect.width >= width - 20 && searchRect.top >= 64,"Expanded mobile search occupies a full-width row below the toolbar");
-            const targets=await page.locator("#menu,#search-toggle,#theme-button").evaluateAll((nodes)=>nodes.map((node)=>{const rect=node.getBoundingClientRect();return Math.min(rect.width,rect.height)}));
-            assert.ok(targets.every((size)=>size>=44),"Mobile header touch targets are at least 44px");
-            diagnostics.push("mobile header interactions: drawer profile reachable; expanded search full-width; touch targets >=44px");
-          }
+          const state = await assertPage(page, routeName, width, theme);
+          await page.screenshot({ path: `/tmp/skilltube-ui-smoke/${routeName}-${width}-${theme}.png`, animations:"disabled" });
           assert.deepEqual(errors, [], `${routeName}/${width}/${theme} console errors`);
           assert.deepEqual(failures, [], `${routeName}/${width}/${theme} failed requests`);
           assert.deepEqual(statusErrors, [], `${routeName}/${width}/${theme} HTTP errors`);
@@ -353,13 +451,226 @@ try {
             }
           }
           diagnostics.push(`${routeName}/${width}/${theme}: h1=${state.h1Count}, chips=${state.topicCount}, scroll=${state.scrollWidth}/${state.width}, errors=0`);
-          await page.close();
         }
+        await page.close();
       }
     }
 
+    const controlPage = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    await configurePage(controlPage,"light");
+    const controlErrors=[];
+    controlPage.on("console",(message)=>{if(message.type()==="error")controlErrors.push(message.text())});
+    controlPage.on("pageerror",(error)=>controlErrors.push(error.message));
+    await controlPage.goto(`${baseUrl}/app/#/home`,{waitUntil:"networkidle"});
+    await controlPage.waitForSelector("#profile-avatar");
+    async function assertSidebar(collapsed, desktop, width) {
+      if(!desktop){
+        await controlPage.waitForFunction((hidden)=>{
+          const rect=document.querySelector("#drawer").getBoundingClientRect();
+          return hidden?rect.right<=1:rect.left>=-1;
+        },collapsed);
+      }
+      const current=await controlPage.evaluate(()=>({
+        collapsed:document.body.classList.contains("sidebar-collapsed"),
+        expanded:document.querySelector("#menu").getAttribute("aria-expanded"),
+        hidden:document.querySelector("#drawer").getAttribute("aria-hidden"),
+        backdrop:document.querySelector("#drawer-backdrop").hidden,
+        drawer:document.querySelector("#drawer").getBoundingClientRect().toJSON(),
+        main:document.querySelector(".app-main").getBoundingClientRect().toJSON(),
+        saved:localStorage.getItem("skilltube.sidebarCollapsed"),
+      }));
+      assert.equal(current.collapsed,collapsed,`Sidebar body class at ${width}px`);
+      assert.equal(current.expanded,String(!collapsed),`Sidebar aria-expanded at ${width}px`);
+      assert.equal(current.backdrop,desktop||collapsed,`Sidebar backdrop visibility at ${width}px`);
+      if(desktop){
+        assert.equal(Math.round(current.drawer.width),collapsed?72:240,`Desktop sidebar width at ${width}px`);
+        assert.ok(current.main.left>=current.drawer.right-1,`Desktop page content begins after sidebar at ${width}px`);
+        assert.equal(current.hidden,"false","Desktop sidebar remains in the accessibility tree");
+      }else{
+        assert.equal(current.hidden,String(collapsed),`Mobile drawer aria-hidden at ${width}px`);
+        assert.equal(current.drawer.right<=1,collapsed,`Mobile drawer visibility at ${width}px`);
+      }
+      if(current.saved!==null) assert.equal(current.saved,collapsed?"1":"0","Sidebar choice persists in localStorage");
+    }
+    await assertSidebar(false,true,1440);
+    await controlPage.locator("#close-menu").click();
+    await assertSidebar(true,true,1440);
+    await controlPage.locator("#menu").click();
+    await assertSidebar(false,true,1440);
+    await controlPage.keyboard.press("Escape");
+    await assertSidebar(true,true,1440);
+    await controlPage.locator("#menu").click();
+    await controlPage.setViewportSize({width:390,height:850});
+    await controlPage.waitForTimeout(100);
+    await assertSidebar(false,false,390);
+    assert.equal(await controlPage.locator("#drawer-profile-name").textContent(),"Demo Developer","Profile remains reachable through the mobile drawer");
+    await controlPage.locator("#close-menu").click();
+    await assertSidebar(true,false,390);
+    await controlPage.locator("#menu").click();
+    await assertSidebar(false,false,390);
+    await controlPage.keyboard.press("Escape");
+    await assertSidebar(true,false,390);
+    await controlPage.locator("#menu").click();
+    await controlPage.locator("#drawer-backdrop").click({position:{x:350,y:80}});
+    await assertSidebar(true,false,390);
+    await controlPage.locator("#menu").click();
+    await controlPage.setViewportSize({width:1024,height:850});
+    await controlPage.waitForTimeout(100);
+    await assertSidebar(false,true,1024);
+    await controlPage.locator("#close-menu").click();
+    await assertSidebar(true,true,1024);
+    await controlPage.setViewportSize({width:390,height:850});
+    await controlPage.waitForTimeout(100);
+    await assertSidebar(true,false,390);
+    await controlPage.locator("#menu").click();
+    await controlPage.evaluate(()=>{location.hash="#/search?q=web-frontend"});
+    await controlPage.waitForFunction(()=>document.querySelector("#breadcrumb-slot h1")?.textContent==="Search");
+    await assertSidebar(false,false,390);
+    await controlPage.locator("#search-toggle").click();
+    const searchGeometry=await controlPage.locator("#top-search").evaluate((node)=>{
+      const rect=node.getBoundingClientRect();
+      return {display:getComputedStyle(node).display,width:rect.width,top:rect.top};
+    });
+    assert.equal(searchGeometry.display,"flex");
+    assert.ok(searchGeometry.width>=370&&searchGeometry.top>=64,"Expanded mobile search is a full-width row below the top bar");
+    const touchTargets=await controlPage.locator("#menu,#search-toggle,#theme-button").evaluateAll((nodes)=>nodes.map((node)=>{
+      const rect=node.getBoundingClientRect();
+      return Math.min(rect.width,rect.height);
+    }));
+    assert.ok(touchTargets.every((target)=>target>=44),"Mobile header controls meet the 44px touch target");
+    const mobileCircleIssues=await controlPage.evaluate(()=>{
+      const issues=[];
+      for(const node of document.querySelectorAll(".icon-button,.profile-button,.drawer-account-avatar,.listing-developer-logo,.skill-developer-logo,.notification-dot:not([hidden])")){
+        if(node.hidden||getComputedStyle(node).display==="none")continue;
+        const outer=node.getBoundingClientRect(),child=node.firstElementChild;
+        if(Math.abs(outer.width-outer.height)>1)issues.push(`${node.id||node.className}: not square`);
+        if(!child)continue;
+        const inner=child.getBoundingClientRect();
+        if(Math.abs((outer.left+outer.right-inner.left-inner.right)/2)>1||Math.abs((outer.top+outer.bottom-inner.top-inner.bottom)/2)>1)issues.push(`${node.id||node.className}: child not centered`);
+        if(inner.left<outer.left-1||inner.top<outer.top-1||inner.right>outer.right+1||inner.bottom>outer.bottom+1)issues.push(`${node.id||node.className}: child escapes circle`);
+      }
+      return issues;
+    });
+    assert.deepEqual(mobileCircleIssues,[],"Mobile circular controls keep children centred and contained");
+    diagnostics.push("sidebar 1440/390/1024: close, menu reopen, Escape, backdrop and resize state passed; mobile search full-width; touch targets >=44px");
+
+    await controlPage.locator("#search-toggle").click();
+    await controlPage.locator("#menu").click();
+    await assertSidebar(true,false,390);
+    await controlPage.locator("#theme-button").click();
+    for(const theme of themes){
+      await controlPage.locator(`.theme-option[data-theme="${theme}"]`).click();
+      const currentTheme=await controlPage.evaluate(()=>({
+        stored:localStorage.getItem("skilltube.theme"),
+        icon:document.querySelector("#theme-button use").getAttribute("href"),
+        label:document.querySelector("#theme-button").getAttribute("aria-label"),
+        selected:document.querySelector(".theme-option[aria-checked='true']")?.dataset.theme,
+        checks:document.querySelectorAll(".theme-option-check:not([hidden])").length,
+      }));
+      assert.deepEqual(currentTheme,{
+        stored:theme,
+        icon:`/icons.svg#theme-${theme}`,
+        label:`Theme: ${themeLabels[theme]}`,
+        selected:theme,
+        checks:1,
+      },`${theme} selection updates the stored theme, icon, accessible name and checkmark`);
+    }
+    await controlPage.locator('.theme-option[data-theme="system"]').click();
+    await controlPage.emulateMedia({colorScheme:"dark"});
+    await controlPage.waitForFunction(
+      () => document.querySelector('meta[name="theme-color"]')?.content === "#17151d",
+    );
+    const systemTheme=await controlPage.evaluate(()=>({
+      root:document.documentElement.getAttribute("data-theme"),
+      color:document.querySelector('meta[name="theme-color"]')?.content,
+      icon:document.querySelector("#theme-button use").getAttribute("href"),
+      colorScheme:getComputedStyle(document.documentElement).colorScheme,
+    }));
+    assert.equal(systemTheme.root,null,"System theme continues following the OS");
+    assert.equal(systemTheme.color,"#17151d","System theme updates the browser color after an OS theme change");
+    assert.equal(systemTheme.icon,"/icons.svg#theme-system","OS changes keep the System glyph");
+    assert.equal(systemTheme.colorScheme,"dark","System theme updates native control colors after an OS theme change");
+    diagnostics.push("theme picker: seven SVG glyphs, aria labels/checkmarks, persistence, and System OS-follow behavior passed");
+
+    const profileCases=[["Ayush Giri","AG"],["Mary Moore","MM"],["W","W"],["A Very Long Developer Name","AV"]];
+    for(const [name,initials] of profileCases){
+      demoName=name;
+      demoAvatarUrl="";
+      await controlPage.reload({waitUntil:"networkidle"});
+      await controlPage.waitForFunction((expected)=>document.querySelector("#profile-avatar")?.textContent===expected,initials);
+      assert.equal(await controlPage.locator("#drawer-avatar").textContent(),initials,`${name} drawer initials are limited and centred`);
+    }
+    demoName="Ayush Giri";
+    demoAvatarUrl="https://avatars.githubusercontent.com/u/123?v=4";
+    await controlPage.route("https://avatars.githubusercontent.com/**",(route)=>route.fulfill({
+      status:200,
+      contentType:"image/svg+xml",
+      body:'<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="#2878c8"/></svg>',
+    }));
+    await controlPage.reload({waitUntil:"networkidle"});
+    await controlPage.waitForFunction(()=>document.querySelector("#profile-avatar img")?.complete&&document.querySelector("#profile-avatar img")?.naturalWidth>0);
+    const avatarStyle=await controlPage.locator("#profile-avatar img").evaluate((image)=>({
+      objectFit:getComputedStyle(image).objectFit,
+      radius:getComputedStyle(image).borderTopLeftRadius,
+      width:image.getBoundingClientRect().width,
+      height:image.getBoundingClientRect().height,
+    }));
+    assert.equal(avatarStyle.objectFit,"cover");
+    assert.equal(avatarStyle.radius,"50%");
+    assert.equal(avatarStyle.width,avatarStyle.height);
+    diagnostics.push("avatar initials AG/MM/W/AV and mocked GitHub image: verified; image is 44px circular object-fit:cover");
+
+    demoName="Demo Developer";
+    demoAvatarUrl="";
+    demoAchievements=true;
+    const quotaCases=[[0,5,"0 / 5"],[1,5,"1 / 5"],[5,5,"5 / 5"],[0,0,"—"]];
+    for(const [used,limit,expected] of quotaCases){
+      demoListingsUsed=used;
+      demoPublishLimit=limit;
+      const quotaPage=await browser.newPage({viewport:{width:390,height:900}});
+      await configurePage(quotaPage,"light");
+      await quotaPage.goto(`${baseUrl}/app/#/dashboard`,{waitUntil:"networkidle"});
+      await quotaPage.waitForFunction(() => !document.querySelector("#app .skeleton[aria-label='Loading dashboard']"));
+      assert.equal(
+        await quotaPage.locator(".donut-center text").first().textContent(),
+        expected,
+        `Quota donut shows ${expected}`,
+      );
+      const center=await quotaPage.locator(".donut-center").evaluate((node)=>{
+        const svg=node.ownerSVGElement,box=node.getBBox(),rect=svg.getBoundingClientRect();
+        return {dx:Math.abs((box.x+box.width/2-80)*rect.width/160),dy:Math.abs((box.y+box.height/2-80)*rect.height/160),caption:node.querySelector(".chart-caption")?.textContent};
+      });
+      assert.ok(center.dx<=2&&center.dy<=2,`Quota ${expected} is centred within 2 CSS px`);
+      assert.equal(center.caption,"listings used");
+      await quotaPage.close();
+    }
+    const chartPage=await browser.newPage({viewport:{width:390,height:900}});
+    await configurePage(chartPage,"light");
+    await chartPage.goto(`${baseUrl}/app/#/dashboard`,{waitUntil:"networkidle"});
+    await chartPage.waitForFunction(() => !document.querySelector("#app .skeleton[aria-label='Loading dashboard']"));
+    const labelSizes=await chartPage.evaluate(()=>({
+      bar:parseFloat(getComputedStyle(document.querySelector(".weekly-bar-label")).fontSize),
+      legend:parseFloat(getComputedStyle(document.querySelector(".chart-legend")).fontSize),
+      bars:document.querySelectorAll(".weekly-bar-row").length,
+      tooltip:document.querySelector(".weekly-bar-label").title,
+    }));
+    assert.ok(labelSizes.bar>=12&&labelSizes.legend>=12,"Mobile chart labels and donut legend are at least 12px");
+    assert.equal(labelSizes.bars,10);
+    assert.ok(labelSizes.tooltip.length>0,"Long weekly chart names have a title tooltip");
+    demoAchievements=false;
+    await chartPage.reload({waitUntil:"networkidle"});
+    await chartPage.waitForSelector(".badge-empty-state");
+    await chartPage.screenshot({path:"/tmp/skilltube-ui-smoke/dashboard-no-badges-390-light.png",fullPage:true,animations:"disabled"});
+    await chartPage.close();
+    demoAchievements=true;
+    demoListingsUsed=1;
+    demoPublishLimit=5;
+    diagnostics.push("dashboard quota 0/5, 1/5, 5/5, 0/0: centred number/caption passed; chart labels >=12px; badge empty state rendered");
+    assert.deepEqual(controlErrors,[],"Sidebar, theme, avatar and chart interaction checks have no browser errors");
+    await controlPage.close();
+
     const chipPage = await browser.newPage({ viewport: { width: 390, height: 850 } });
-    await configurePage(chipPage);
+    await configurePage(chipPage,"light");
     await chipPage.goto(`${baseUrl}/app/#/home`, { waitUntil: "networkidle" });
     await chipPage.locator("#topic-chips a").filter({ hasText: "Web & frontend" }).click();
     await chipPage.waitForSelector("#app .search-toolbar");
@@ -370,7 +681,7 @@ try {
 
     for (const variant of ["empty", "waiting"]) {
       const page = await browser.newPage({ viewport: { width: 390, height: 850 } });
-      await configurePage(page, variant);
+      await configurePage(page, "light", variant);
       await page.goto(`${baseUrl}/app/#/dashboard`, { waitUntil: "networkidle" });
       await page.waitForSelector(".empty-banner");
       await page.screenshot({ path: `/tmp/skilltube-ui-smoke/dashboard-${variant}-390-light.png`, fullPage: true });

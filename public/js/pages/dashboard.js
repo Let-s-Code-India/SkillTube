@@ -94,7 +94,19 @@ export async function render(app) {
     const grid=el("div",undefined,"badge-grid");
     for (const badge of achievements) grid.append(badgeCard(images,badge,{showReason:true}));
     recent.append(grid);
-  } else recent.append(el("p","Earn your first badge from the catalog.","mut"));
+  } else {
+    const empty=el("div",undefined,"badge-empty-state");
+    const icon=document.createElementNS("http://www.w3.org/2000/svg","svg");
+    icon.setAttribute("aria-hidden","true");
+    const use=document.createElementNS("http://www.w3.org/2000/svg","use");
+    use.setAttribute("href","/icons.svg#badge");
+    icon.append(use);
+    const message=el("p","Earn your first badge from the catalog.");
+    const link=el("a","Explore badges","btn secondary");
+    link.href="#/badges";
+    empty.append(icon,message,link);
+    recent.append(empty);
+  }
   lower.append(recent);
   app.append(lower);
 }

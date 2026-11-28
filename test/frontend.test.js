@@ -38,7 +38,15 @@ async function testCharts() {
   donutChart(chart,3,10);
   assert.ok(chart.querySelector('svg[role="img"][aria-label]'));
   assert.ok(chart.querySelector("table caption"));
-  assert.equal(chart.querySelectorAll("svg").length,2);
+  assert.equal(chart.querySelectorAll(".weekly-bar-row").length,2);
+  assert.equal(chart.querySelector(".donut-center .chart-number").textContent,"3 / 10");
+  assert.equal(chart.querySelector(".donut-center .chart-caption").textContent,"listings used");
+  for (const [used,limit,expected] of [[0,5,"0 / 5"],[1,5,"1 / 5"],[5,5,"5 / 5"],[0,0,"—"]]) {
+    const host=document.createElement("div");
+    donutChart(host,used,limit);
+    assert.equal(host.querySelector(".donut-center .chart-number").textContent,expected);
+    assert.equal(host.querySelector(".donut-center .chart-caption").textContent,"listings used");
+  }
 }
 async function testStepper() {
   const dom=new JSDOM("<!doctype html><div id='steps'></div>",{url:"https://skilltube.test/"});

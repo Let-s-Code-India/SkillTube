@@ -27,6 +27,12 @@ export function updateAnnouncementDot(announcements) {
     latest && localStorage.getItem(lastSeenKey) !== String(latest.id),
   );
   dot.hidden = !unread;
+  dot.replaceChildren();
+  if (unread) {
+    const indicator = document.createElement("span");
+    indicator.setAttribute("aria-hidden", "true");
+    dot.append(indicator);
+  }
   dot.setAttribute(
     "aria-label",
     unread ? "Unread announcements" : "No unread announcements",
