@@ -10,6 +10,10 @@ import { listingCard } from "../components/cards.js";
 import { renderAnnouncementBanner } from "../components/announcements.js";
 // Render the home route into its container.
 export async function render(app) {
+  const greeting = document.createElement("section");
+  greeting.className = "home-greeting";
+  greeting.append(Object.assign(document.createElement("h2"),{textContent:"Good to see you"}));
+  app.append(greeting);
   try {
     await renderAnnouncementBanner(app);
   } catch (error) {
@@ -20,6 +24,9 @@ export async function render(app) {
   const status = document.createElement("div");
   status.className = "listing-grid";
   status.setAttribute("aria-live", "polite");
+  const heading = document.createElement("h2");
+  heading.textContent = "Recommended for you";
+  app.append(heading);
   for (let index = 0; index < 4; index++) {
     const skeleton = document.createElement("div");
     skeleton.className = "skeleton";
@@ -67,11 +74,22 @@ export async function render(app) {
       status.append(card);
     }
   } else {
+    const empty = document.createElement("section");
+    empty.className = "empty-state";
+    const icon = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    icon.setAttribute("viewBox","0 0 96 96");
+    icon.setAttribute("aria-hidden","true");
+    icon.classList.add("empty-illustration");
+    const circle = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    circle.setAttribute("cx","48");circle.setAttribute("cy","48");circle.setAttribute("r","36");
+    circle.setAttribute("fill","none");circle.setAttribute("stroke","var(--line)");
+    icon.append(circle);
     const p = document.createElement("p");
-    p.className = "mut";
-    p.textContent =
-      "There are no recommendations yet. Explore Search or publish your first AI resource.";
-    status.append(p);
+    p.textContent = "Explore listings and publish your first AI resource.";
+    const link = document.createElement("a");
+    link.className = "btn"; link.href="#/search"; link.textContent="Explore Search";
+    empty.append(icon,p,link);
+    status.append(empty);
   }
   refreshNotificationDots();
 }
@@ -81,7 +99,7 @@ async function loadDashboard() {
   const dashboard = await call("dashboard", {});
   if (dashboard?.me) {
     const card = document.createElement("section");
-    card.className = "card";
+    card.className = "card dashboard-summary";
     const h = document.createElement("h2");
     h.textContent = "Your dashboard";
     const detail = document.createElement("p");

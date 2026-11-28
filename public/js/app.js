@@ -12,53 +12,125 @@ import { renderCountryPicker } from "./components/country-picker.js";
 import { refreshNotificationDots } from "./components/notification-dots.js";
 import { call } from "./api.js";
 import { onAuthChange } from "./auth.js";
+import { signOut } from "./auth.js";
+import { topicSlugs } from "./topics.js";
+import { mountThemePicker, syncSystemTheme } from "./components/theme-picker.js";
+import "./rules.js";
 
 const app = document.querySelector("#app");
 const drawer = document.querySelector("#drawer");
 const menu = document.querySelector("#menu");
-import("./components/theme-picker.js").then(({ mountThemePicker, syncSystemTheme }) => {
-  const themeButton=document.querySelector("#theme-button");
-  if(themeButton){
-    themeButton.addEventListener("click",()=>{
-      const menu=document.createElement("div");
-      menu.className="theme-menu card";
-      mountThemePicker(menu);
-      themeButton.replaceWith(menu);
-    });
+const backdrop = document.querySelector("#drawer-backdrop");
+const isDesktop = () => matchMedia("(min-width: 1024px)").matches;
+let lastDrawerFocus = null;
+try {
+  if (localStorage.getItem("skilltube.sidebarCollapsed") === "1") document.body.classList.add("sidebar-collapsed");
+} catch {}
+function closeDrawer({ restore = true } = {}) {
+  drawer.classList.remove("open");
+  document.body.classList.remove("drawer-lock");
+  if (backdrop) backdrop.hidden = true;
+  menu.setAttribute("aria-expanded", "false");
+  if (restore && lastDrawerFocus) lastDrawerFocus.focus();
+}
+function openDrawer() {
+  lastDrawerFocus = document.activeElement;
+  drawer.classList.add("open");
+  document.body.classList.add("drawer-lock");
+  if (backdrop) backdrop.hidden = false;
+  menu.setAttribute("aria-expanded", "true");
+  document.querySelector("#close-menu")?.focus();
+}
+menu.addEventListener("click", () => {
+  if (isDesktop()) {
+    document.body.classList.toggle("sidebar-collapsed");
+    try {
+      localStorage.setItem("skilltube.sidebarCollapsed", document.body.classList.contains("sidebar-collapsed") ? "1" : "0");
+    } catch {}
+    menu.setAttribute("aria-expanded", String(!document.body.classList.contains("sidebar-collapsed")));
+    return;
   }
-  if(matchMedia("(prefers-color-scheme: dark)").addEventListener){
-    matchMedia("(prefers-color-scheme: dark)").addEventListener("change",syncSystemTheme);
+  if (drawer.classList.contains("open")) closeDrawer();
+  else openDrawer();
+});
+document.querySelector("#close-menu")?.addEventListener("click", () => closeDrawer());
+backdrop?.addEventListener("click", () => closeDrawer());
+drawer.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => {
+  if (!isDesktop()) closeDrawer({ restore: false });
+}));
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && drawer.classList.contains("open")) {
+    closeDrawer();
+  } else if (event.key === "Tab" && !isDesktop() && drawer.classList.contains("open")) {
+    const focusable = [...drawer.querySelectorAll("a,button")].filter((node) => !node.hidden);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable.at(-1);
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 });
+if (isDesktop()) drawer.classList.add("open");
+matchMedia("(min-width: 1024px)").addEventListener("change", (event) => {
+  if (event.matches) drawer.classList.add("open");
+  else closeDrawer({ restore: false });
+});
 
-// Close drawer.
-function closeDrawer() {
-  drawer.classList.remove("open");
-  menu.setAttribute("aria-expanded", "false");
-}
-menu.addEventListener(
-  "click",
-  /* Handle the click event. */
-  () => {
-    drawer.classList.add("open");
-    menu.setAttribute("aria-expanded", "true");
-  },
-);
-document.querySelector("#close-menu").addEventListener("click", closeDrawer);
-drawer.querySelectorAll("a").forEach(
-  /* Process each a in the collection. */
-  (a) => a.addEventListener("click", closeDrawer),
-);
-document.addEventListener(
-  "keydown",
-  /* Handle the keydown event. */
-  (event) => {
-    if (event.key === "Escape" && drawer.classList.contains("open")) {
-      closeDrawer();
-      menu.focus();
+const topicChips = document.querySelector("#topic-chips");
+function renderTopicChips() {
+  if (!topicChips) return;
+  const route = hashRoute();
+  const hash = location.hash;
+  const active = new URLSearchParams(hash.includes("?") ? hash.split("?")[1] : "").get("topic")
+    || new URLSearchParams(hash.includes("?") ? hash.split("?")[1] : "").get("q");
+  const entries = [["All", ""] , ...topicSlugs.map((topic) => [topic.replaceAll("-", " "), topic])];
+  topicChips.replaceChildren();
+  for (const [label, topic] of entries) {
+    const link = document.createElement("a");
+    link.className = "chip";
+    link.href = topic ? `#/search?q=${encodeURIComponent(topic)}&topic=${encodeURIComponent(topic)}` : "#/search";
+    link.textContent = label;
+    if ((topic ? active === topic : route === "search" && !active)) {
+      link.classList.add("active");
+      link.setAttribute("aria-current", "page");
     }
-  },
-);
+    topicChips.append(link);
+  }
+}
+
+const themeButton = document.querySelector("#theme-button");
+const themeMenu = document.createElement("div");
+themeMenu.className = "theme-menu card";
+themeMenu.setAttribute("role","menu");
+themeMenu.hidden = true;
+themeButton?.parentElement.append(themeMenu);
+mountThemePicker(themeMenu);
+themeButton?.addEventListener("click", () => {
+  themeMenu.hidden = !themeMenu.hidden;
+  themeButton.setAttribute("aria-expanded", String(!themeMenu.hidden));
+});
+document.addEventListener("click", (event) => {
+  if (themeMenu && !themeMenu.hidden && !themeMenu.contains(event.target) && event.target !== themeButton && !themeButton?.contains(event.target)) {
+    themeMenu.hidden = true;
+    themeButton?.setAttribute("aria-expanded","false");
+  }
+});
+if (matchMedia("(prefers-color-scheme: dark)").addEventListener) {
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", syncSystemTheme);
+}
+
+const topSearch = document.querySelector("#top-search");
+topSearch?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const input = document.querySelector("#top-search-input");
+  const query = input?.value.trim();
+  location.hash = query ? `#/search?q=${encodeURIComponent(query)}` : "#/search";
+});
 
 const pageModules = {
   home: "home",
@@ -88,6 +160,33 @@ const titles = {
   invite: "Invite",
   admin: "Admin",
 };
+
+function renderBreadcrumb(route) {
+  const slot = document.querySelector("#breadcrumb-slot");
+  if (!slot) return;
+  slot.replaceChildren();
+  const [page, id] = routeParts(route);
+  let title = titles[page] || "SkillTube";
+  if (page === "skill" && id) title = "Listing";
+  if (page === "dev" && id) title = "Developer";
+  const nav = document.createElement("nav");
+  nav.className = "breadcrumb";
+  nav.setAttribute("aria-label","Breadcrumb");
+  const skillLink = document.createElement("a");
+  skillLink.href = "#/home";
+  skillLink.textContent = "SkillTube";
+  const current = document.createElement("h1");
+  current.textContent = title;
+  current.setAttribute("aria-current","page");
+  nav.append(skillLink, document.createTextNode(" / "), current);
+  slot.append(nav);
+  document.querySelectorAll(".drawer a").forEach((link) => {
+    const activeRoute = link.getAttribute("href") === `#/${page}`;
+    link.classList.toggle("active", activeRoute);
+    if (activeRoute) link.setAttribute("aria-current","page");
+    else link.removeAttribute("aria-current");
+  });
+}
 
 // Load page.
 async function loadPage(route, app) {
@@ -206,6 +305,46 @@ async function renderOnce({ signedOut = false } = {}) {
     showError(app, error.code, error.arg);
     return;
   }
+  state.profile = account;
+  const avatar = document.querySelector("#profile-avatar");
+  const avatarUrl = account?.avatar_url || account?.github_avatar_url;
+  if (avatar) {
+    if (typeof avatarUrl === "string" && avatarUrl) {
+    avatar.replaceChildren();
+    const image = document.createElement("img");
+    image.src = avatarUrl;
+    image.alt = "";
+    image.width = 36;
+    image.height = 36;
+    avatar.append(image);
+    } else {
+    const name = account?.name || account?.username || "SkillTube";
+    avatar.textContent = name.trim().split(/\s+/).map((part) => part[0]).join("").slice(0,2).toUpperCase();
+    }
+  }
+  const profileButton = document.querySelector("#profile-button");
+  const profileMenu = document.querySelector("#profile-menu");
+  if (profileMenu) {
+    profileMenu.replaceChildren();
+    for (const [label, href] of [["Dashboard","#/dashboard"],["My listings","#/my-skills"],["Settings","#/settings"]]) {
+    const link = document.createElement("a");
+    link.href = href;
+    link.textContent = label;
+    link.setAttribute("role","menuitem");
+    profileMenu.append(link);
+    }
+    const signOutButton = document.createElement("button");
+    signOutButton.type = "button";
+    signOutButton.textContent = "Sign out";
+    signOutButton.setAttribute("role","menuitem");
+    signOutButton.addEventListener("click", () => signOut().catch(() => {}));
+    profileMenu.append(signOutButton);
+  }
+  profileButton?.addEventListener("click", () => {
+    if (!profileMenu) return;
+    profileMenu.hidden = !profileMenu.hidden;
+    profileButton.setAttribute("aria-expanded", String(!profileMenu.hidden));
+  });
   if (!account?.country) {
     renderCountryPicker(
       app,
@@ -215,9 +354,8 @@ async function renderOnce({ signedOut = false } = {}) {
     return;
   }
   app.replaceChildren();
-  const h = document.createElement("h1");
-  h.textContent = titles[routeParts(route)[0]] || "SkillTube";
-  app.append(h);
+  renderBreadcrumb(route);
+  renderTopicChips();
   refreshNotificationDots();
   try {
     await loadPage(route, app);

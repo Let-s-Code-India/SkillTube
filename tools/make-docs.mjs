@@ -112,6 +112,10 @@ function slugifyHeading(value, used) {
 
 // Render authored Markdown through the HTML sanitizer.
 function sanitizeBody(markdown) {
+  markdown = markdown
+    .replaceAll("{{blue_tick_followers}}", '<span data-rule="blue_tick_followers">1,000</span>')
+    .replaceAll("{{master_tick_blue_followers}}", '<span data-rule="master_tick_blue_followers">100</span>')
+    .replaceAll("{{master_tick_countries}}", '<span data-rule="master_tick_countries">10</span>');
   const rendered = globalThis.marked.parse(markdown, {
     gfm: true,
     breaks: false,
@@ -140,8 +144,9 @@ function sanitizeBody(markdown) {
       "thead",
       "tr",
       "ul",
+      "span",
     ],
-    ALLOWED_ATTR: ["href"],
+    ALLOWED_ATTR: ["href", "data-rule"],
     FORBID_TAGS: ["img", "iframe", "object", "embed", "style", "script"],
     ALLOW_DATA_ATTR: false,
   });

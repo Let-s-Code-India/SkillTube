@@ -4,6 +4,8 @@
   "author": "Ayush Giri, Founder of Let's Code India",
   "type": "module",
   "scripts": {
+    "prebuild": "node tools/build-css.mjs",
+    "build": "npm run prebuild",
     "generate:posts": "node tools/make-post.mjs",
     "check:posts": "node tools/make-post.mjs --check",
     "generate:llms-source": "node tools/make-llms-source.mjs",

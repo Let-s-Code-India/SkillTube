@@ -54,18 +54,9 @@ export function imageFrame(image, alt, className = "listing-image-frame") {
   const zoom = Number(image.zoom);
   const x = Number(image.x);
   const y = Number(image.y);
-  img.style.setProperty(
-    "--image-zoom",
-    String(Number.isFinite(zoom) ? Math.min(4, Math.max(1, zoom)) : 1),
-  );
-  img.style.setProperty(
-    "--image-x",
-    `${Number.isFinite(x) ? Math.min(100, Math.max(0, x)) : 50}%`,
-  );
-  img.style.setProperty(
-    "--image-y",
-    `${Number.isFinite(y) ? Math.min(100, Math.max(0, y)) : 50}%`,
-  );
+  if (Number.isFinite(zoom)) img.dataset.zoom = String(Math.min(4, Math.max(1, zoom)));
+  if (Number.isFinite(x)) img.dataset.x = String(Math.min(100, Math.max(0, x)));
+  if (Number.isFinite(y)) img.dataset.y = String(Math.min(100, Math.max(0, y)));
   frame.append(img);
   return frame;
 }
@@ -144,7 +135,15 @@ export function listingCard(skill) {
 
   const stats = document.createElement("p");
   stats.className = "listing-stats";
-  stats.textContent = `${Number(skill.views || 0).toLocaleString()} views · ${Number(skill.stars || 0).toLocaleString()} stars`;
+  const comments = skill.comments ?? skill.comment_count;
+  const time = skill.updated_at || skill.created_at;
+  const timeAgo = time ? `${Math.max(1, Math.round((Date.now() - Date.parse(time)) / 86400000))}d ago` : "";
+  stats.textContent = [
+    `${Number(skill.views || 0).toLocaleString()} views`,
+    `${Number(skill.stars || 0).toLocaleString()} stars`,
+    comments !== undefined ? `${Number(comments || 0).toLocaleString()} comments` : null,
+    timeAgo || null,
+  ].filter(Boolean).join(" · ");
   content.append(stats);
   article.append(content);
   return article;

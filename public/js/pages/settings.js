@@ -365,14 +365,26 @@ export async function render(app) {
   );
   deleteSection.append(confirmationLabel, deleteButton, deleteError);
 
-  app.append(
-    profileSection,
-    interestsSection,
-    privacySection,
-    imageSection,
-    countrySection,
-    shortcutSection,
-    signOutSection,
-    deleteSection,
-  );
+  const layout = node("div", undefined, "settings-layout");
+  const nav = node("nav", undefined, "settings-subnav");
+  nav.setAttribute("aria-label","Settings sections");
+  const sections = [
+    ["Profile", profileSection],
+    ["Interests", interestsSection],
+    ["Privacy", privacySection],
+    ["Profile image", imageSection],
+    ["Country", countrySection],
+    ["Invite", shortcutSection],
+    ["Account", signOutSection],
+  ];
+  for (const [label, sectionNode] of sections) {
+    sectionNode.id = `settings-${label.toLowerCase().replaceAll(" ","-")}`;
+    const link = node("a", label);
+    link.href = `#settings-${sectionNode.id.slice(9)}`;
+    nav.append(link);
+  }
+  const content = node("div", undefined, "settings-content");
+  content.append(profileSection, interestsSection, privacySection, imageSection, countrySection, shortcutSection, signOutSection, deleteSection);
+  layout.append(nav, content);
+  app.append(layout);
 }

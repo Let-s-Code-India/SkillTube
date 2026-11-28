@@ -5,23 +5,43 @@
  */
 import { call } from "../api.js";
 
-if ("serviceWorker" in navigator)
-  navigator.serviceWorker.register("/sw.js").catch(
-    /* Handle a rejected asynchronous operation. */
-    () => {},
-  );
-
-document.querySelector("#footer-slot").innerHTML = footerMarkup();
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations()
+    .then((registrations) => {
+      if (!registrations.length) navigator.serviceWorker.register("/sw.js").catch(() => {});
+    })
+    .catch(() => {});
+}
 // Load public statistics and trending tags for the landing page.
 async function load() {
   try {
     const stats = await call("public_stats");
-    document.querySelector("#skill-count").textContent = stats?.skills ?? "0";
-    document.querySelector("#developer-count").textContent =
-      stats?.developers ?? "0";
-    document.querySelector("#view-count").textContent = stats?.views ?? "0";
+    const bar = document.querySelector("#stats");
+    if (stats?.real !== true) {
+      bar.hidden = true;
+      return;
+    }
+    bar.hidden = false;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const counts = [
+      ["#skill-count", Number(stats.skills||0)],
+      ["#developer-count", Number(stats.developers||0)],
+      ["#member-count", Number(stats.members||0)],
+    ];
+    for (const [selector,target] of counts) {
+      const node=document.querySelector(selector);
+      if (reduce) { node.textContent=target.toLocaleString(); continue; }
+      const start=performance.now();
+      const tick=(now)=>{
+        const progress=Math.min(1,(now-start)/600);
+        node.textContent=Math.round(target*progress).toLocaleString();
+        if(progress<1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
   } catch (_) {
-    document.querySelector("#stats").classList.add("error");
+    const bar=document.querySelector("#stats");
+    if(bar) bar.hidden=true;
   }
   try {
     const tags = await call("trending_tags");

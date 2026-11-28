@@ -54,14 +54,14 @@ export async function render(app) {
   const canWrite = state.admin_can_write === true;
   // Admin panels are loaded only after server-confirmed admin access.
   const panels = [
-    ["Overview", renderOverview],
-    ["Reports", renderReports],
-    ["Users", renderUsers],
-    ["Settings", renderSettings],
-    ["Blocked accounts", renderBlocked],
+    ["Access & safety", renderOverview],
+    ["Badges & ticks", renderBadgeRevocation],
+    ["Limits & timing", renderSettings],
+    ["Content & reports", renderReports],
     ["Announcements", renderAnnouncements],
-    ["Revoke badge", renderBadgeRevocation],
-    ["Audit log", renderAuditLog],
+    ["System", renderAuditLog],
+    ["Users", renderUsers],
+    ["Blocked accounts", renderBlocked],
     ["Admin team", renderAdminTeam],
   ];
   for (const [label, renderPanel] of panels) {

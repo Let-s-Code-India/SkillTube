@@ -75,15 +75,19 @@ export async function render(app) {
     t3: [],
   };
   const host = document.createElement("section");
+  host.className = "publish-wizard";
   app.append(host);
 
   // Render the active step and its matching form.
   function setStep(next) {
     step = next;
     host.replaceChildren();
+    const indicator = document.createElement("p");
+    indicator.className = "publish-stepper";
+    indicator.textContent = ["1 Details","2 Tags","3 Image","4 Review"][Math.min(step,3)] + ` · Step ${step + 1} of 5`;
     const heading = document.createElement("h2");
     heading.textContent = `Step ${step + 1} of 5`;
-    host.append(heading);
+    host.append(indicator, heading);
     if (step === 0) renderType();
     if (step === 1) renderRepoAndText();
     if (step === 2) renderTopics();

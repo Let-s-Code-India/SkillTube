@@ -6,9 +6,11 @@ Last updated: 2026-11-25
 
 ## Ticks
 
-The **Blue Tick** is earned at 1,000,000 followers. It represents fame, not identity verification.
+The **Blue Tick** is earned at <span data-rule="blue_tick_followers">1,000</span> followers. It represents fame, not identity verification.
 
-The **Master Tick** is earned when a developer has 100 Blue-Tick followers from at least 10 countries. It does not mean that SkillTube has verified a person's legal identity.
+The **Master Tick** is earned when a developer has <span data-rule="master_tick_blue_followers">100</span> Blue-Tick followers from at least <span data-rule="master_tick_countries">10</span> countries. It does not mean that SkillTube has verified a person's legal identity.
+
+Admin settings override these static fallback values at runtime.
 
 ## Weekly ranking
 

@@ -82,6 +82,7 @@
 .listing-card-content h2 {
   margin-top: 0;
   font-size: 1.2rem;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
 }
 .listing-byline {
   display: flex;

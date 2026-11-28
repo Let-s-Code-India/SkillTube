@@ -21,10 +21,23 @@ export function horizontalBarChart(container, title, rows, metric) {
   const values=(rows||[]).filter((row)=>Number(row.value)>=0).slice(0,8);
   const max=Math.max(1,...values.map((row)=>Number(row.value)||0));
   const svg=svgEl("svg",{viewBox:"0 0 600 260",role:"img","aria-label":`${title}. ${values.map((r)=>`${r.label}: ${r.value}`).join(", ")}`});
+  for (let step=0;step<=100;step+=20) {
+    const x=145+Math.round(step/100*440);
+    svg.append(svgEl("line",{x1:x,y1:8,x2:x,y2:230,class:"chart-gridline"}));
+  }
   values.forEach((row,index)=>{
     const y=18+index*28; const width=Math.max(2,Math.round((Number(row.value)||0)/max*440));
     const label=svgEl("text",{x:0,y:y+11,class:"chart-label"}); label.textContent=row.label.slice(0,18); svg.append(label);
-    svg.append(svgEl("rect",{x:145,y,y,width, height:16,rx:8,class:"chart-bar","data-color":String(index%6+1)}));
+    const bar=svgEl("rect",{x:145,y,width,height:16,rx:8,class:"chart-bar","data-color":String(index%6+1),tabindex:"0","aria-label":`${row.label}: ${row.value}`});
+    const tip=document.createElement("div");tip.className="chart-tooltip";tip.textContent=`${row.label}: ${row.value}`;
+    tip.hidden=true;
+    bar.addEventListener("mouseenter",()=>{tip.hidden=false});
+    bar.addEventListener("mouseleave",()=>{tip.hidden=true});
+    bar.addEventListener("focus",()=>{tip.hidden=false});
+    bar.addEventListener("blur",()=>{tip.hidden=true});
+    card.append(tip);
+    svg.append(bar);
+    const value=svgEl("text",{x:145+width+8,y:y+12,class:"chart-value"});value.textContent=String(row.value);svg.append(value);
   });
   card.append(svg);
   hiddenTable(card,title,["Listing",metric],values.map((row)=>[row.label,String(row.value)]));
